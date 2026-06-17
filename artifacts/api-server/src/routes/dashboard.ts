@@ -1,19 +1,11 @@
 import { Router, type IRouter } from "express";
-import { getAuth } from "@clerk/express";
 import { db, profilesTable, recordingsTable, surahProgressTable, bookmarksTable, achievementsTable } from "@workspace/db";
-import { eq, gte, desc } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import { logger } from "../lib/logger";
+import { requireAuth } from "../middlewares/auth";
 import { SURAHS } from "./surahs";
 
 const router: IRouter = Router();
-
-function requireAuth(req: any, res: any, next: any) {
-  const auth = getAuth(req);
-  const userId = auth?.userId;
-  if (!userId) return res.status(401).json({ error: "Unauthorized" });
-  req.userId = userId;
-  next();
-}
 
 async function getOrCreateProfile(userId: string) {
   let rows = await db.select().from(profilesTable).where(eq(profilesTable.clerkId, userId)).limit(1);
@@ -26,7 +18,7 @@ async function getOrCreateProfile(userId: string) {
 
 function formatProfile(p: any) {
   let goals: string[] = [];
-  try { goals = typeof p.learningGoals === "string" ? JSON.parse(p.learningGoals) : p.learningGoals; } catch {}
+  try { goals = typeof p.learningGoals === "string" ? JSON.parse(p.learningGoals) : (p.learningGoals ?? []); } catch {}
   return {
     id: p.id, clerkId: p.clerkId, displayName: p.displayName, avatarUrl: p.avatarUrl ?? null,
     onboardingComplete: p.onboardingComplete, language: p.language, learningGoals: goals,
@@ -39,32 +31,57 @@ function formatProfile(p: any) {
 router.get("/dashboard", requireAuth, async (req: any, res) => {
   try {
     const userId = req.userId;
-    const [profile, recordings, surahRows, bookmarks, achievements] = await Promise.all([
+
+    const [profile, allRecordings, surahRows, bookmarks, achievements] = await Promise.all([
       getOrCreateProfile(userId),
-      db.select().from(recordingsTable).where(eq(recordingsTable.userId, userId)).orderBy(desc(recordingsTable.createdAt)).limit(5),
+      db.select().from(recordingsTable).where(eq(recordingsTable.userId, userId)).orderBy(desc(recordingsTable.createdAt)),
       db.select().from(surahProgressTable).where(eq(surahProgressTable.userId, userId)),
       db.select().from(bookmarksTable).where(eq(bookmarksTable.userId, userId)),
       db.select().from(achievementsTable).where(eq(achievementsTable.userId, userId)),
     ]);
 
-    const xpLevel = Math.floor(profile.xp / 500) + 1;
-    const xpToNextLevel = (xpLevel * 500) - profile.xp;
     const today = new Date().toISOString().split("T")[0];
+    const oneWeekAgo = new Date(); oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    const twoWeeksAgo = new Date(); twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
 
-    const weekAgo = new Date();
-    weekAgo.setDate(weekAgo.getDate() - 7);
+    const todayRecs = allRecordings.filter(r => new Date(r.createdAt).toISOString().split("T")[0] === today);
+    const thisWeekRecs = allRecordings.filter(r => new Date(r.createdAt) >= oneWeekAgo);
+    const lastWeekRecs = allRecordings.filter(r => {
+      const t = new Date(r.createdAt);
+      return t >= twoWeeksAgo && t < oneWeekAgo;
+    });
 
-    const scores = recordings.map(r => ((r.feedback as any)?.overallScore as number) ?? 0).filter((s: number) => s > 0);
-    const avgAccuracy = scores.length > 0 ? Math.round(scores.reduce((a: number, b: number) => a + b, 0) / scores.length) : 0;
-    const tajweedScores = recordings.map(r => ((r.feedback as any)?.tajweedScore as number) ?? 0).filter((s: number) => s > 0);
-    const avgTajweed = tajweedScores.length > 0 ? Math.round(tajweedScores.reduce((a: number, b: number) => a + b, 0) / tajweedScores.length) : 0;
+    const minutesStudiedToday = Math.round(todayRecs.reduce((s, r) => s + r.durationSeconds, 0) / 60);
 
-    const totalAyahs = surahRows.reduce((sum: number, s) => sum + s.completedAyahs, 0);
+    const getAvgScore = (recs: typeof allRecordings) => {
+      const scores = recs.map(r => ((r.feedback as any)?.overallScore ?? 0) as number).filter(s => s > 0);
+      return scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
+    };
+
+    const thisWeekAvg = getAvgScore(thisWeekRecs);
+    const lastWeekAvg = getAvgScore(lastWeekRecs);
+    const improvement = lastWeekAvg > 0 ? thisWeekAvg - lastWeekAvg : 0;
+
+    const weeklyXp = thisWeekRecs.reduce((sum, r) => {
+      const score = ((r.feedback as any)?.overallScore ?? 0) as number;
+      return sum + 10 + (score >= 90 ? 20 : score >= 75 ? 10 : 0);
+    }, 0);
+
+    const recentRecordings = allRecordings.slice(0, 5);
+    const scores = recentRecordings.map(r => ((r.feedback as any)?.overallScore as number) ?? 0).filter(s => s > 0);
+    const avgAccuracy = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
+    const tajweedScores = recentRecordings.map(r => ((r.feedback as any)?.tajweedScore as number) ?? 0).filter(s => s > 0);
+    const avgTajweed = tajweedScores.length > 0 ? Math.round(tajweedScores.reduce((a, b) => a + b, 0) / tajweedScores.length) : 0;
+
+    const totalAyahs = surahRows.reduce((sum, s) => sum + s.completedAyahs, 0);
     const surahsInProgress = surahRows.filter(s => s.completedAyahs > 0).length;
     const surahsCompleted = surahRows.filter(s => {
       const surah = SURAHS.find(su => su.number === s.surahId);
       return surah && s.completedAyahs >= surah.ayahCount;
     }).length;
+
+    const xpLevel = Math.floor(profile.xp / 500) + 1;
+    const xpToNextLevel = (xpLevel * 500) - profile.xp;
 
     res.json({
       profile: formatProfile(profile),
@@ -76,12 +93,12 @@ router.get("/dashboard", requireAuth, async (req: any, res) => {
         xpToNextLevel,
         dailyGoalMinutes: profile.dailyGoalMinutes,
         dailyGoalCompletedToday: profile.lastStudyDate === today,
-        minutesStudiedToday: 0,
+        minutesStudiedToday,
       },
-      todayMinutes: 0,
-      weeklyXp: Math.round(profile.xp * 0.3),
+      todayMinutes: minutesStudiedToday,
+      weeklyXp,
       totalAyahs,
-      recentRecordings: recordings.map(r => ({
+      recentRecordings: recentRecordings.map(r => ({
         id: r.id, userId: r.userId, surahId: r.surahId, ayahId: r.ayahId, ayahNumber: r.ayahNumber,
         audioUrl: r.audioUrl ?? null, durationSeconds: r.durationSeconds, createdAt: r.createdAt, feedback: r.feedback ?? null,
       })),
@@ -91,8 +108,8 @@ router.get("/dashboard", requireAuth, async (req: any, res) => {
         unlockedAt: a.unlockedAt ?? null, progress: a.progress ?? null,
       })),
       quickStats: {
-        avgAccuracy, avgTajweed, totalRecordings: recordings.length,
-        totalBookmarks: bookmarks.length, surahsInProgress, surahsCompleted,
+        avgAccuracy, avgTajweed, totalRecordings: allRecordings.length,
+        totalBookmarks: bookmarks.length, surahsInProgress, surahsCompleted, improvement,
       },
     });
   } catch (err) {
@@ -104,26 +121,41 @@ router.get("/dashboard", requireAuth, async (req: any, res) => {
 router.get("/dashboard/weekly-report", requireAuth, async (req: any, res) => {
   try {
     const userId = req.userId;
+    const allRecs = await db.select().from(recordingsTable).where(eq(recordingsTable.userId, userId));
+
     const days: any[] = [];
     let totalXp = 0, totalMinutes = 0, totalRecordings = 0, totalScore = 0, scoreCount = 0;
+
+    const twoWeeksAgo = new Date(); twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+    const oneWeekAgo = new Date(); oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    const thisWeekRecs = allRecs.filter(r => new Date(r.createdAt) >= oneWeekAgo);
+    const lastWeekRecs = allRecs.filter(r => {
+      const t = new Date(r.createdAt);
+      return t >= twoWeeksAgo && t < oneWeekAgo;
+    });
+
+    const getAvg = (recs: typeof allRecs) => {
+      const s = recs.map(r => ((r.feedback as any)?.overallScore ?? 0) as number).filter(x => x > 0);
+      return s.length > 0 ? Math.round(s.reduce((a, b) => a + b, 0) / s.length) : 0;
+    };
+
+    const thisWeekAvg = getAvg(thisWeekRecs);
+    const lastWeekAvg = getAvg(lastWeekRecs);
+    const improvement = lastWeekAvg > 0 ? thisWeekAvg - lastWeekAvg : 0;
 
     for (let i = 6; i >= 0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
       const dateStr = d.toISOString().split("T")[0];
-      const dayStart = new Date(dateStr + "T00:00:00Z");
-      const dayEnd = new Date(dateStr + "T23:59:59Z");
 
-      const allRecs = await db.select().from(recordingsTable).where(eq(recordingsTable.userId, userId));
-      const dayRecs = allRecs.filter(r => {
-        const t = new Date(r.createdAt);
-        return t >= dayStart && t <= dayEnd;
-      });
-
-      const xp = dayRecs.length * 10;
-      const minutes = Math.round(dayRecs.reduce((s: number, r) => s + r.durationSeconds, 0) / 60);
-      const dayScore = dayRecs.map(r => ((r.feedback as any)?.overallScore as number) ?? 0).filter((s: number) => s > 0);
-      if (dayScore.length > 0) { totalScore += dayScore.reduce((a: number, b: number) => a + b, 0); scoreCount += dayScore.length; }
+      const dayRecs = allRecs.filter(r => new Date(r.createdAt).toISOString().split("T")[0] === dateStr);
+      const xp = dayRecs.reduce((sum, r) => {
+        const score = ((r.feedback as any)?.overallScore ?? 0) as number;
+        return sum + 10 + (score >= 90 ? 20 : score >= 75 ? 10 : 0);
+      }, 0);
+      const minutes = Math.round(dayRecs.reduce((s, r) => s + r.durationSeconds, 0) / 60);
+      const dayScores = dayRecs.map(r => ((r.feedback as any)?.overallScore as number) ?? 0).filter(s => s > 0);
+      if (dayScores.length > 0) { totalScore += dayScores.reduce((a, b) => a + b, 0); scoreCount += dayScores.length; }
 
       totalXp += xp; totalMinutes += minutes; totalRecordings += dayRecs.length;
       days.push({ date: dateStr, xp, minutes, recordings: dayRecs.length });
@@ -134,13 +166,10 @@ router.get("/dashboard/weekly-report", requireAuth, async (req: any, res) => {
     const bestDayDate = new Date(days[bestDayIdx].date);
 
     res.json({
-      days,
-      totalXp,
-      totalMinutes,
-      totalRecordings,
+      days, totalXp, totalMinutes, totalRecordings,
       avgScore: scoreCount > 0 ? Math.round(totalScore / scoreCount) : 0,
       bestDay: dayNames[bestDayDate.getDay()],
-      improvement: 12,
+      improvement,
     });
   } catch (err) {
     logger.error({ err }, "Failed to get weekly report");

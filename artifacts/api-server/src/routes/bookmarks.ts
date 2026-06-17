@@ -1,19 +1,10 @@
 import { Router, type IRouter } from "express";
-import { getAuth } from "@clerk/express";
 import { db, bookmarksTable } from "@workspace/db";
-import { eq, and } from "drizzle-orm";
-import { desc } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 import { logger } from "../lib/logger";
+import { requireAuth } from "../middlewares/auth";
 
 const router: IRouter = Router();
-
-function requireAuth(req: any, res: any, next: any) {
-  const auth = getAuth(req);
-  const userId = auth?.userId;
-  if (!userId) return res.status(401).json({ error: "Unauthorized" });
-  req.userId = userId;
-  next();
-}
 
 router.get("/bookmarks", requireAuth, async (req: any, res) => {
   try {
@@ -21,14 +12,8 @@ router.get("/bookmarks", requireAuth, async (req: any, res) => {
       .where(eq(bookmarksTable.userId, req.userId))
       .orderBy(desc(bookmarksTable.createdAt));
     res.json(rows.map(b => ({
-      id: b.id,
-      userId: b.userId,
-      surahId: b.surahId,
-      surahName: b.surahName,
-      ayahNumber: b.ayahNumber,
-      ayahText: b.ayahText,
-      note: b.note ?? null,
-      createdAt: b.createdAt,
+      id: b.id, userId: b.userId, surahId: b.surahId, surahName: b.surahName,
+      ayahNumber: b.ayahNumber, ayahText: b.ayahText, note: b.note ?? null, createdAt: b.createdAt,
     })));
   } catch (err) {
     logger.error({ err }, "Failed to list bookmarks");
@@ -40,23 +25,13 @@ router.post("/bookmarks", requireAuth, async (req: any, res) => {
   try {
     const { surahId, surahName, ayahNumber, ayahText, note } = req.body;
     const inserted = await db.insert(bookmarksTable).values({
-      userId: req.userId,
-      surahId,
-      surahName: surahName ?? "",
-      ayahNumber,
-      ayahText: ayahText ?? "",
-      note: note ?? null,
+      userId: req.userId, surahId, surahName: surahName ?? "", ayahNumber,
+      ayahText: ayahText ?? "", note: note ?? null,
     }).returning();
     const b = inserted[0];
     res.status(201).json({
-      id: b.id,
-      userId: b.userId,
-      surahId: b.surahId,
-      surahName: b.surahName,
-      ayahNumber: b.ayahNumber,
-      ayahText: b.ayahText,
-      note: b.note ?? null,
-      createdAt: b.createdAt,
+      id: b.id, userId: b.userId, surahId: b.surahId, surahName: b.surahName,
+      ayahNumber: b.ayahNumber, ayahText: b.ayahText, note: b.note ?? null, createdAt: b.createdAt,
     });
   } catch (err) {
     logger.error({ err }, "Failed to create bookmark");
@@ -67,6 +42,7 @@ router.post("/bookmarks", requireAuth, async (req: any, res) => {
 router.delete("/bookmarks/:id", requireAuth, async (req: any, res) => {
   try {
     const id = parseInt(req.params.id);
+    if (isNaN(id)) { res.status(400).json({ error: "Invalid bookmark ID" }); return; }
     await db.delete(bookmarksTable).where(and(eq(bookmarksTable.id, id), eq(bookmarksTable.userId, req.userId)));
     res.status(204).send();
   } catch (err) {

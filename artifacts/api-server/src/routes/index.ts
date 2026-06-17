@@ -11,6 +11,10 @@ import leaderboardRouter from "./leaderboard";
 import transcribeRouter from "./transcribe";
 import teacherRouter from "./teacher";
 import hifdhRouter from "./hifdh";
+import voiceTeacherRouter from "./voice-teacher";
+import studyPlannerRouter from "./study-planner";
+import adminRouter from "./admin";
+import teacherDashboardRouter from "./teacher-dashboard";
 
 const router = Router();
 
@@ -26,5 +30,9 @@ router.use(leaderboardRouter);
 router.use(transcribeRouter);
 router.use(teacherRouter);
 router.use(hifdhRouter);
+router.use(voiceTeacherRouter);
+router.use(studyPlannerRouter);
+router.use(adminRouter);
+router.use(teacherDashboardRouter);
 
 export default router;

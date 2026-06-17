@@ -18,6 +18,11 @@ import Achievements from "./pages/achievements";
 import Leaderboard from "./pages/leaderboard";
 import Teacher from "./pages/teacher";
 import Hifdh from "./pages/hifdh";
+import TajweedTeacher from "./pages/tajweed-teacher";
+import StudyPlanner from "./pages/study-planner";
+import VoiceTeacher from "./pages/voice-teacher";
+import Admin from "./pages/admin";
+import TeacherDashboard from "./pages/teacher-dashboard";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient();
@@ -160,6 +165,11 @@ function ClerkProviderWithRoutes() {
           <Route path="/leaderboard" component={() => <ProtectedRoute component={Leaderboard} />} />
           <Route path="/teacher" component={() => <ProtectedRoute component={Teacher} />} />
           <Route path="/hifdh" component={() => <ProtectedRoute component={Hifdh} />} />
+          <Route path="/tajweed-teacher" component={() => <ProtectedRoute component={TajweedTeacher} />} />
+          <Route path="/study-planner" component={() => <ProtectedRoute component={StudyPlanner} />} />
+          <Route path="/voice-teacher" component={() => <ProtectedRoute component={VoiceTeacher} />} />
+          <Route path="/admin" component={() => <ProtectedRoute component={Admin} />} />
+          <Route path="/teacher-dashboard" component={() => <ProtectedRoute component={TeacherDashboard} />} />
           <Route component={NotFound} />
         </Switch>
       </QueryClientProvider>
