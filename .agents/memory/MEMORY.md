@@ -1,1 +1,3 @@
 - [Clerk React version compatibility](clerk-react-versions.md) — @clerk/react@6.x + @clerk/shared@4.x required; v5 has broken peer deps against 3.x/4.x boundary
+- [Al Bayaan AI stack](al-bayaan-ai-stack.md) — HuggingFace free API for Whisper STT + Mistral-7B AI Teacher; OpenRouter requires account upgrade
+- [Al Bayaan DB tables](al-bayaan-db-tables.md) — hifdh_progress, conversations, messages tables added in Phase 2; run `pnpm --filter @workspace/db run push` to migrate

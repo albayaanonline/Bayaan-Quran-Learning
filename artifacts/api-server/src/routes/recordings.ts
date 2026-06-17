@@ -1,61 +1,14 @@
-import { Router, type IRouter } from "express";
-import { getAuth } from "@clerk/express";
-import { db, recordingsTable, profilesTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
-import { desc } from "drizzle-orm";
+import { Router } from "express";
+import { db, recordingsTable, profilesTable, surahProgressTable } from "@workspace/db";
+import { eq, and, sql, desc } from "drizzle-orm";
 import { logger } from "../lib/logger";
+import { requireAuth } from "../middlewares/auth";
+import { transcribeAudio } from "../lib/whisperTranscribe";
+import { analyzeRecitation } from "../lib/quranCorrection";
+import { analyzeTajweed } from "../lib/tajweedAnalysis";
+import { SURAHS } from "./surahs";
 
-const router: IRouter = Router();
-
-function requireAuth(req: any, res: any, next: any) {
-  const auth = getAuth(req);
-  const userId = auth?.userId;
-  if (!userId) return res.status(401).json({ error: "Unauthorized" });
-  req.userId = userId;
-  next();
-}
-
-function generateAIFeedback(ayahText: string): any {
-  // Simulated AI feedback for demonstration
-  const rand = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
-  const pronunciationScore = rand(68, 98);
-  const fluencyScore = rand(65, 96);
-  const tajweedScore = rand(60, 95);
-  const accuracyScore = rand(70, 99);
-  const confidenceScore = rand(65, 97);
-  const overallScore = Math.round((pronunciationScore + fluencyScore + tajweedScore + accuracyScore + confidenceScore) / 5);
-
-  const words = ayahText.split(" ").slice(0, 5);
-  const correctCount = Math.floor(words.length * 0.7);
-  const correctWords = words.slice(0, correctCount);
-  const incorrectWords = words.slice(correctCount, correctCount + 1);
-  const missingWords: string[] = [];
-
-  const allSuggestions = [
-    "Work on the pronunciation of the letter ع",
-    "Practice the madd (elongation) rules",
-    "Pay attention to the ghunnah on ن and م",
-    "Improve the qalqalah on ق and ط",
-    "Practice the idgham rule when applicable",
-    "Work on breath control for longer ayahs",
-    "Review the rules for waqf (stopping)",
-  ];
-  const suggestions = allSuggestions.sort(() => Math.random() - 0.5).slice(0, 2);
-
-  return {
-    pronunciationScore,
-    fluencyScore,
-    tajweedScore,
-    accuracyScore,
-    confidenceScore,
-    overallScore,
-    correctWords,
-    incorrectWords,
-    missingWords,
-    suggestions,
-    transcribedText: ayahText,
-  };
-}
+const router = Router();
 
 function formatRecording(r: any) {
   return {
@@ -73,7 +26,9 @@ function formatRecording(r: any) {
 
 router.get("/recordings", requireAuth, async (req: any, res) => {
   try {
-    const rows = await db.select().from(recordingsTable)
+    const rows = await db
+      .select()
+      .from(recordingsTable)
       .where(eq(recordingsTable.userId, req.userId))
       .orderBy(desc(recordingsTable.createdAt))
       .limit(50);
@@ -86,23 +41,142 @@ router.get("/recordings", requireAuth, async (req: any, res) => {
 
 router.post("/recordings", requireAuth, async (req: any, res) => {
   try {
-    const { surahId, ayahId, ayahNumber, ayahText, durationSeconds } = req.body;
-    const feedback = generateAIFeedback(ayahText ?? "");
-    const inserted = await db.insert(recordingsTable).values({
-      userId: req.userId,
-      surahId,
-      ayahId,
-      ayahNumber,
-      durationSeconds: durationSeconds ?? 0,
-      feedback,
-    }).returning();
+    const { surahId, ayahId, ayahNumber, ayahText, audioBase64, audioMimeType, durationSeconds } = req.body;
 
-    // Award XP for recording — raw SQL increment
-    await db.execute(
-      `UPDATE profiles SET xp = xp + 10 WHERE clerk_id = '${req.userId}'`
-    );
+    let transcribedText = "";
+    let transcriptionSuccess = false;
+    let transcriptionModel = "none";
 
-    res.status(201).json(formatRecording(inserted[0]));
+    if (audioBase64 && audioBase64.length > 100) {
+      logger.info({ surahId, ayahNumber }, "Transcribing audio with Whisper");
+      const result = await transcribeAudio(audioBase64, audioMimeType || "audio/webm");
+      transcribedText = result.text;
+      transcriptionSuccess = result.success;
+      transcriptionModel = result.model;
+      if (!result.success) {
+        logger.warn({ error: result.error }, "Transcription failed, using text-only analysis");
+      }
+    }
+
+    const correction = analyzeRecitation(ayahText ?? "", transcribedText);
+    const tajweed = analyzeTajweed(ayahText ?? "", correction.accuracyScore);
+
+    const accuracyScore = correction.accuracyScore;
+    const tajweedScore = tajweed.score;
+    const pronunciationScore = Math.min(100, Math.round(accuracyScore * 0.85 + tajweedScore * 0.15));
+    const fluencyScore = transcribedText.length > 0 ? Math.min(100, Math.round(accuracyScore * 0.75 + 25)) : 0;
+    const confidenceScore = transcribedText.length > 0 ? Math.min(100, fluencyScore + 5) : 0;
+    const overallScore =
+      transcribedText.length > 0
+        ? Math.round((accuracyScore + tajweedScore + pronunciationScore + fluencyScore + confidenceScore) / 5)
+        : 0;
+
+    const allSuggestions = [
+      ...correction.suggestions,
+      ...tajweed.suggestions,
+    ].filter(Boolean).slice(0, 5);
+
+    const feedback = {
+      pronunciationScore,
+      fluencyScore,
+      tajweedScore,
+      accuracyScore,
+      confidenceScore,
+      overallScore,
+      correctWords: correction.correctWords,
+      incorrectWords: correction.incorrectWords,
+      missingWords: correction.missingWords,
+      suggestions: allSuggestions.length > 0 ? allSuggestions : ["Keep practicing!"],
+      transcribedText,
+      transcriptionSuccess,
+      transcriptionModel,
+      presentTajweedRules: tajweed.presentRules,
+      tajweedRules: tajweed.rules.filter((r) => r.found),
+      wordStats: correction.wordStats,
+    };
+
+    const [inserted] = await db
+      .insert(recordingsTable)
+      .values({
+        userId: req.userId,
+        surahId,
+        ayahId,
+        ayahNumber,
+        durationSeconds: durationSeconds ?? 0,
+        feedback,
+      })
+      .returning();
+
+    const today = new Date().toISOString().split("T")[0];
+    const profileRows = await db
+      .select()
+      .from(profilesTable)
+      .where(eq(profilesTable.clerkId, req.userId))
+      .limit(1);
+
+    if (profileRows.length > 0) {
+      const profile = profileRows[0];
+      const lastStudy = profile.lastStudyDate;
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = yesterday.toISOString().split("T")[0];
+
+      let newStreak = profile.streakDays;
+      if (lastStudy !== today) {
+        if (lastStudy === yesterdayStr) {
+          newStreak = profile.streakDays + 1;
+        } else {
+          newStreak = 1;
+        }
+      }
+
+      const xpGain = 10 + (overallScore >= 90 ? 20 : overallScore >= 75 ? 10 : 0);
+
+      await db
+        .update(profilesTable)
+        .set({
+          xp: sql`${profilesTable.xp} + ${xpGain}`,
+          streakDays: newStreak,
+          lastStudyDate: today,
+        })
+        .where(eq(profilesTable.clerkId, req.userId));
+    }
+
+    const surah = SURAHS.find((s) => s.number === surahId);
+    if (surah) {
+      const progressRows = await db
+        .select()
+        .from(surahProgressTable)
+        .where(and(eq(surahProgressTable.userId, req.userId), eq(surahProgressTable.surahId, surahId)))
+        .limit(1);
+
+      if (progressRows.length === 0) {
+        await db.insert(surahProgressTable).values({
+          userId: req.userId,
+          surahId,
+          surahName: surah.name,
+          completedAyahs: ayahNumber,
+          totalAyahs: surah.ayahCount,
+          lastStudied: new Date(),
+          averageScore: overallScore > 0 ? overallScore : null,
+        });
+      } else {
+        const prev = progressRows[0];
+        const newCompleted = Math.max(prev.completedAyahs, ayahNumber);
+        const prevAvg = prev.averageScore ?? 0;
+        const newAvg = overallScore > 0 ? Math.round((prevAvg + overallScore) / 2) : prevAvg;
+        await db
+          .update(surahProgressTable)
+          .set({
+            completedAyahs: newCompleted,
+            lastStudied: new Date(),
+            averageScore: newAvg > 0 ? newAvg : null,
+          })
+          .where(and(eq(surahProgressTable.userId, req.userId), eq(surahProgressTable.surahId, surahId)));
+      }
+    }
+
+    res.status(201).json(formatRecording(inserted));
   } catch (err) {
     logger.error({ err }, "Failed to create recording");
     res.status(500).json({ error: "Internal server error" });
@@ -112,8 +186,15 @@ router.post("/recordings", requireAuth, async (req: any, res) => {
 router.get("/recordings/:id", requireAuth, async (req: any, res) => {
   try {
     const id = parseInt(req.params.id);
-    const rows = await db.select().from(recordingsTable).where(eq(recordingsTable.id, id)).limit(1);
-    if (!rows[0]) { res.status(404).json({ error: "Not found" }); return; }
+    const rows = await db
+      .select()
+      .from(recordingsTable)
+      .where(and(eq(recordingsTable.id, id), eq(recordingsTable.userId, req.userId)))
+      .limit(1);
+    if (!rows[0]) {
+      res.status(404).json({ error: "Not found" });
+      return;
+    }
     res.json(formatRecording(rows[0]));
   } catch (err) {
     logger.error({ err }, "Failed to get recording");

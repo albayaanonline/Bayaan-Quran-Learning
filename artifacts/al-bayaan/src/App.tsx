@@ -16,21 +16,21 @@ import Progress from "./pages/progress";
 import Bookmarks from "./pages/bookmarks";
 import Achievements from "./pages/achievements";
 import Leaderboard from "./pages/leaderboard";
+import Teacher from "./pages/teacher";
+import Hifdh from "./pages/hifdh";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient();
 
 const clerkPubKey = publishableKeyFromHost(
   window.location.hostname,
-  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
+  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
 );
 const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 function stripBase(path: string): string {
-  return basePath && path.startsWith(basePath)
-    ? path.slice(basePath.length) || "/"
-    : path;
+  return basePath && path.startsWith(basePath) ? path.slice(basePath.length) || "/" : path;
 }
 
 if (!clerkPubKey) {
@@ -46,8 +46,8 @@ const clerkAppearance = {
     logoImageUrl: `${window.location.origin}${basePath}/logo.svg`,
   },
   variables: {
-    colorPrimary: "hsl(161 94% 30%)", // emerald-600
-    colorForeground: "hsl(164 86% 16%)", // dark forest
+    colorPrimary: "hsl(161 94% 30%)",
+    colorForeground: "hsl(164 86% 16%)",
     colorMutedForeground: "hsl(164 30% 40%)",
     colorDanger: "hsl(0 84% 60%)",
     colorBackground: "hsl(0 0% 100%)",
@@ -89,33 +89,21 @@ const clerkAppearance = {
 function HomeRedirect() {
   return (
     <>
-      <Show when="signed-in">
-        <Redirect to="/dashboard" />
-      </Show>
-      <Show when="signed-out">
-        <Landing />
-      </Show>
+      <Show when="signed-in"><Redirect to="/dashboard" /></Show>
+      <Show when="signed-out"><Landing /></Show>
     </>
   );
 }
 
-function SignInPage() {
+function AuthPage({ type }: { type: "sign-in" | "sign-up" }) {
   return (
     <div className="flex min-h-[100dvh] items-center justify-center bg-[#fdfdfc] bg-[url('/images/geometric-pattern.png')] bg-cover bg-center px-4">
-      <div className="absolute inset-0 bg-[#fdfdfc]/80 backdrop-blur-sm z-0"></div>
+      <div className="absolute inset-0 bg-[#fdfdfc]/80 backdrop-blur-sm z-0" />
       <div className="relative z-10 w-full max-w-md">
-        <SignIn routing="path" path={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} />
-      </div>
-    </div>
-  );
-}
-
-function SignUpPage() {
-  return (
-    <div className="flex min-h-[100dvh] items-center justify-center bg-[#fdfdfc] bg-[url('/images/geometric-pattern.png')] bg-cover bg-center px-4">
-      <div className="absolute inset-0 bg-[#fdfdfc]/80 backdrop-blur-sm z-0"></div>
-      <div className="relative z-10 w-full max-w-md">
-        <SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/sign-in`} />
+        {type === "sign-in"
+          ? <SignIn routing="path" path={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} />
+          : <SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/sign-in`} />
+        }
       </div>
     </div>
   );
@@ -124,38 +112,28 @@ function SignUpPage() {
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
   return (
     <>
-      <Show when="signed-in">
-        <Component />
-      </Show>
-      <Show when="signed-out">
-        <Redirect to="/sign-in" />
-      </Show>
+      <Show when="signed-in"><Component /></Show>
+      <Show when="signed-out"><Redirect to="/sign-in" /></Show>
     </>
   );
 }
 
 function ClerkQueryClientCacheInvalidator() {
   const { addListener } = useClerk();
-  const queryClient = useQueryClient();
-  const prevUserIdRef = useRef<string | null | undefined>(undefined);
-
+  const qc = useQueryClient();
+  const prevRef = useRef<string | null | undefined>(undefined);
   useEffect(() => {
-    const unsubscribe = addListener(({ user }) => {
-      const userId = user?.id ?? null;
-      if (prevUserIdRef.current !== undefined && prevUserIdRef.current !== userId) {
-        queryClient.clear();
-      }
-      prevUserIdRef.current = userId;
+    return addListener(({ user }) => {
+      const id = user?.id ?? null;
+      if (prevRef.current !== undefined && prevRef.current !== id) qc.clear();
+      prevRef.current = id;
     });
-    return unsubscribe;
-  }, [addListener, queryClient]);
-
+  }, [addListener, qc]);
   return null;
 }
 
 function ClerkProviderWithRoutes() {
   const [, setLocation] = useLocation();
-
   return (
     <ClerkProvider
       publishableKey={clerkPubKey}
@@ -170,8 +148,8 @@ function ClerkProviderWithRoutes() {
         <ClerkQueryClientCacheInvalidator />
         <Switch>
           <Route path="/" component={HomeRedirect} />
-          <Route path="/sign-in/*?" component={SignInPage} />
-          <Route path="/sign-up/*?" component={SignUpPage} />
+          <Route path="/sign-in/*?" component={() => <AuthPage type="sign-in" />} />
+          <Route path="/sign-up/*?" component={() => <AuthPage type="sign-up" />} />
           <Route path="/onboarding" component={() => <ProtectedRoute component={Onboarding} />} />
           <Route path="/dashboard" component={() => <ProtectedRoute component={Dashboard} />} />
           <Route path="/learn" component={() => <ProtectedRoute component={Learn} />} />
@@ -180,6 +158,8 @@ function ClerkProviderWithRoutes() {
           <Route path="/bookmarks" component={() => <ProtectedRoute component={Bookmarks} />} />
           <Route path="/achievements" component={() => <ProtectedRoute component={Achievements} />} />
           <Route path="/leaderboard" component={() => <ProtectedRoute component={Leaderboard} />} />
+          <Route path="/teacher" component={() => <ProtectedRoute component={Teacher} />} />
+          <Route path="/hifdh" component={() => <ProtectedRoute component={Hifdh} />} />
           <Route component={NotFound} />
         </Switch>
       </QueryClientProvider>

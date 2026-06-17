@@ -1,4 +1,4 @@
-import { Router, type IRouter } from "express";
+import { Router } from "express";
 import healthRouter from "./health";
 import profileRouter from "./profile";
 import surahsRouter from "./surahs";
@@ -8,8 +8,11 @@ import bookmarksRouter from "./bookmarks";
 import achievementsRouter from "./achievements";
 import dashboardRouter from "./dashboard";
 import leaderboardRouter from "./leaderboard";
+import transcribeRouter from "./transcribe";
+import teacherRouter from "./teacher";
+import hifdhRouter from "./hifdh";
 
-const router: IRouter = Router();
+const router = Router();
 
 router.use(healthRouter);
 router.use(profileRouter);
@@ -20,5 +23,8 @@ router.use(bookmarksRouter);
 router.use(achievementsRouter);
 router.use(dashboardRouter);
 router.use(leaderboardRouter);
+router.use(transcribeRouter);
+router.use(teacherRouter);
+router.use(hifdhRouter);
 
 export default router;
