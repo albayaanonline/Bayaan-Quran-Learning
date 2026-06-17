@@ -75,6 +75,8 @@ onlyBuiltDependencies:
   - unrs-resolver
 
 overrides:
+  # Force @clerk/shared to 4.x so @clerk/react (built against 4.x despite declaring ^3.x) resolves correctly
+  "@clerk/shared": "^4.18.0"
   # replit uses linux-x64 only, we can exclude all other platforms
   "esbuild>@esbuild/darwin-arm64": "-"
   "esbuild>@esbuild/darwin-x64": "-"

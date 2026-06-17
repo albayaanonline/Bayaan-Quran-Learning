@@ -1,0 +1,20 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "G4_Bv2z48TGVsJ7cMk5fC"
+uri = "file://artifacts/al-bayaan/public/images/geometric-pattern.png"
+type = "image"
+title = "Islamic geometric pattern background"
+
+[[generated]]
+id = "HQRgHtgjTlTtKGcDL_5P8"
+uri = "file://artifacts/al-bayaan/public/images/illuminated-quran.png"
+type = "image"
+title = "Illuminated Quran manuscript page"
+
+[[generated]]
+id = "FKOuwuhk4JMjQ5CnRzVVJ"
+uri = "file://artifacts/al-bayaan/public/images/islamic-dome.png"
+type = "image"
+title = "Islamic dome architecture illustration"

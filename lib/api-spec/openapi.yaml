@@ -1,22 +1,39 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Al Bayaan AI Quran API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: profile
+    description: User profile and onboarding
+  - name: surahs
+    description: Quran surahs
+  - name: ayahs
+    description: Quran ayahs
+  - name: progress
+    description: Learning progress
+  - name: recordings
+    description: Voice recordings and AI analysis
+  - name: bookmarks
+    description: Bookmarks and favorites
+  - name: achievements
+    description: Achievements and badges
+  - name: dashboard
+    description: Dashboard and analytics
+  - name: leaderboard
+    description: Leaderboard
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,13 +41,840 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # ── PROFILE ──────────────────────────────────────────────────────────────
+  /profile:
+    get:
+      operationId: getProfile
+      tags: [profile]
+      summary: Get current user profile
+      responses:
+        "200":
+          description: Profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+        "404":
+          description: Not found
+    put:
+      operationId: updateProfile
+      tags: [profile]
+      summary: Update user profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfileUpdate"
+      responses:
+        "200":
+          description: Updated profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+
+  /profile/onboarding:
+    post:
+      operationId: completeOnboarding
+      tags: [profile]
+      summary: Complete onboarding flow
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OnboardingInput"
+      responses:
+        "200":
+          description: Onboarding complete, profile returned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+
+  # ── SURAHS ───────────────────────────────────────────────────────────────
+  /surahs:
+    get:
+      operationId: listSurahs
+      tags: [surahs]
+      summary: List all 114 surahs
+      responses:
+        "200":
+          description: Surahs list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Surah"
+
+  /surahs/{surahId}:
+    get:
+      operationId: getSurah
+      tags: [surahs]
+      summary: Get surah by number
+      parameters:
+        - in: path
+          name: surahId
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Surah detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Surah"
+
+  /surahs/{surahId}/ayahs:
+    get:
+      operationId: listAyahs
+      tags: [ayahs]
+      summary: List ayahs for a surah
+      parameters:
+        - in: path
+          name: surahId
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Ayahs list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Ayah"
+
+  /ayahs/{ayahKey}:
+    get:
+      operationId: getAyah
+      tags: [ayahs]
+      summary: Get a specific ayah with translation
+      parameters:
+        - in: path
+          name: ayahKey
+          required: true
+          schema:
+            type: string
+          description: "Format: surahNum:ayahNum e.g. 1:1"
+      responses:
+        "200":
+          description: Ayah detail with translations
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AyahDetail"
+
+  # ── PROGRESS ─────────────────────────────────────────────────────────────
+  /progress:
+    get:
+      operationId: getProgress
+      tags: [progress]
+      summary: Get user learning progress
+      responses:
+        "200":
+          description: Progress data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Progress"
+
+  /progress/streak:
+    get:
+      operationId: getStreak
+      tags: [progress]
+      summary: Get current streak and XP
+      responses:
+        "200":
+          description: Streak info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StreakInfo"
+
+  /progress/surah/{surahId}:
+    get:
+      operationId: getSurahProgress
+      tags: [progress]
+      summary: Get progress for a specific surah
+      parameters:
+        - in: path
+          name: surahId
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Surah progress
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SurahProgress"
+    patch:
+      operationId: updateSurahProgress
+      tags: [progress]
+      summary: Update progress for a surah ayah
+      parameters:
+        - in: path
+          name: surahId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SurahProgressUpdate"
+      responses:
+        "200":
+          description: Updated surah progress
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SurahProgress"
+
+  # ── RECORDINGS ────────────────────────────────────────────────────────────
+  /recordings:
+    get:
+      operationId: listRecordings
+      tags: [recordings]
+      summary: List user's recordings
+      responses:
+        "200":
+          description: Recordings list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Recording"
+    post:
+      operationId: createRecording
+      tags: [recordings]
+      summary: Submit a recording for AI analysis
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecordingInput"
+      responses:
+        "201":
+          description: Recording created with AI feedback
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Recording"
+
+  /recordings/{id}:
+    get:
+      operationId: getRecording
+      tags: [recordings]
+      summary: Get recording with AI feedback
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Recording detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Recording"
+
+  # ── BOOKMARKS ─────────────────────────────────────────────────────────────
+  /bookmarks:
+    get:
+      operationId: listBookmarks
+      tags: [bookmarks]
+      summary: List user bookmarks
+      responses:
+        "200":
+          description: Bookmarks list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Bookmark"
+    post:
+      operationId: createBookmark
+      tags: [bookmarks]
+      summary: Create a bookmark
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookmarkInput"
+      responses:
+        "201":
+          description: Bookmark created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Bookmark"
+
+  /bookmarks/{id}:
+    delete:
+      operationId: deleteBookmark
+      tags: [bookmarks]
+      summary: Delete a bookmark
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ── ACHIEVEMENTS ──────────────────────────────────────────────────────────
+  /achievements:
+    get:
+      operationId: listAchievements
+      tags: [achievements]
+      summary: List user achievements and badges
+      responses:
+        "200":
+          description: Achievements list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Achievement"
+
+  # ── DASHBOARD (wow endpoints) ─────────────────────────────────────────────
+  /dashboard:
+    get:
+      operationId: getDashboard
+      tags: [dashboard]
+      summary: Get full dashboard summary
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
+  /dashboard/weekly-report:
+    get:
+      operationId: getWeeklyReport
+      tags: [dashboard]
+      summary: Get this week's learning activity report
+      responses:
+        "200":
+          description: Weekly report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WeeklyReport"
+
+  # ── LEADERBOARD ──────────────────────────────────────────────────────────
+  /leaderboard:
+    get:
+      operationId: getLeaderboard
+      tags: [leaderboard]
+      summary: Get top learners leaderboard
+      parameters:
+        - in: query
+          name: period
+          required: false
+          schema:
+            type: string
+            enum: [weekly, monthly, alltime]
+            default: weekly
+      responses:
+        "200":
+          description: Leaderboard
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LeaderboardEntry"
+
 components:
   schemas:
     HealthStatus:
       type: object
+      required: [status]
       properties:
         status:
           type: string
-      required:
-        - status
 
+    Profile:
+      type: object
+      required: [id, clerkId, displayName, onboardingComplete, language, learningGoals, level, ageGroup, dailyGoalMinutes, preferredQari, teacherPreference, xp, streakDays, createdAt]
+      properties:
+        id:
+          type: integer
+        clerkId:
+          type: string
+        displayName:
+          type: string
+        avatarUrl:
+          type: ["string", "null"]
+        onboardingComplete:
+          type: boolean
+        language:
+          type: string
+          description: "en | ar | so"
+        learningGoals:
+          type: array
+          items:
+            type: string
+          description: "quran_reading | hifdh | tajweed | tafsir | arabic"
+        level:
+          type: string
+          description: "beginner | intermediate | advanced"
+        ageGroup:
+          type: string
+          description: "child | teen | adult | senior"
+        dailyGoalMinutes:
+          type: integer
+        preferredQari:
+          type: string
+        teacherPreference:
+          type: string
+          description: "male | female | any"
+        xp:
+          type: integer
+        streakDays:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+
+    ProfileUpdate:
+      type: object
+      properties:
+        displayName:
+          type: string
+        avatarUrl:
+          type: string
+        language:
+          type: string
+        learningGoals:
+          type: array
+          items:
+            type: string
+        level:
+          type: string
+        ageGroup:
+          type: string
+        dailyGoalMinutes:
+          type: integer
+        preferredQari:
+          type: string
+        teacherPreference:
+          type: string
+
+    OnboardingInput:
+      type: object
+      required: [displayName, learningGoals, level, ageGroup, dailyGoalMinutes, preferredQari, language, teacherPreference]
+      properties:
+        displayName:
+          type: string
+        learningGoals:
+          type: array
+          items:
+            type: string
+        level:
+          type: string
+        ageGroup:
+          type: string
+        dailyGoalMinutes:
+          type: integer
+        preferredQari:
+          type: string
+        language:
+          type: string
+        teacherPreference:
+          type: string
+
+    Surah:
+      type: object
+      required: [number, name, nameArabic, nameTranslation, ayahCount, revelationType, juz]
+      properties:
+        number:
+          type: integer
+        name:
+          type: string
+          description: Transliteration e.g. Al-Fatihah
+        nameArabic:
+          type: string
+        nameTranslation:
+          type: string
+        ayahCount:
+          type: integer
+        revelationType:
+          type: string
+          description: "Meccan | Medinan"
+        juz:
+          type: integer
+        hasProgress:
+          type: boolean
+
+    Ayah:
+      type: object
+      required: [number, numberInSurah, text, surahNumber]
+      properties:
+        number:
+          type: integer
+          description: Global ayah number 1-6236
+        numberInSurah:
+          type: integer
+        text:
+          type: string
+          description: Arabic text
+        surahNumber:
+          type: integer
+        page:
+          type: ["integer", "null"]
+        juz:
+          type: ["integer", "null"]
+        audioUrl:
+          type: ["string", "null"]
+
+    AyahDetail:
+      type: object
+      required: [ayah, translation, transliteration]
+      properties:
+        ayah:
+          $ref: "#/components/schemas/Ayah"
+        translation:
+          type: string
+          description: English translation
+        transliteration:
+          type: ["string", "null"]
+        tafsir:
+          type: ["string", "null"]
+
+    Progress:
+      type: object
+      required: [totalAyahsRecited, totalSurahsStarted, totalSurahsCompleted, totalRecordingMinutes, tajweedScore, accuracyScore, surahsProgress]
+      properties:
+        totalAyahsRecited:
+          type: integer
+        totalSurahsStarted:
+          type: integer
+        totalSurahsCompleted:
+          type: integer
+        totalRecordingMinutes:
+          type: integer
+        tajweedScore:
+          type: integer
+          description: 0-100
+        accuracyScore:
+          type: integer
+          description: 0-100
+        surahsProgress:
+          type: array
+          items:
+            $ref: "#/components/schemas/SurahProgress"
+
+    SurahProgress:
+      type: object
+      required: [surahId, surahName, completedAyahs, totalAyahs, lastStudied]
+      properties:
+        surahId:
+          type: integer
+        surahName:
+          type: string
+        completedAyahs:
+          type: integer
+        totalAyahs:
+          type: integer
+        lastStudied:
+          type: ["string", "null"]
+          format: date-time
+        averageScore:
+          type: ["integer", "null"]
+
+    SurahProgressUpdate:
+      type: object
+      required: [completedAyahs]
+      properties:
+        completedAyahs:
+          type: integer
+
+    StreakInfo:
+      type: object
+      required: [currentStreak, longestStreak, xp, level, xpToNextLevel, dailyGoalMinutes, dailyGoalCompletedToday]
+      properties:
+        currentStreak:
+          type: integer
+        longestStreak:
+          type: integer
+        xp:
+          type: integer
+        level:
+          type: integer
+          description: Numeric level 1-100
+        xpToNextLevel:
+          type: integer
+        dailyGoalMinutes:
+          type: integer
+        dailyGoalCompletedToday:
+          type: boolean
+        minutesStudiedToday:
+          type: integer
+
+    Recording:
+      type: object
+      required: [id, userId, surahId, ayahId, ayahNumber, createdAt, durationSeconds]
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        surahId:
+          type: integer
+        ayahId:
+          type: integer
+        ayahNumber:
+          type: integer
+        audioUrl:
+          type: ["string", "null"]
+        durationSeconds:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        feedback:
+          $ref: "#/components/schemas/AIFeedback"
+
+    AIFeedback:
+      type: object
+      required: [pronunciationScore, fluencyScore, tajweedScore, accuracyScore, confidenceScore, overallScore, correctWords, incorrectWords, missingWords, suggestions]
+      properties:
+        pronunciationScore:
+          type: integer
+          description: 0-100
+        fluencyScore:
+          type: integer
+          description: 0-100
+        tajweedScore:
+          type: integer
+          description: 0-100
+        accuracyScore:
+          type: integer
+          description: 0-100
+        confidenceScore:
+          type: integer
+          description: 0-100
+        overallScore:
+          type: integer
+          description: 0-100
+        correctWords:
+          type: array
+          items:
+            type: string
+        incorrectWords:
+          type: array
+          items:
+            type: string
+        missingWords:
+          type: array
+          items:
+            type: string
+        suggestions:
+          type: array
+          items:
+            type: string
+        transcribedText:
+          type: ["string", "null"]
+
+    RecordingInput:
+      type: object
+      required: [surahId, ayahId, ayahNumber, ayahText, durationSeconds]
+      properties:
+        surahId:
+          type: integer
+        ayahId:
+          type: integer
+        ayahNumber:
+          type: integer
+        ayahText:
+          type: string
+          description: The reference Arabic text to compare against
+        audioBase64:
+          type: ["string", "null"]
+          description: Base64 encoded audio for AI analysis
+        durationSeconds:
+          type: integer
+
+    Bookmark:
+      type: object
+      required: [id, userId, surahId, ayahNumber, createdAt]
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        surahId:
+          type: integer
+        surahName:
+          type: string
+        ayahNumber:
+          type: integer
+        ayahText:
+          type: string
+        note:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+
+    BookmarkInput:
+      type: object
+      required: [surahId, ayahNumber, ayahText, surahName]
+      properties:
+        surahId:
+          type: integer
+        surahName:
+          type: string
+        ayahNumber:
+          type: integer
+        ayahText:
+          type: string
+        note:
+          type: string
+
+    Achievement:
+      type: object
+      required: [id, slug, title, description, iconType, xpReward, unlockedAt, isUnlocked]
+      properties:
+        id:
+          type: integer
+        slug:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        iconType:
+          type: string
+          description: "star | flame | book | mic | trophy | medal | crown | heart | moon | sun"
+        xpReward:
+          type: integer
+        isUnlocked:
+          type: boolean
+        unlockedAt:
+          type: ["string", "null"]
+          format: date-time
+        progress:
+          type: ["integer", "null"]
+          description: 0-100 for locked achievements
+
+    DashboardSummary:
+      type: object
+      required: [profile, streak, todayMinutes, weeklyXp, totalAyahs, recentRecordings, recentAchievements, quickStats]
+      properties:
+        profile:
+          $ref: "#/components/schemas/Profile"
+        streak:
+          $ref: "#/components/schemas/StreakInfo"
+        todayMinutes:
+          type: integer
+        weeklyXp:
+          type: integer
+        totalAyahs:
+          type: integer
+        recentRecordings:
+          type: array
+          items:
+            $ref: "#/components/schemas/Recording"
+        recentAchievements:
+          type: array
+          items:
+            $ref: "#/components/schemas/Achievement"
+        quickStats:
+          $ref: "#/components/schemas/QuickStats"
+
+    QuickStats:
+      type: object
+      required: [avgAccuracy, avgTajweed, totalRecordings, totalBookmarks, surahsInProgress, surahsCompleted]
+      properties:
+        avgAccuracy:
+          type: integer
+        avgTajweed:
+          type: integer
+        totalRecordings:
+          type: integer
+        totalBookmarks:
+          type: integer
+        surahsInProgress:
+          type: integer
+        surahsCompleted:
+          type: integer
+
+    WeeklyReport:
+      type: object
+      required: [days, totalXp, totalMinutes, totalRecordings, avgScore, bestDay, improvement]
+      properties:
+        days:
+          type: array
+          items:
+            $ref: "#/components/schemas/DayActivity"
+        totalXp:
+          type: integer
+        totalMinutes:
+          type: integer
+        totalRecordings:
+          type: integer
+        avgScore:
+          type: integer
+        bestDay:
+          type: string
+        improvement:
+          type: integer
+          description: Percentage change vs previous week
+
+    DayActivity:
+      type: object
+      required: [date, xp, minutes, recordings]
+      properties:
+        date:
+          type: string
+          format: date
+        xp:
+          type: integer
+        minutes:
+          type: integer
+        recordings:
+          type: integer
+
+    LeaderboardEntry:
+      type: object
+      required: [rank, userId, displayName, xp, streakDays, surahsCompleted]
+      properties:
+        rank:
+          type: integer
+        userId:
+          type: string
+        displayName:
+          type: string
+        avatarUrl:
+          type: ["string", "null"]
+        xp:
+          type: integer
+        streakDays:
+          type: integer
+        surahsCompleted:
+          type: integer
+        isCurrentUser:
+          type: boolean

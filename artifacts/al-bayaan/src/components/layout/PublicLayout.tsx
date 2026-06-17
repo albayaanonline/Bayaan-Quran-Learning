@@ -1,0 +1,35 @@
+import { Link } from "wouter";
+import { Button } from "@/components/ui/button";
+
+export default function PublicLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="min-h-screen bg-background flex flex-col font-sans">
+      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-16 items-center justify-between">
+          <Link href="/" className="flex items-center gap-2">
+            <img src="/logo.svg" alt="Al Bayaan" className="h-8 w-auto" />
+          </Link>
+          <nav className="flex items-center gap-4">
+            <Link href="/sign-in">
+              <Button variant="ghost" className="font-medium text-emerald-950">Sign In</Button>
+            </Link>
+            <Link href="/sign-up">
+              <Button className="bg-emerald-600 hover:bg-emerald-700 text-white">Get Started</Button>
+            </Link>
+          </nav>
+        </div>
+      </header>
+      <main className="flex-1 w-full">{children}</main>
+      <footer className="border-t py-6 md:py-0 bg-emerald-950 text-emerald-50">
+        <div className="container flex flex-col items-center justify-between gap-4 md:h-24 md:flex-row">
+          <div className="flex flex-col items-center gap-4 px-8 md:flex-row md:gap-2 md:px-0">
+            <img src="/logo.svg" alt="Al Bayaan" className="h-6 w-auto brightness-0 invert" />
+            <p className="text-center text-sm leading-loose md:text-left opacity-80">
+              © 2025 Al Bayaan AI Quran. Built for the modern Muslim.
+            </p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}

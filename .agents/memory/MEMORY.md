@@ -1,0 +1,1 @@
+- [Clerk React version compatibility](clerk-react-versions.md) — @clerk/react@6.x + @clerk/shared@4.x required; v5 has broken peer deps against 3.x/4.x boundary
