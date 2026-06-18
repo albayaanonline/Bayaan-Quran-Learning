@@ -1,1 +1,6 @@
-- [Broken features fixed](broken-features-fixed.md) — Live Classroom (DB-backed), Payments history (DB-backed), Certificate PDF+QR (pdfkit+qrcode), all TS errors resolved.
+- [Clerk React version compatibility](clerk-react-versions.md) — @clerk/react@6.x + @clerk/shared@4.x required; v5 has broken peer deps against 3.x/4.x boundary
+- [Al Bayaan AI stack](al-bayaan-ai-stack.md) — HuggingFace free API for Whisper STT + Mistral-7B AI Teacher; OpenRouter requires account upgrade
+- [Al Bayaan DB tables](al-bayaan-db-tables.md) — hifdh_progress, conversations, messages tables added in Phase 2; run `pnpm --filter @workspace/db run push` to migrate
+- [Al Bayaan Phase 3 features](al-bayaan-phase3.md) — Phase 3-6 all built: Exam Builder, Auto-cert, Notifications, Security, i18n (EN/AR/SO)
+- [Al Bayaan Phases A-L](al-bayaan-phases-a-l.md) — Video Teacher, Tajweed Engine, Payments, Live Classroom (Jitsi), PWA, Content Generator, Marketing, Messages, Analytics Reports, Audit Log
+- [Al Bayaan audit + fixes](al-bayaan-audit-fixes.md) — Full audit June 2026: payment_records+live_classroom_sessions missing from DB index (fixed+pushed), PDF certs now real jsPDF+QR, parent auto-notifs added to recordings route

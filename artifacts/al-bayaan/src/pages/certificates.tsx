@@ -1,11 +1,11 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import AppLayout from "@/components/layout/AppLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Award, Download, QrCode, CheckCircle2, XCircle, Search, Loader2, ExternalLink } from "lucide-react";
+import { Award, Download, QrCode, CheckCircle2, XCircle, Search, Loader2, Copy } from "lucide-react";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 
@@ -26,32 +26,117 @@ const TYPE_COLORS: Record<string, string> = {
   hifdh: "bg-purple-100 text-purple-700 border-purple-200",
   tajweed: "bg-amber-100 text-amber-700 border-amber-200",
   exam: "bg-blue-100 text-blue-700 border-blue-200",
+  exam_completion: "bg-blue-100 text-blue-700 border-blue-200",
 };
+
+async function generateQRDataUrl(text: string): Promise<string> {
+  const QRCode = (await import("qrcode")).default;
+  return QRCode.toDataURL(text, { width: 120, margin: 1, color: { dark: "#064e3b", light: "#ffffff" } });
+}
+
+async function downloadCertificatePDF(cert: Certificate) {
+  const { jsPDF } = await import("jspdf");
+  const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+
+  const W = 297;
+  const H = 210;
+
+  doc.setFillColor(240, 253, 244);
+  doc.rect(0, 0, W, H, "F");
+
+  doc.setDrawColor(5, 150, 105);
+  doc.setLineWidth(4);
+  doc.rect(8, 8, W - 16, H - 16);
+  doc.setLineWidth(1);
+  doc.setDrawColor(110, 231, 183);
+  doc.rect(12, 12, W - 24, H - 24);
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.setTextColor(5, 150, 105);
+  doc.text("AL BAYAAN AI ACADEMY", W / 2, 28, { align: "center" });
+
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(16, 185, 129);
+  doc.text("بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ", W / 2, 35, { align: "center" });
+
+  doc.setFontSize(28);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(6, 78, 59);
+  doc.text("CERTIFICATE OF ACHIEVEMENT", W / 2, 58, { align: "center" });
+
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(52, 78, 65);
+  doc.text("This certificate is proudly awarded for successfully completing:", W / 2, 72, { align: "center" });
+
+  doc.setFontSize(22);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(5, 150, 105);
+  const titleLines = doc.splitTextToSize(cert.title, 220);
+  doc.text(titleLines, W / 2, 88, { align: "center" });
+
+  const afterTitle = 88 + (titleLines.length - 1) * 10;
+
+  if (cert.description) {
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "italic");
+    doc.setTextColor(75, 85, 99);
+    const descLines = doc.splitTextToSize(cert.description, 200);
+    doc.text(descLines, W / 2, afterTitle + 10, { align: "center" });
+  }
+
+  const date = new Date(cert.issuedAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(52, 78, 65);
+  doc.text(`Subject: ${cert.subject ?? "Islamic Studies"}`, W / 2 - 50, H - 48, { align: "center" });
+  doc.text(`Issued by: ${cert.issuedBy ?? "Al Bayaan AI Academy"}`, W / 2 + 50, H - 48, { align: "center" });
+  doc.text(`Date: ${date}`, W / 2, H - 40, { align: "center" });
+
+  doc.setDrawColor(16, 185, 129);
+  doc.setLineWidth(0.5);
+  doc.line(40, H - 33, W - 40, H - 33);
+
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(107, 114, 128);
+  doc.text(`Verification Code: ${cert.verificationCode}`, W / 2, H - 27, { align: "center" });
+
+  const verifyUrl = `${window.location.origin}/certificates`;
+  doc.text(`Verify at: ${verifyUrl}`, W / 2, H - 22, { align: "center" });
+
+  try {
+    const qrDataUrl = await generateQRDataUrl(verifyUrl + `?verify=${cert.verificationCode}`);
+    doc.addImage(qrDataUrl, "PNG", W - 45, H - 48, 28, 28);
+    doc.setFontSize(6);
+    doc.setTextColor(107, 114, 128);
+    doc.text("Scan to verify", W - 31, H - 18, { align: "center" });
+  } catch {}
+
+  doc.save(`Certificate-${cert.verificationCode}.pdf`);
+}
 
 function CertificateCard({ cert }: { cert: Certificate }) {
   const { toast } = useToast();
   const [downloading, setDownloading] = useState(false);
-  const date = new Date(cert.issuedAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
 
   const handleDownload = async () => {
     setDownloading(true);
     try {
-      const r = await fetch(`/api/certificates/${cert.id}/pdf`, { credentials: "include" });
-      if (!r.ok) throw new Error("PDF generation failed");
-      const blob = await r.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `Certificate-${cert.verificationCode}.pdf`;
-      a.click();
-      URL.revokeObjectURL(url);
-      toast({ title: "Certificate PDF downloaded" });
-    } catch {
-      toast({ title: "Download failed", description: "Could not generate PDF. Please try again.", variant: "destructive" });
+      await downloadCertificatePDF(cert);
+      toast({ title: "Certificate downloaded as PDF" });
+    } catch (err) {
+      console.error("PDF generation failed:", err);
+      toast({ title: "Download failed", description: "Could not generate PDF. Try again.", variant: "destructive" });
     } finally {
       setDownloading(false);
     }
   };
+
+  const date = new Date(cert.issuedAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
 
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
@@ -81,13 +166,27 @@ function CertificateCard({ cert }: { cert: Certificate }) {
             <div className="flex gap-2 mt-4 pt-4 border-t border-emerald-100">
               <Button variant="outline" size="sm" onClick={handleDownload} disabled={downloading} className="gap-1.5 text-xs h-7">
                 {downloading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
-                {downloading ? "Generating…" : "Download PDF"}
+                {downloading ? "Generating PDF…" : "Download PDF"}
               </Button>
               <Button variant="outline" size="sm" className="gap-1.5 text-xs h-7" onClick={() => {
-                navigator.clipboard.writeText(`${window.location.origin}/verify/${cert.verificationCode}`);
-                toast({ title: "Verification link copied!" });
+                navigator.clipboard.writeText(`${window.location.origin}/certificates?verify=${cert.verificationCode}`);
+                toast({ title: "Verification link copied" });
               }}>
-                <ExternalLink className="h-3.5 w-3.5" /> Share Link
+                <Copy className="h-3.5 w-3.5" /> Copy Link
+              </Button>
+              <Button variant="outline" size="sm" className="gap-1.5 text-xs h-7" onClick={async () => {
+                try {
+                  const qrUrl = await generateQRDataUrl(`${window.location.origin}/certificates?verify=${cert.verificationCode}`);
+                  const a = document.createElement("a");
+                  a.href = qrUrl;
+                  a.download = `QR-${cert.verificationCode}.png`;
+                  a.click();
+                  toast({ title: "QR code downloaded" });
+                } catch {
+                  toast({ title: "QR generation failed", variant: "destructive" });
+                }
+              }}>
+                <QrCode className="h-3.5 w-3.5" /> QR Code
               </Button>
             </div>
           )}
@@ -101,16 +200,18 @@ function VerifyPanel() {
   const [code, setCode] = useState("");
   const [result, setResult] = useState<{ valid: boolean; certificate?: Certificate & { studentName: string }; message?: string } | null>(null);
   const [checking, setChecking] = useState(false);
+  const { toast } = useToast();
 
   const verify = async () => {
     if (!code.trim()) return;
     setChecking(true);
     setResult(null);
     try {
-      const r = await fetch(`/api/certificates/verify/${code.trim().toUpperCase()}`);
+      const basePath = (import.meta.env.BASE_URL || "").replace(/\/$/, "");
+      const r = await fetch(`${basePath}/api/certificates/verify/${code.trim().toUpperCase()}`);
       const data = await r.json();
       setResult(data);
-    } catch { setResult({ valid: false, message: "Verification failed" }); }
+    } catch { setResult({ valid: false, message: "Verification failed — check your connection and try again." }); }
     finally { setChecking(false); }
   };
 
@@ -155,7 +256,8 @@ export default function Certificates() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/certificates", { credentials: "include" })
+    const basePath = (import.meta.env.BASE_URL || "").replace(/\/$/, "");
+    fetch(`${basePath}/api/certificates`, { credentials: "include" })
       .then(r => r.ok ? r.json() : [])
       .then(data => setCerts(Array.isArray(data) ? data : []))
       .catch(() => {})
@@ -169,7 +271,7 @@ export default function Certificates() {
           <h1 className="text-2xl font-serif font-bold text-emerald-950 flex items-center gap-2">
             <Award className="h-6 w-6 text-emerald-600" /> My Certificates
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">Your Islamic learning achievements and verifiable certificates</p>
+          <p className="text-sm text-muted-foreground mt-1">Your Islamic learning achievements — each certificate is verifiable with a unique code</p>
         </div>
 
         <VerifyPanel />
@@ -181,7 +283,7 @@ export default function Certificates() {
             <CardContent className="p-12 text-center">
               <Award className="h-12 w-12 text-emerald-300 mx-auto mb-4" />
               <h3 className="font-semibold text-lg">No certificates yet</h3>
-              <p className="text-sm text-muted-foreground mt-1">Complete exams and courses to earn your first certificate</p>
+              <p className="text-sm text-muted-foreground mt-1">Complete exams with a passing score to earn your first certificate</p>
             </CardContent>
           </Card>
         ) : (

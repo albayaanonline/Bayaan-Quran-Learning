@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { db, recordingsTable, profilesTable, surahProgressTable } from "@workspace/db";
+import { db, recordingsTable, profilesTable, surahProgressTable, parentProfilesTable, notificationsTable } from "@workspace/db";
 import { eq, and, sql, desc } from "drizzle-orm";
 import { logger } from "../lib/logger";
 import { requireAuth } from "../middlewares/auth";
@@ -177,6 +177,31 @@ router.post("/recordings", requireAuth, async (req: any, res) => {
     }
 
     res.status(201).json(formatRecording(inserted));
+
+    // Async: notify any parent who has this student as a child
+    if (overallScore > 0) {
+      setImmediate(async () => {
+        try {
+          const surahName = SURAHS.find(s => s.number === surahId)?.name ?? `Surah ${surahId}`;
+          const studentName = profileRows[0]?.displayName ?? "Your child";
+          const parentRows = await db.select().from(parentProfilesTable);
+          for (const parent of parentRows) {
+            const childIds = parent.childClerkIds ?? [];
+            if (!childIds.includes(req.userId)) continue;
+            await db.insert(notificationsTable).values({
+              userId: parent.parentClerkId,
+              type: "recitation",
+              title: "New Recitation Completed",
+              message: `${studentName} completed Ayah ${ayahNumber} of ${surahName} with a score of ${overallScore}%.`,
+              link: `/teacher-dashboard`,
+              isRead: false,
+            });
+          }
+        } catch (notifErr) {
+          logger.warn({ notifErr }, "Parent notification failed (non-critical)");
+        }
+      });
+    }
   } catch (err) {
     logger.error({ err }, "Failed to create recording");
     res.status(500).json({ error: "Internal server error" });
