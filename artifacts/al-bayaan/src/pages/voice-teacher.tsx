@@ -22,7 +22,7 @@ const LANG_OPTIONS: { value: VoiceLang; label: string }[] = [
   { value: "so-SO", label: "SO" },
 ];
 
-const SR_CLASS: (new () => SpeechRecognition) | null =
+const SR_CLASS: (new () => any) | null =
   typeof window !== "undefined"
     ? ((window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition ?? null)
     : null;
@@ -38,7 +38,7 @@ export default function VoiceTeacher() {
   const [textInput, setTextInput] = useState("");
   const [statusMsg, setStatusMsg] = useState("");
 
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const recognitionRef = useRef<any | null>(null);
   const recognizedTextRef = useRef("");
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -161,7 +161,7 @@ export default function VoiceTeacher() {
       recognition.interimResults = false;
       recognition.maxAlternatives = 1;
 
-      recognition.onresult = (e) => {
+      recognition.onresult = (e: any) => {
         for (let i = e.resultIndex; i < e.results.length; i++) {
           if (e.results[i].isFinal) {
             recognizedTextRef.current += e.results[i][0].transcript + " ";

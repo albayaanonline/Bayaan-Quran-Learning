@@ -30,40 +30,27 @@ const TYPE_COLORS: Record<string, string> = {
 
 function CertificateCard({ cert }: { cert: Certificate }) {
   const { toast } = useToast();
+  const [downloading, setDownloading] = useState(false);
   const date = new Date(cert.issuedAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
 
-  const handleDownload = () => {
-    const content = `
-AL BAYAAN AI ACADEMY
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-CERTIFICATE OF ${cert.type.toUpperCase()}
-
-This certifies that the student has successfully completed:
-
-${cert.title}
-
-${cert.description ?? ""}
-
-Subject: ${cert.subject ?? "Islamic Studies"}
-Issued by: ${cert.issuedBy}
-Date: ${date}
-
-Verification Code: ${cert.verificationCode}
-Verify at: ${window.location.origin}/verify/${cert.verificationCode}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
-    `.trim();
-
-    const blob = new Blob([content], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `Certificate-${cert.verificationCode}.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
-    toast({ title: "Certificate downloaded" });
+  const handleDownload = async () => {
+    setDownloading(true);
+    try {
+      const r = await fetch(`/api/certificates/${cert.id}/pdf`, { credentials: "include" });
+      if (!r.ok) throw new Error("PDF generation failed");
+      const blob = await r.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Certificate-${cert.verificationCode}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast({ title: "Certificate PDF downloaded" });
+    } catch {
+      toast({ title: "Download failed", description: "Could not generate PDF. Please try again.", variant: "destructive" });
+    } finally {
+      setDownloading(false);
+    }
   };
 
   return (
@@ -92,8 +79,9 @@ Verify at: ${window.location.origin}/verify/${cert.verificationCode}
 
           {!cert.isRevoked && (
             <div className="flex gap-2 mt-4 pt-4 border-t border-emerald-100">
-              <Button variant="outline" size="sm" onClick={handleDownload} className="gap-1.5 text-xs h-7">
-                <Download className="h-3.5 w-3.5" /> Download
+              <Button variant="outline" size="sm" onClick={handleDownload} disabled={downloading} className="gap-1.5 text-xs h-7">
+                {downloading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+                {downloading ? "Generating…" : "Download PDF"}
               </Button>
               <Button variant="outline" size="sm" className="gap-1.5 text-xs h-7" onClick={() => {
                 navigator.clipboard.writeText(`${window.location.origin}/verify/${cert.verificationCode}`);

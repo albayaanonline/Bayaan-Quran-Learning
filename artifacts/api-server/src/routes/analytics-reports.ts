@@ -157,7 +157,7 @@ router.get("/analytics/monthly-report", requireAuth, async (req: any, res) => {
       rules.filter((ru: any) => ru.found).forEach((ru: any) => tajweedRulesLearned.add(ru.name));
     });
 
-    const surahsStudied = surahProgress.filter(s => (s.completionPercentage ?? 0) > 0).length;
+    const surahsStudied = surahProgress.filter(s => s.completedAyahs > 0).length;
     const mastered = hifdhProgress.filter(h => h.status === "mastered").length;
 
     const totalScore = recs.map(r => ((r.feedback as any)?.overallScore ?? 0)).filter(s => s > 0);

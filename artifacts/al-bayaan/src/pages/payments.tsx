@@ -1,12 +1,95 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AppLayout from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CheckCircle2, CreditCard, Smartphone, Star, Zap, Crown, BookOpen, Loader2 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { CheckCircle2, CreditCard, Smartphone, Star, Zap, Crown, BookOpen, Loader2, History, Clock } from "lucide-react";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
+
+interface PaymentRecord {
+  id: number;
+  planId: string;
+  planName: string;
+  billing: string;
+  method: string;
+  amount: string;
+  currency: string;
+  reference: string;
+  status: string;
+  createdAt: string;
+}
+
+function PaymentHistory() {
+  const [records, setRecords] = useState<PaymentRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/payments/history", { credentials: "include" })
+      .then(r => r.ok ? r.json() : [])
+      .then(data => setRecords(Array.isArray(data) ? data : []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <div className="space-y-2">{[0,1,2].map(i => <Skeleton key={i} className="h-16" />)}</div>;
+
+  if (records.length === 0) {
+    return (
+      <Card className="border-dashed">
+        <CardContent className="p-10 text-center">
+          <History className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+          <p className="font-medium">No payment history yet</p>
+          <p className="text-sm text-muted-foreground mt-1">Your initiated payments will appear here</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const METHOD_LABELS: Record<string, string> = {
+    zaad: "Zaad", evc: "EVC Plus", edahab: "eDahab",
+    stripe: "Card (Stripe)", paypal: "PayPal",
+  };
+  const STATUS_COLORS: Record<string, string> = {
+    pending: "bg-amber-100 text-amber-700",
+    completed: "bg-emerald-100 text-emerald-700",
+    failed: "bg-red-100 text-red-700",
+  };
+
+  return (
+    <div className="space-y-3">
+      {records.map(r => (
+        <motion.div key={r.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
+                    <CreditCard className="h-5 w-5 text-emerald-600" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-sm">{r.planName} Plan <span className="text-muted-foreground font-normal">· {r.billing}</span></p>
+                    <p className="text-xs text-muted-foreground">{METHOD_LABELS[r.method] ?? r.method} · Ref: <span className="font-mono">{r.reference}</span></p>
+                    <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                      <Clock className="h-3 w-3" />
+                      {new Date(r.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right shrink-0">
+                  <p className="font-semibold text-sm">${r.amount} <span className="text-muted-foreground font-normal text-xs">{r.currency}</span></p>
+                  <Badge className={`text-xs mt-1 border-0 ${STATUS_COLORS[r.status] ?? "bg-gray-100 text-gray-600"}`}>{r.status}</Badge>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      ))}
+    </div>
+  );
+}
 
 interface Plan {
   id: string;
@@ -291,6 +374,14 @@ export default function Payments() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Payment History */}
+        <div>
+          <h2 className="text-lg font-semibold text-emerald-950 flex items-center gap-2 mb-4">
+            <History className="h-5 w-5 text-emerald-600" /> Payment History
+          </h2>
+          <PaymentHistory />
+        </div>
       </div>
     </AppLayout>
   );

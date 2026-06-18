@@ -25,7 +25,7 @@ async function transcribeGroq(audioBuffer: Buffer, mimeType: string): Promise<Tr
   if (!apiKey) return { text: "", success: false, model: "groq-whisper", error: "No GROQ_API_KEY" };
 
   const formData = new FormData();
-  const blob = new Blob([audioBuffer], { type: mimeType });
+  const blob = new Blob([new Uint8Array(audioBuffer)], { type: mimeType });
   formData.append("file", blob, "audio.webm");
   formData.append("model", "whisper-large-v3");
   formData.append("language", "ar");

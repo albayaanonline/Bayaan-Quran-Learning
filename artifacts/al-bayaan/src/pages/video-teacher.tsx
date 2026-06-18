@@ -157,7 +157,7 @@ function AvatarFace({ isSpeaking, isThinking, mode }: { isSpeaking: boolean; isT
   );
 }
 
-const SR_CLASS_VT: (new () => SpeechRecognition) | null =
+const SR_CLASS_VT: (new () => any) | null =
   typeof window !== "undefined"
     ? ((window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition ?? null)
     : null;
@@ -176,7 +176,7 @@ export default function VideoTeacher() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [ttsEnabled, setTtsEnabled] = useState(true);
 
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const recognitionRef = useRef<any | null>(null);
   const recognizedTextRef = useRef("");
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -285,7 +285,7 @@ export default function VideoTeacher() {
       recognition.interimResults = false;
       recognition.maxAlternatives = 1;
 
-      recognition.onresult = (e) => {
+      recognition.onresult = (e: any) => {
         for (let i = e.resultIndex; i < e.results.length; i++) {
           if (e.results[i].isFinal) {
             recognizedTextRef.current += e.results[i][0].transcript + " ";

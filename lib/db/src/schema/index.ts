@@ -14,3 +14,5 @@ export * from "./cms_content";
 export * from "./parent_profiles";
 export * from "./notifications";
 export * from "./direct_messages";
+export * from "./payment_records";
+export * from "./live_classroom_sessions";
