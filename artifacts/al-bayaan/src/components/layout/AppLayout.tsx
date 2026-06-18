@@ -4,7 +4,7 @@ import {
   BookOpen, LayoutDashboard, LineChart, Bookmark, Award, Trophy,
   LogOut, Menu, BotMessageSquare, Brain, Mic, CalendarDays,
   BookMarked, Shield, GraduationCap, Library, Users, ClipboardList,
-  BarChart3, FolderOpen, Globe, PenSquare,
+  BarChart3, FolderOpen, Globe, PenSquare, Video, MessageCircle, Sparkles, CreditCard, MonitorPlay,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -39,6 +39,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         { href: "/teacher", label: t("nav.aiTeacher"), icon: BotMessageSquare },
         { href: "/tajweed-teacher", label: t("nav.tajweedTutor"), icon: BookMarked },
         { href: "/voice-teacher", label: t("nav.voiceTeacher"), icon: Mic, badge: "AI" },
+        { href: "/video-teacher", label: "Video Teacher", icon: Video, badge: "NEW" },
         { href: "/study-planner", label: t("nav.studyPlanner"), icon: CalendarDays },
       ],
     },
@@ -66,9 +67,18 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       ],
     },
     {
+      label: "Communication",
+      items: [
+        { href: "/messages", label: "Messages", icon: MessageCircle, badge: "NEW" },
+        { href: "/live-classroom", label: "Live Classroom", icon: MonitorPlay, badge: "NEW" },
+        { href: "/payments", label: "Upgrade Plan", icon: CreditCard },
+      ],
+    },
+    {
       label: "Admin",
       items: [
-        { href: "/exam-builder", label: t("nav.examBuilder"), icon: PenSquare, badge: "NEW" },
+        { href: "/content-generator", label: "AI Content", icon: Sparkles, badge: "NEW" },
+        { href: "/exam-builder", label: t("nav.examBuilder"), icon: PenSquare },
         { href: "/teacher-dashboard", label: t("nav.teacherView"), icon: GraduationCap },
         { href: "/admin", label: t("nav.admin"), icon: Shield },
       ],

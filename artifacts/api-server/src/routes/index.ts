@@ -22,6 +22,14 @@ import cmsRouter from "./cms";
 import parentRouter from "./parent";
 import analyticsRouter from "./analytics";
 import notificationsRouter from "./notifications";
+import videoTeacherRouter from "./video-teacher";
+import contentGeneratorRouter from "./content-generator";
+import messagesRouter from "./messages";
+import paymentsRouter from "./payments";
+import liveClassroomRouter from "./live-classroom";
+import analyticsReportsRouter from "./analytics-reports";
+import auditRouter from "./audit";
+import marketingRouter from "./marketing";
 
 const router = Router();
 
@@ -48,5 +56,13 @@ router.use(cmsRouter);
 router.use(parentRouter);
 router.use(analyticsRouter);
 router.use(notificationsRouter);
+router.use(videoTeacherRouter);
+router.use(contentGeneratorRouter);
+router.use(messagesRouter);
+router.use(paymentsRouter);
+router.use(liveClassroomRouter);
+router.use(analyticsReportsRouter);
+router.use(auditRouter);
+router.use(marketingRouter);
 
 export default router;

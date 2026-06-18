@@ -1,0 +1,38 @@
+{
+  "name": "Al Bayaan AI Academy",
+  "short_name": "Al Bayaan",
+  "description": "World-class Islamic learning platform with AI Quran teacher",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#059669",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "lifestyle"],
+  "lang": "en",
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Learn Quran",
+      "url": "/learn",
+      "description": "Go to Quran learning"
+    },
+    {
+      "name": "AI Teacher",
+      "url": "/teacher",
+      "description": "Open AI Teacher"
+    },
+    {
+      "name": "Hifdh Tracker",
+      "url": "/hifdh",
+      "description": "Track memorization"
+    }
+  ]
+}

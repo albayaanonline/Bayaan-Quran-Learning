@@ -63,6 +63,7 @@ export default function Landing() {
           <span className="font-semibold text-white/90 text-sm tracking-wide">Al Bayaan</span>
         </Link>
         <div className="hidden md:flex items-center gap-8 text-sm text-white/60">
+          <Link href="/about" className="hover:text-white transition-colors">About</Link>
           <Link href="/sign-in" className="hover:text-white transition-colors">Programs</Link>
           <Link href="/sign-in" className="hover:text-white transition-colors">Library</Link>
           <Link href="/sign-in" className="hover:text-white transition-colors">AI Teacher</Link>

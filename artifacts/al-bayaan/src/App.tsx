@@ -31,6 +31,12 @@ import Certificates from "./pages/certificates";
 import Analytics from "./pages/analytics";
 import CMS from "./pages/cms";
 import ExamBuilder from "./pages/exam-builder";
+import VideoTeacher from "./pages/video-teacher";
+import ContentGenerator from "./pages/content-generator";
+import Messages from "./pages/messages";
+import Payments from "./pages/payments";
+import LiveClassroom from "./pages/live-classroom";
+import Marketing from "./pages/marketing";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient();
@@ -185,6 +191,12 @@ function ClerkProviderWithRoutes() {
           <Route path="/admin" component={() => <ProtectedRoute component={Admin} />} />
           <Route path="/teacher-dashboard" component={() => <ProtectedRoute component={TeacherDashboard} />} />
           <Route path="/exam-builder" component={() => <ProtectedRoute component={ExamBuilder} />} />
+          <Route path="/video-teacher" component={() => <ProtectedRoute component={VideoTeacher} />} />
+          <Route path="/content-generator" component={() => <ProtectedRoute component={ContentGenerator} />} />
+          <Route path="/messages" component={() => <ProtectedRoute component={Messages} />} />
+          <Route path="/payments" component={() => <ProtectedRoute component={Payments} />} />
+          <Route path="/live-classroom" component={() => <ProtectedRoute component={LiveClassroom} />} />
+          <Route path="/about" component={Marketing} />
           <Route component={NotFound} />
         </Switch>
       </QueryClientProvider>

@@ -83,6 +83,8 @@ app.use("/api/voice-teacher", aiLimiter);
 app.use("/api/study-planner", aiLimiter);
 app.use("/api/hifdh/ai-coach", aiLimiter);
 app.use("/api/exams/:id/evaluate", aiLimiter);
+app.use("/api/video-teacher", aiLimiter);
+app.use("/api/content-generator", aiLimiter);
 
 // ── Routes ──────────────────────────────────────────────────────────────────
 app.use("/api", router);

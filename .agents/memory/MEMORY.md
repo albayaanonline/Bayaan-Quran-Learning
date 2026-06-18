@@ -2,3 +2,4 @@
 - [Al Bayaan AI stack](al-bayaan-ai-stack.md) — HuggingFace free API for Whisper STT + Mistral-7B AI Teacher; OpenRouter requires account upgrade
 - [Al Bayaan DB tables](al-bayaan-db-tables.md) — hifdh_progress, conversations, messages tables added in Phase 2; run `pnpm --filter @workspace/db run push` to migrate
 - [Al Bayaan Phase 3 features](al-bayaan-phase3.md) — Phase 3-6 all built: Exam Builder, Auto-cert, Notifications, Security, i18n (EN/AR/SO)
+- [Al Bayaan Phases A-L](al-bayaan-phases-a-l.md) — Video Teacher, Tajweed Engine (10 rules+Makharij+Waqf), Payments (Zaad/EVC/eDahab), Live Classroom (Jitsi), PWA, Content Generator, Marketing, Messages, Analytics Reports, Audit Log

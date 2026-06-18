@@ -13,3 +13,4 @@ export * from "./certificates";
 export * from "./cms_content";
 export * from "./parent_profiles";
 export * from "./notifications";
+export * from "./direct_messages";
