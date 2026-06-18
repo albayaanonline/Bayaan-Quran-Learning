@@ -3,7 +3,7 @@ import { logger } from "../lib/logger";
 
 const router: IRouter = Router();
 
-// Static surah metadata — all 114 surahs with essential data
+// ── Surah metadata ──────────────────────────────────────────────────────────
 const SURAHS = [
   { number: 1, name: "Al-Fatihah", nameArabic: "الفاتحة", nameTranslation: "The Opening", ayahCount: 7, revelationType: "Meccan", juz: 1 },
   { number: 2, name: "Al-Baqarah", nameArabic: "البقرة", nameTranslation: "The Cow", ayahCount: 286, revelationType: "Medinan", juz: 1 },
@@ -23,7 +23,7 @@ const SURAHS = [
   { number: 16, name: "An-Nahl", nameArabic: "النحل", nameTranslation: "The Bee", ayahCount: 128, revelationType: "Meccan", juz: 14 },
   { number: 17, name: "Al-Isra", nameArabic: "الإسراء", nameTranslation: "The Night Journey", ayahCount: 111, revelationType: "Meccan", juz: 15 },
   { number: 18, name: "Al-Kahf", nameArabic: "الكهف", nameTranslation: "The Cave", ayahCount: 110, revelationType: "Meccan", juz: 15 },
-  { number: 19, name: "Maryam", nameArabic: "مريم", nameTranslation: "Mary", ayahCount: 98, revelationType: "Meccan", juz: 16 },
+  { number: 19, name: "Maryam", nameArabic: "مريام", nameTranslation: "Mary", ayahCount: 98, revelationType: "Meccan", juz: 16 },
   { number: 20, name: "Ta-Ha", nameArabic: "طه", nameTranslation: "Ta-Ha", ayahCount: 135, revelationType: "Meccan", juz: 16 },
   { number: 21, name: "Al-Anbiya", nameArabic: "الأنبياء", nameTranslation: "The Prophets", ayahCount: 112, revelationType: "Meccan", juz: 17 },
   { number: 22, name: "Al-Hajj", nameArabic: "الحج", nameTranslation: "The Pilgrimage", ayahCount: 78, revelationType: "Medinan", juz: 17 },
@@ -80,7 +80,7 @@ const SURAHS = [
   { number: 73, name: "Al-Muzzammil", nameArabic: "المزمل", nameTranslation: "The Enshrouded One", ayahCount: 20, revelationType: "Meccan", juz: 29 },
   { number: 74, name: "Al-Muddaththir", nameArabic: "المدثر", nameTranslation: "The Cloaked One", ayahCount: 56, revelationType: "Meccan", juz: 29 },
   { number: 75, name: "Al-Qiyamah", nameArabic: "القيامة", nameTranslation: "The Resurrection", ayahCount: 40, revelationType: "Meccan", juz: 29 },
-  { number: 76, name: "Al-Insan", nameArabic: "الإنسان", nameTranslation: "The Man", ayahCount: 31, revelationType: "Medinan", juz: 29 },
+  { number: 76, name: "Al-Insan", nameArabic: "الإنسان", nameTranslation: "Man", ayahCount: 31, revelationType: "Medinan", juz: 29 },
   { number: 77, name: "Al-Mursalat", nameArabic: "المرسلات", nameTranslation: "The Emissaries", ayahCount: 50, revelationType: "Meccan", juz: 29 },
   { number: 78, name: "An-Naba", nameArabic: "النبأ", nameTranslation: "The Tidings", ayahCount: 40, revelationType: "Meccan", juz: 30 },
   { number: 79, name: "An-Nazi'at", nameArabic: "النازعات", nameTranslation: "Those who drag forth", ayahCount: 46, revelationType: "Meccan", juz: 30 },
@@ -90,14 +90,14 @@ const SURAHS = [
   { number: 83, name: "Al-Mutaffifin", nameArabic: "المطففين", nameTranslation: "The Defrauding", ayahCount: 36, revelationType: "Meccan", juz: 30 },
   { number: 84, name: "Al-Inshiqaq", nameArabic: "الانشقاق", nameTranslation: "The Sundering", ayahCount: 25, revelationType: "Meccan", juz: 30 },
   { number: 85, name: "Al-Buruj", nameArabic: "البروج", nameTranslation: "The Mansions of the Stars", ayahCount: 22, revelationType: "Meccan", juz: 30 },
-  { number: 86, name: "At-Tariq", nameArabic: "الطارق", nameTranslation: "The Nightcommer", ayahCount: 17, revelationType: "Meccan", juz: 30 },
+  { number: 86, name: "At-Tariq", nameArabic: "الطارق", nameTranslation: "The Morning Star", ayahCount: 17, revelationType: "Meccan", juz: 30 },
   { number: 87, name: "Al-A'la", nameArabic: "الأعلى", nameTranslation: "The Most High", ayahCount: 19, revelationType: "Meccan", juz: 30 },
   { number: 88, name: "Al-Ghashiyah", nameArabic: "الغاشية", nameTranslation: "The Overwhelming", ayahCount: 26, revelationType: "Meccan", juz: 30 },
   { number: 89, name: "Al-Fajr", nameArabic: "الفجر", nameTranslation: "The Dawn", ayahCount: 30, revelationType: "Meccan", juz: 30 },
   { number: 90, name: "Al-Balad", nameArabic: "البلد", nameTranslation: "The City", ayahCount: 20, revelationType: "Meccan", juz: 30 },
   { number: 91, name: "Ash-Shams", nameArabic: "الشمس", nameTranslation: "The Sun", ayahCount: 15, revelationType: "Meccan", juz: 30 },
   { number: 92, name: "Al-Layl", nameArabic: "الليل", nameTranslation: "The Night", ayahCount: 21, revelationType: "Meccan", juz: 30 },
-  { number: 93, name: "Ad-Duha", nameArabic: "الضحى", nameTranslation: "The Morning Hours", ayahCount: 11, revelationType: "Meccan", juz: 30 },
+  { number: 93, name: "Ad-Duhaa", nameArabic: "الضحى", nameTranslation: "The Morning Hours", ayahCount: 11, revelationType: "Meccan", juz: 30 },
   { number: 94, name: "Ash-Sharh", nameArabic: "الشرح", nameTranslation: "The Relief", ayahCount: 8, revelationType: "Meccan", juz: 30 },
   { number: 95, name: "At-Tin", nameArabic: "التين", nameTranslation: "The Fig", ayahCount: 8, revelationType: "Meccan", juz: 30 },
   { number: 96, name: "Al-'Alaq", nameArabic: "العلق", nameTranslation: "The Clot", ayahCount: 19, revelationType: "Meccan", juz: 30 },
@@ -112,14 +112,131 @@ const SURAHS = [
   { number: 105, name: "Al-Fil", nameArabic: "الفيل", nameTranslation: "The Elephant", ayahCount: 5, revelationType: "Meccan", juz: 30 },
   { number: 106, name: "Quraysh", nameArabic: "قريش", nameTranslation: "Quraysh", ayahCount: 4, revelationType: "Meccan", juz: 30 },
   { number: 107, name: "Al-Ma'un", nameArabic: "الماعون", nameTranslation: "The Small Kindnesses", ayahCount: 7, revelationType: "Meccan", juz: 30 },
-  { number: 108, name: "Al-Kawthar", nameArabic: "الكوثر", nameTranslation: "The Abundance", ayahCount: 3, revelationType: "Meccan", juz: 30 },
+  { number: 108, name: "Al-Kawthar", nameArabic: "الكوثر", nameTranslation: "A River in Paradise", ayahCount: 3, revelationType: "Meccan", juz: 30 },
   { number: 109, name: "Al-Kafirun", nameArabic: "الكافرون", nameTranslation: "The Disbelievers", ayahCount: 6, revelationType: "Meccan", juz: 30 },
   { number: 110, name: "An-Nasr", nameArabic: "النصر", nameTranslation: "The Divine Support", ayahCount: 3, revelationType: "Medinan", juz: 30 },
-  { number: 111, name: "Al-Masad", nameArabic: "المسد", nameTranslation: "The Palm Fiber", ayahCount: 5, revelationType: "Meccan", juz: 30 },
+  { number: 111, name: "Al-Masad", nameArabic: "المسد", nameTranslation: "The Palm Fibre", ayahCount: 5, revelationType: "Meccan", juz: 30 },
   { number: 112, name: "Al-Ikhlas", nameArabic: "الإخلاص", nameTranslation: "The Sincerity", ayahCount: 4, revelationType: "Meccan", juz: 30 },
   { number: 113, name: "Al-Falaq", nameArabic: "الفلق", nameTranslation: "The Daybreak", ayahCount: 5, revelationType: "Meccan", juz: 30 },
   { number: 114, name: "An-Nas", nameArabic: "الناس", nameTranslation: "Mankind", ayahCount: 6, revelationType: "Meccan", juz: 30 },
 ];
+
+// ── In-memory ayah cache — keyed by surahId, TTL 24 hours ──────────────────
+interface CacheEntry {
+  ayahs: any[];
+  fetchedAt: number;
+}
+const ayahCache = new Map<number, CacheEntry>();
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+
+function getCached(surahId: number): any[] | null {
+  const entry = ayahCache.get(surahId);
+  if (!entry) return null;
+  if (Date.now() - entry.fetchedAt > CACHE_TTL_MS) {
+    ayahCache.delete(surahId);
+    return null;
+  }
+  return entry.ayahs;
+}
+
+function setCache(surahId: number, ayahs: any[]): void {
+  ayahCache.set(surahId, { ayahs, fetchedAt: Date.now() });
+}
+
+function buildAudioUrl(surahId: number, numberInSurah: number): string {
+  const s = String(surahId).padStart(3, "0");
+  const a = String(numberInSurah).padStart(3, "0");
+  return `https://everyayah.com/data/Alafasy_128kbps/${s}${a}.mp3`;
+}
+
+// ── Primary Quran source: AlQuran.cloud ─────────────────────────────────────
+async function fetchFromAlQuranCloud(surahId: number): Promise<any[] | null> {
+  const ctrl = new AbortController();
+  const timeout = setTimeout(() => ctrl.abort(), 10_000);
+  try {
+    const resp = await fetch(
+      `https://api.alquran.cloud/v1/surah/${surahId}/quran-uthmani`,
+      { signal: ctrl.signal }
+    );
+    clearTimeout(timeout);
+    if (!resp.ok) return null;
+    const data = await resp.json() as any;
+    const ayahs = data.data?.ayahs;
+    if (!Array.isArray(ayahs) || ayahs.length === 0) return null;
+    return ayahs.map((a: any) => ({
+      number: a.number,
+      numberInSurah: a.numberInSurah,
+      text: a.text,
+      surahNumber: surahId,
+      page: a.page ?? null,
+      juz: a.juz ?? null,
+      audioUrl: buildAudioUrl(surahId, a.numberInSurah),
+    }));
+  } catch {
+    clearTimeout(timeout);
+    return null;
+  }
+}
+
+// ── Backup Quran source: quranapi.pages.dev ──────────────────────────────────
+async function fetchFromBackupAPI(surahId: number, surah: { ayahCount: number; juz: number }): Promise<any[] | null> {
+  const ctrl = new AbortController();
+  const timeout = setTimeout(() => ctrl.abort(), 10_000);
+  try {
+    const resp = await fetch(
+      `https://quranapi.pages.dev/api/${surahId}.json`,
+      { signal: ctrl.signal }
+    );
+    clearTimeout(timeout);
+    if (!resp.ok) return null;
+    const data = await resp.json() as any;
+    const arabicLines: string[] = data.arabic1 ?? data.arabic2 ?? [];
+    if (!arabicLines.length) return null;
+
+    return arabicLines.map((text: string, i: number) => ({
+      number: i + 1,
+      numberInSurah: i + 1,
+      text,
+      surahNumber: surahId,
+      page: null,
+      juz: surah.juz,
+      audioUrl: buildAudioUrl(surahId, i + 1),
+    }));
+  } catch {
+    clearTimeout(timeout);
+    return null;
+  }
+}
+
+// ── Third backup: cdn.jsdelivr.net static Quran data ────────────────────────
+async function fetchFromJsDelivr(surahId: number, surah: { ayahCount: number; juz: number }): Promise<any[] | null> {
+  const ctrl = new AbortController();
+  const timeout = setTimeout(() => ctrl.abort(), 12_000);
+  try {
+    const resp = await fetch(
+      `https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/editions/ara-quranabulama/${surahId}.json`,
+      { signal: ctrl.signal }
+    );
+    clearTimeout(timeout);
+    if (!resp.ok) return null;
+    const data = await resp.json() as any;
+    const chapter = data?.chapter;
+    if (!Array.isArray(chapter) || chapter.length === 0) return null;
+
+    return chapter.map((entry: any, i: number) => ({
+      number: i + 1,
+      numberInSurah: i + 1,
+      text: entry.text ?? entry,
+      surahNumber: surahId,
+      page: null,
+      juz: surah.juz,
+      audioUrl: buildAudioUrl(surahId, i + 1),
+    }));
+  } catch {
+    clearTimeout(timeout);
+    return null;
+  }
+}
 
 router.get("/surahs", (_req, res) => {
   res.json(SURAHS);
@@ -136,34 +253,40 @@ router.get("/surahs/:surahId/ayahs", async (req, res) => {
   const surahId = parseInt(req.params.surahId);
   const surah = SURAHS.find(s => s.number === surahId);
   if (!surah) { res.status(404).json({ error: "Surah not found" }); return; }
-  try {
-    const resp = await fetch(`https://api.alquran.cloud/v1/surah/${surahId}/quran-uthmani`);
-    if (!resp.ok) throw new Error("API error");
-    const data = await resp.json() as any;
-    const ayahs = (data.data?.ayahs ?? []).map((a: any) => ({
-      number: a.number,
-      numberInSurah: a.numberInSurah,
-      text: a.text,
-      surahNumber: surahId,
-      page: a.page ?? null,
-      juz: a.juz ?? null,
-      audioUrl: `https://everyayah.com/data/Alafasy_128kbps/${String(surahId).padStart(3, "0")}${String(a.numberInSurah).padStart(3, "0")}.mp3`,
-    }));
-    res.json(ayahs);
-  } catch (err) {
-    logger.error({ err }, "Failed to fetch ayahs from API");
-    // Fallback: return a minimal placeholder
-    const ayahs = Array.from({ length: surah.ayahCount }, (_, i) => ({
-      number: i + 1,
-      numberInSurah: i + 1,
-      text: "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
-      surahNumber: surahId,
-      page: null,
-      juz: surah.juz,
-      audioUrl: `https://everyayah.com/data/Alafasy_128kbps/${String(surahId).padStart(3, "0")}${String(i + 1).padStart(3, "0")}.mp3`,
-    }));
-    res.json(ayahs);
+
+  const cached = getCached(surahId);
+  if (cached) {
+    res.setHeader("X-Cache", "HIT");
+    res.json(cached);
+    return;
   }
+
+  logger.info({ surahId }, "Fetching ayahs from AlQuran.cloud (primary)");
+  let ayahs = await fetchFromAlQuranCloud(surahId);
+
+  if (!ayahs) {
+    logger.warn({ surahId }, "AlQuran.cloud failed — trying quranapi.pages.dev");
+    ayahs = await fetchFromBackupAPI(surahId, surah);
+  }
+
+  if (!ayahs) {
+    logger.warn({ surahId }, "quranapi.pages.dev failed — trying jsDelivr");
+    ayahs = await fetchFromJsDelivr(surahId, surah);
+  }
+
+  if (!ayahs) {
+    logger.error({ surahId }, "All Quran API sources failed");
+    res.status(503).json({
+      error: "Quran text temporarily unavailable — all sources failed",
+      detail: "AlQuran.cloud, quranapi.pages.dev, and jsDelivr cdn all failed. Please try again.",
+      surahId,
+    });
+    return;
+  }
+
+  setCache(surahId, ayahs);
+  res.setHeader("X-Cache", "MISS");
+  res.json(ayahs);
 });
 
 router.get("/ayahs/:ayahKey", async (req, res) => {
@@ -172,14 +295,48 @@ router.get("/ayahs/:ayahKey", async (req, res) => {
     const [surahPart, ayahPart] = ayahKey.split(":");
     const surahNum = parseInt(surahPart);
     const ayahNum = parseInt(ayahPart);
-    const [arabicResp, translationResp] = await Promise.all([
+
+    const cached = getCached(surahNum);
+    if (cached) {
+      const ayah = cached.find((a: any) => a.numberInSurah === ayahNum);
+      if (ayah) {
+        const translationCtrl = new AbortController();
+        const ttTimeout = setTimeout(() => translationCtrl.abort(), 8_000);
+        let translation = "";
+        try {
+          const translationResp = await fetch(
+            `https://api.alquran.cloud/v1/ayah/${surahNum}:${ayahNum}/en.sahih`,
+            { signal: translationCtrl.signal }
+          );
+          clearTimeout(ttTimeout);
+          if (translationResp.ok) {
+            const tData = await translationResp.json() as any;
+            translation = tData.data?.text ?? "";
+          }
+        } catch { clearTimeout(ttTimeout); }
+        res.json({ ayah, translation, transliteration: null, tafsir: null });
+        return;
+      }
+    }
+
+    const [arabicResp, translationResp] = await Promise.allSettled([
       fetch(`https://api.alquran.cloud/v1/ayah/${surahNum}:${ayahNum}/quran-uthmani`),
       fetch(`https://api.alquran.cloud/v1/ayah/${surahNum}:${ayahNum}/en.sahih`),
     ]);
-    const arabicData = await arabicResp.json() as any;
-    const translationData = await translationResp.json() as any;
+
+    if (arabicResp.status === "rejected" || !((arabicResp as PromiseFulfilledResult<Response>).value?.ok)) {
+      res.status(503).json({ error: "Failed to fetch ayah from Quran API" });
+      return;
+    }
+
+    const arabicData = await (arabicResp as PromiseFulfilledResult<Response>).value.json() as any;
+    let translationText = "";
+    if (translationResp.status === "fulfilled" && (translationResp as PromiseFulfilledResult<Response>).value.ok) {
+      const tData = await (translationResp as PromiseFulfilledResult<Response>).value.json() as any;
+      translationText = tData.data?.text ?? "";
+    }
+
     const a = arabicData.data;
-    const t = translationData.data;
     res.json({
       ayah: {
         number: a.number,
@@ -188,9 +345,9 @@ router.get("/ayahs/:ayahKey", async (req, res) => {
         surahNumber: surahNum,
         page: a.page ?? null,
         juz: a.juz ?? null,
-        audioUrl: `https://everyayah.com/data/Alafasy_128kbps/${String(surahNum).padStart(3, "0")}${String(ayahNum).padStart(3, "0")}.mp3`,
+        audioUrl: buildAudioUrl(surahNum, ayahNum),
       },
-      translation: t?.text ?? "",
+      translation: translationText,
       transliteration: null,
       tafsir: null,
     });

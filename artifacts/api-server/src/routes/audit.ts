@@ -1,54 +1,70 @@
 import { Router } from "express";
+import { db, auditLogsTable } from "@workspace/db";
+import { eq, desc, and } from "drizzle-orm";
 import { logger } from "../lib/logger";
 import { requireAuth } from "../middlewares/auth";
 
 const router = Router();
 
-const auditLog: Array<{
-  id: string;
+export async function addAuditEntry(entry: {
   userId: string;
   action: string;
   resource: string;
   details?: Record<string, unknown>;
   ip?: string;
   userAgent?: string;
-  timestamp: string;
-}> = [];
-
-const MAX_AUDIT_ENTRIES = 10000;
-
-export function addAuditEntry(entry: {
-  userId: string;
-  action: string;
-  resource: string;
-  details?: Record<string, unknown>;
-  ip?: string;
-  userAgent?: string;
-}) {
-  auditLog.unshift({
-    id: `audit_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-    ...entry,
-    timestamp: new Date().toISOString(),
-  });
-  if (auditLog.length > MAX_AUDIT_ENTRIES) auditLog.splice(MAX_AUDIT_ENTRIES);
+}): Promise<void> {
+  try {
+    await db.insert(auditLogsTable).values({
+      userId: entry.userId,
+      action: entry.action,
+      resource: entry.resource,
+      details: entry.details ?? null,
+      ip: entry.ip ?? null,
+      userAgent: entry.userAgent ?? null,
+    });
+  } catch (err) {
+    logger.error({ err }, "Failed to persist audit log entry");
+  }
 }
 
 router.get("/audit/logs", requireAuth, async (req: any, res) => {
   const { action, resource, limit = "50", offset = "0" } = req.query;
 
-  let filtered = auditLog.filter(e => e.userId === req.userId);
-  if (action) filtered = filtered.filter(e => e.action === action);
-  if (resource) filtered = filtered.filter(e => e.resource === resource);
+  try {
+    let rows = await db.select().from(auditLogsTable)
+      .where(eq(auditLogsTable.userId, req.userId))
+      .orderBy(desc(auditLogsTable.createdAt))
+      .limit(200);
 
-  const total = filtered.length;
-  const page = filtered.slice(Number(offset), Number(offset) + Number(limit));
+    if (action) rows = rows.filter(e => e.action === action);
+    if (resource) rows = rows.filter(e => e.resource === resource);
 
-  res.json({ total, logs: page });
+    const total = rows.length;
+    const page = rows.slice(Number(offset), Number(offset) + Number(limit));
+
+    res.json({ total, logs: page });
+  } catch (err) {
+    logger.error({ err }, "Failed to fetch audit logs");
+    res.status(500).json({ error: "Internal server error" });
+  }
 });
 
 router.get("/audit/logs/admin", requireAuth, async (req: any, res) => {
   const { limit = "100", offset = "0" } = req.query;
-  res.json({ total: auditLog.length, logs: auditLog.slice(Number(offset), Number(offset) + Number(limit)) });
+
+  try {
+    const logs = await db.select().from(auditLogsTable)
+      .orderBy(desc(auditLogsTable.createdAt))
+      .limit(Number(limit))
+      .offset(Number(offset));
+
+    const all = await db.select({ id: auditLogsTable.id }).from(auditLogsTable);
+    res.json({ total: all.length, logs });
+  } catch (err) {
+    logger.error({ err }, "Failed to fetch admin audit logs");
+    res.status(500).json({ error: "Internal server error" });
+  }
 });
 
 export default router;

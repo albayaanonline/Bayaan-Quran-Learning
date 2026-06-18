@@ -7,10 +7,66 @@ import { requireAuth } from "../middlewares/auth";
 const router = Router();
 
 const PLAN_PRICES: Record<string, { monthly: number; annual: number; name: string }> = {
-  student: { monthly: 9.99, annual: 7.99, name: "Student" },
-  family: { monthly: 19.99, annual: 15.99, name: "Family" },
-  institute: { monthly: 99, annual: 79, name: "Institute" },
+  student:   { monthly: 9.99,  annual: 7.99,  name: "Student" },
+  family:    { monthly: 19.99, annual: 15.99, name: "Family" },
+  institute: { monthly: 99,    annual: 79,    name: "Institute" },
 };
+
+// ── Stripe real checkout session ─────────────────────────────────────────────
+async function createStripeCheckoutSession(params: {
+  planId: string;
+  planName: string;
+  amount: number;
+  billing: string;
+  userId: string;
+  reference: string;
+}): Promise<{ url: string } | null> {
+  const stripeKey = process.env.STRIPE_SECRET_KEY;
+  if (!stripeKey) return null;
+
+  try {
+    const appUrl = process.env.APP_URL ?? "https://albayaan.replit.app";
+    const unitAmount = Math.round(params.amount * 100);
+    const interval = params.billing === "annual" ? "year" : "month";
+
+    const body = new URLSearchParams({
+      "mode": "subscription",
+      "payment_method_types[0]": "card",
+      "line_items[0][price_data][currency]": "usd",
+      "line_items[0][price_data][unit_amount]": String(unitAmount),
+      "line_items[0][price_data][product_data][name]": `Al Bayaan ${params.planName} Plan`,
+      "line_items[0][price_data][product_data][description]": `${params.billing === "annual" ? "Annual" : "Monthly"} subscription to Al Bayaan AI Academy`,
+      "line_items[0][price_data][recurring][interval]": interval,
+      "line_items[0][quantity]": "1",
+      "success_url": `${appUrl}/payments?status=success&ref=${params.reference}`,
+      "cancel_url": `${appUrl}/payments?status=cancelled`,
+      "metadata[userId]": params.userId,
+      "metadata[planId]": params.planId,
+      "metadata[reference]": params.reference,
+    });
+
+    const resp = await fetch("https://api.stripe.com/v1/checkout/sessions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${stripeKey}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: body.toString(),
+    });
+
+    if (!resp.ok) {
+      const err = await resp.text();
+      logger.error({ err }, "Stripe session creation failed");
+      return null;
+    }
+
+    const session = await resp.json() as any;
+    return { url: session.url };
+  } catch (err) {
+    logger.error({ err }, "Stripe checkout error");
+    return null;
+  }
+}
 
 router.post("/payments/initiate", requireAuth, async (req: any, res) => {
   const { planId, billing = "monthly", method } = req.body;
@@ -62,21 +118,50 @@ router.post("/payments/initiate", requireAuth, async (req: any, res) => {
     if (!process.env.STRIPE_SECRET_KEY) {
       res.json({
         success: false,
-        instructions: "Stripe card payments are coming soon. Please use Zaad, EVC, or eDahab for now, or contact support@albayaan.com",
+        method: "stripe",
+        instructions: "Stripe card payments are not yet configured for this deployment. Please use Zaad, EVC Plus, or eDahab, or contact support@albayaan.com to set up card payments.",
       });
       return;
     }
-    res.json({ success: true, redirectUrl: `/api/payments/stripe-checkout?plan=${planId}&billing=${billing}` });
-    return;
-  } else if (method === "paypal") {
-    if (!process.env.PAYPAL_CLIENT_ID) {
+
+    const session = await createStripeCheckoutSession({
+      planId, planName: plan.name, amount, billing, userId: req.userId, reference,
+    });
+
+    if (!session) {
       res.json({
         success: false,
-        instructions: "PayPal payments are coming soon. Please use Zaad, EVC, or eDahab for now, or contact support@albayaan.com",
+        method: "stripe",
+        instructions: "Stripe checkout could not be initiated. Please try again or use Zaad/EVC/eDahab.",
       });
       return;
     }
-    res.json({ success: true, redirectUrl: `/api/payments/paypal-checkout?plan=${planId}&billing=${billing}` });
+
+    try {
+      await db.insert(paymentRecordsTable).values({
+        userId: req.userId,
+        planId,
+        planName: plan.name,
+        billing,
+        method,
+        amount: String(amount),
+        currency,
+        reference,
+        status: "pending",
+        metadata: { stripeCheckoutUrl: session.url },
+      });
+    } catch (dbErr) {
+      logger.error({ dbErr }, "Failed to save Stripe payment record");
+    }
+
+    res.json({ success: true, redirectUrl: session.url, reference });
+    return;
+  } else if (method === "paypal") {
+    res.json({
+      success: false,
+      method: "paypal",
+      instructions: "PayPal payments are coming soon. Please use Zaad, EVC Plus, or eDahab for now, or contact support@albayaan.com.",
+    });
     return;
   } else {
     res.status(400).json({ error: "Unknown payment method" });
@@ -131,6 +216,32 @@ router.patch("/payments/:id/confirm", requireAuth, async (req: any, res) => {
   } catch (err) {
     logger.error({ err }, "Failed to confirm payment");
     res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// ── Stripe webhook — marks payment as completed when Stripe confirms ─────────
+router.post("/payments/stripe-webhook", async (req, res) => {
+  const stripeKey = process.env.STRIPE_SECRET_KEY;
+  if (!stripeKey) { res.status(400).end(); return; }
+
+  try {
+    const event = req.body;
+
+    if (event.type === "checkout.session.completed") {
+      const session = event.data?.object;
+      const reference = session?.metadata?.reference;
+      if (reference) {
+        await db.update(paymentRecordsTable)
+          .set({ status: "completed", metadata: { stripeSessionId: session.id } })
+          .where(eq(paymentRecordsTable.reference, reference));
+        logger.info({ reference }, "Stripe payment completed via webhook");
+      }
+    }
+
+    res.json({ received: true });
+  } catch (err) {
+    logger.error({ err }, "Stripe webhook error");
+    res.status(400).json({ error: "Webhook error" });
   }
 });
 

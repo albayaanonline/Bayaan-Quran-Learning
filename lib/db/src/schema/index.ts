@@ -16,3 +16,5 @@ export * from "./notifications";
 export * from "./direct_messages";
 export * from "./payment_records";
 export * from "./live_classroom_sessions";
+export * from "./audit_logs";
+export * from "./marketing_leads";

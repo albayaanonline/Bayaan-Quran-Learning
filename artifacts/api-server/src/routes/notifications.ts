@@ -1,8 +1,9 @@
 import { Router } from "express";
-import { db, notificationsTable } from "@workspace/db";
+import { db, notificationsTable, profilesTable } from "@workspace/db";
 import { eq, desc, and } from "drizzle-orm";
 import { logger } from "../lib/logger";
 import { requireAuth } from "../middlewares/auth";
+import { sendNotificationEmail } from "../lib/emailNotifications";
 
 const router = Router();
 
@@ -78,7 +79,11 @@ router.delete("/notifications/:id", requireAuth, async (req: any, res) => {
   }
 });
 
-/** Internal helper — create a notification for a user (called from other routes) */
+/**
+ * Internal helper — create a notification for a user.
+ * Automatically sends an email if SMTP is configured and user has an email.
+ * Called from other routes (exams, recordings, etc).
+ */
 export async function createNotification(
   userId: string,
   type: string,
@@ -91,6 +96,30 @@ export async function createNotification(
   } catch (err) {
     logger.error({ err }, "Failed to auto-create notification");
   }
+
+  setImmediate(async () => {
+    try {
+      const [profile] = await db.select().from(profilesTable)
+        .where(eq(profilesTable.clerkId, userId))
+        .limit(1);
+
+      if (!profile?.email) return;
+
+      const notifTypes = ["certificate_earned", "exam_passed", "achievement_earned"];
+      if (!notifTypes.includes(type)) return;
+
+      await sendNotificationEmail({
+        to: profile.email,
+        userName: profile.displayName ?? "Student",
+        title,
+        message,
+        linkText: "Open Al Bayaan",
+        linkUrl: process.env.APP_URL ?? "https://albayaan.replit.app",
+      });
+    } catch (emailErr) {
+      logger.warn({ emailErr }, "Email notification failed (non-critical)");
+    }
+  });
 }
 
 export default router;
