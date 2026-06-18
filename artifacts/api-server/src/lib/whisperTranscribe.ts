@@ -2,10 +2,10 @@
  * Al Bayaan Audio Transcription
  *
  * Provider chain — automatic fallback, zero student-visible errors:
- *   1. Groq Whisper-large-v3          (fast, free tier — needs GROQ_API_KEY)
- *   2. HF tarteel-ai/whisper-large-v2-ar  (Quran-specialised, free, no token needed)
- *   3. HF openai/whisper-large-v3         (general Arabic, free, no token needed)
- *   4. Graceful empty-string fallback     (never crashes the student)
+ *   1. Groq Whisper-large-v3              (fast, free tier — needs GROQ_API_KEY)
+ *   2. HF tarteel-ai/whisper-large-v2-ar  (Quran-specialised, free — retries on 503)
+ *   3. HF openai/whisper-large-v3         (general Arabic, free — retries on 503)
+ *   4. Graceful error with diagnostics    (never crashes the student)
  */
 
 import { logger } from "./logger";
@@ -58,6 +58,7 @@ async function transcribeGroq(audioBuffer: Buffer, mimeType: string): Promise<Tr
 
 // ---------------------------------------------------------------------------
 // 2 & 3. HuggingFace Whisper  (free, HF_TOKEN optional for higher rate limits)
+//         Automatically retries once when the model is cold-starting (503)
 // ---------------------------------------------------------------------------
 async function transcribeHuggingFace(
   model: string,
@@ -68,49 +69,72 @@ async function transcribeHuggingFace(
   const headers: Record<string, string> = { "Content-Type": mimeType };
   if (hfToken) headers["Authorization"] = `Bearer ${hfToken}`;
 
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 35_000);
-
-  try {
-    const resp = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
-      method: "POST",
-      headers,
-      body: audioBuffer,
-      signal: controller.signal,
-    });
-    clearTimeout(timeout);
-
-    if (resp.status === 503) {
-      const body = await resp.json().catch(() => ({})) as any;
-      const wait = body?.estimated_time ?? 20;
-      return { text: "", success: false, model, error: `Model loading (~${wait}s), try again shortly` };
+  const attempt = async (waitMs = 0): Promise<TranscriptionResult> => {
+    if (waitMs > 0) {
+      logger.info({ model, waitMs }, "Waiting for HF model to load before retry");
+      await new Promise(r => setTimeout(r, waitMs));
     }
 
-    if (!resp.ok) {
-      const err = await resp.text();
-      return { text: "", success: false, model, error: `HF ${resp.status}: ${err}` };
-    }
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 40_000);
 
-    const data = await resp.json() as any;
-    const text: string = (
-      data?.text ??
-      data?.[0]?.generated_text ??
-      data?.[0]?.text ??
-      ""
-    ).trim();
+    try {
+      const resp = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
+        method: "POST",
+        headers,
+        body: audioBuffer,
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
 
-    return { text, success: text.length > 0, model };
-  } catch (err: any) {
-    clearTimeout(timeout);
-    if (err?.name === "AbortError") {
-      return { text: "", success: false, model, error: "Transcription timed out" };
+      if (resp.status === 503) {
+        const body = await resp.json().catch(() => ({})) as any;
+        const estimatedWait: number = Math.min(body?.estimated_time ?? 20, 30);
+        return { text: "", success: false, model, error: `Model loading (~${Math.round(estimatedWait)}s)` };
+      }
+
+      if (!resp.ok) {
+        const err = await resp.text();
+        return { text: "", success: false, model, error: `HF ${resp.status}: ${err}` };
+      }
+
+      const data = await resp.json() as any;
+      const text: string = (
+        data?.text ??
+        data?.[0]?.generated_text ??
+        data?.[0]?.text ??
+        ""
+      ).trim();
+
+      return { text, success: text.length > 0, model };
+    } catch (err: any) {
+      clearTimeout(timeout);
+      if (err?.name === "AbortError") {
+        return { text: "", success: false, model, error: "Transcription timed out" };
+      }
+      return { text: "", success: false, model, error: String(err) };
     }
-    return { text: "", success: false, model, error: String(err) };
+  };
+
+  // First attempt
+  const first = await attempt(0);
+  if (first.success) return first;
+
+  // If model is cold-starting (503), wait and retry once
+  if (first.error?.includes("Model loading")) {
+    const waitMatch = first.error.match(/~(\d+)s/);
+    const waitMs = Math.min((parseInt(waitMatch?.[1] ?? "20", 10) + 3) * 1000, 20_000);
+    logger.info({ model, waitMs }, "HF model cold-starting, retrying after delay");
+    const retry = await attempt(waitMs);
+    if (retry.success) return retry;
+    return { ...retry, error: `${first.error} (retry also failed: ${retry.error})` };
   }
+
+  return first;
 }
 
 // ---------------------------------------------------------------------------
-// Public API — used by transcribe.ts and voice-teacher.ts
+// Public API — used by recordings.ts and voice-teacher.ts
 // ---------------------------------------------------------------------------
 export async function transcribeAudio(
   audioBase64: string,
@@ -125,10 +149,10 @@ export async function transcribeAudio(
   const audioBuffer = Buffer.from(base64Data, "base64");
 
   if (audioBuffer.length < 1000) {
-    return { text: "", success: false, model: "none", error: "Audio too short" };
+    return { text: "", success: false, model: "none", error: "Audio too short (< 1 second)" };
   }
 
-  logger.info({ bytes: audioBuffer.length }, "Starting transcription chain");
+  logger.info({ bytes: audioBuffer.length, mimeType }, "Starting transcription chain");
 
   // 1. Groq (fast, free tier)
   const groqResult = await transcribeGroq(audioBuffer, mimeType);
@@ -140,7 +164,7 @@ export async function transcribeAudio(
     logger.warn({ err: groqResult.error }, "Groq transcription failed");
   }
 
-  // 2. HF tarteel (Quran-specialised, best for Arabic recitation)
+  // 2. HF tarteel (Quran-specialised, best for Arabic recitation — retries on 503)
   const tarteelResult = await transcribeHuggingFace(
     "tarteel-ai/whisper-large-v2-ar",
     audioBuffer,
@@ -152,7 +176,7 @@ export async function transcribeAudio(
   }
   logger.warn({ err: tarteelResult.error }, "tarteel failed, trying whisper-large-v3");
 
-  // 3. HF openai/whisper-large-v3 (general Arabic)
+  // 3. HF openai/whisper-large-v3 (general Arabic — retries on 503)
   const whisperResult = await transcribeHuggingFace(
     "openai/whisper-large-v3",
     audioBuffer,
@@ -164,6 +188,7 @@ export async function transcribeAudio(
   }
   logger.warn({ err: whisperResult.error }, "All transcription providers failed");
 
-  // 4. Graceful fallback — student sees a helpful message, not a crash
-  return { text: "", success: false, model: "none", error: "Transcription unavailable — please try again" };
+  // Aggregate error for diagnostics
+  const errors = [groqResult.error, tarteelResult.error, whisperResult.error].filter(Boolean).join(" | ");
+  return { text: "", success: false, model: "none", error: errors || "All transcription providers unavailable" };
 }

@@ -3,9 +3,10 @@
  *
  * Priority chain — fully automatic, zero student-visible config errors:
  *   1. Groq          (free tier, fast — llama3-8b-8192 / mixtral-8x7b)
- *   2. Pollinations  (100% free, no key, open-source models)
- *   3. HuggingFace   (free inference, no token required, rate-limited)
- *   4. Static        (built-in Islamic scholar fallback, always works)
+ *   2. Pollinations  (100% free, no key, open-source models — streaming)
+ *   3. Pollinations  (GET endpoint — simple, reliable, no streaming issues)
+ *   4. HuggingFace   (free inference, no token required, rate-limited)
+ *   5. Static        (built-in Islamic scholar fallback, always works)
  *
  * To unlock Groq: set GROQ_API_KEY env var (free at console.groq.com).
  * The app works perfectly without ANY key — providers auto-skip on failure.
@@ -56,7 +57,7 @@ function buildProviders(): Provider[] {
     );
   }
 
-  // 2. Pollinations — free, no key, open-source
+  // 2. Pollinations — free, no key, open-source (streaming)
   providers.push(
     {
       name: "pollinations-openai",
@@ -116,7 +117,7 @@ async function tryStreamProvider(
   };
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 45_000);
+  const timeout = setTimeout(() => controller.abort(), 40_000);
 
   try {
     const resp = await fetch(provider.baseUrl, {
@@ -180,8 +181,48 @@ async function tryStreamProvider(
 }
 
 /**
+ * Pollinations simple GET fallback — no streaming, returns plain text.
+ * Very reliable as a final free fallback before the static response.
+ */
+async function tryPollinationsGet(
+  messages: AIChatMessage[]
+): Promise<string | null> {
+  const lastUser = [...messages].reverse().find(m => m.role === "user")?.content ?? "";
+  const system = messages.find(m => m.role === "system")?.content ?? "";
+
+  if (!lastUser) return null;
+
+  const prompt = encodeURIComponent(lastUser);
+  const sys = encodeURIComponent(system.slice(0, 600));
+  const seed = Math.floor(Math.random() * 9999);
+
+  const url = `https://text.pollinations.ai/${prompt}?model=openai&system=${sys}&seed=${seed}`;
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 35_000);
+
+  try {
+    const resp = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeout);
+
+    if (!resp.ok) {
+      logger.warn({ status: resp.status }, "Pollinations GET failed");
+      return null;
+    }
+
+    const text = (await resp.text()).trim();
+    logger.info({ chars: text.length }, "Pollinations GET success");
+    return text.length > 10 ? text : null;
+  } catch (err: unknown) {
+    clearTimeout(timeout);
+    logger.warn({ err: String(err) }, "Pollinations GET error");
+    return null;
+  }
+}
+
+/**
  * Stream a chat completion through the provider chain.
- * Never throws — falls back to static text on total failure.
+ * Never throws — falls back through GET Pollinations then static text on total failure.
  */
 export async function streamAIChat(
   messages: AIChatMessage[],
@@ -198,7 +239,16 @@ export async function streamAIChat(
     if (ok) return true;
   }
 
-  // All providers exhausted — invoke static fallback
+  // All streaming providers failed — try simple GET Pollinations
+  logger.info("Trying Pollinations GET fallback");
+  const getResult = await tryPollinationsGet(messages);
+  if (getResult) {
+    callbacks.onChunk(getResult);
+    callbacks.onDone(getResult);
+    return true;
+  }
+
+  // Everything failed
   callbacks.onError("All providers unavailable");
   return false;
 }
@@ -238,9 +288,8 @@ export async function streamToResponse(
   );
 
   if (!ok || fullText.trim().length < 10) {
-    const fallback =
-      options.fallback ??
-      "Bismillah. I am your Al Bayaan AI Teacher. I am here to help you with Quran recitation, Tajweed rules, Hifdh memorization, and Islamic studies. Please ask me your question and I will do my best to assist you, insha'Allah.";
+    const lastUserMsg = [...messages].reverse().find(m => m.role === "user")?.content ?? "";
+    const fallback = options.fallback ?? buildContextualFallback(lastUserMsg);
     res.write(`data: ${JSON.stringify({ content: fallback })}\n\n`);
     fullText = fallback;
   }
@@ -248,4 +297,27 @@ export async function streamToResponse(
   res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
   res.end();
   return fullText;
+}
+
+/**
+ * Build a contextual fallback response based on what the user asked,
+ * so it never returns the exact same static message every time.
+ */
+function buildContextualFallback(userMessage: string): string {
+  const msg = userMessage.toLowerCase();
+
+  if (msg.includes("tajweed") || msg.includes("ghunnah") || msg.includes("madd") || msg.includes("ikhfa")) {
+    return "Tajweed is the science of reciting the Quran correctly. Key rules include Ikhfa (hiding the nun sound), Ghunnah (nasal sounds), Idgham (merging letters), and Madd (lengthening vowels). I recommend starting with the Noon Sakinah rules before moving to Madd. Which specific rule would you like to explore?";
+  }
+  if (msg.includes("hifdh") || msg.includes("memori") || msg.includes("memorize")) {
+    return "For Quran memorization, consistency is key. Recite new verses in Fajr when the mind is fresh, and review old portions in every prayer. The rule of 3-3-3 works well: memorize 3 new verses, review the last 3 pages, and revise a Juz from older memorization. How many verses are you currently memorizing per day?";
+  }
+  if (msg.includes("arabic") || msg.includes("word") || msg.includes("grammar")) {
+    return "Classical Arabic has a rich grammar system built around three-letter roots. Understanding root patterns helps you decode Quranic vocabulary. Start with common patterns like فَعَلَ (verb patterns) and فَاعِل (doer patterns). Would you like to start with vocabulary, grammar, or Quranic word meanings?";
+  }
+  if (msg.includes("surah") || msg.includes("ayah") || msg.includes("verse") || msg.includes("quran")) {
+    return "The Quran is the direct word of Allah, revealed to Prophet Muhammad ﷺ over 23 years. It contains 114 Surahs and 6236 Ayat. Each Surah has a unique theme and purpose. Regular recitation with reflection (Tadabbur) brings enormous blessing. Which Surah would you like to study today?";
+  }
+
+  return "Bismillah. I am your Al Bayaan AI Teacher, here to help with Quran recitation, Tajweed rules, Hifdh memorization, and Islamic knowledge. The AI response service is temporarily busy — please ask your question again and I will answer with full detail, insha'Allah.";
 }

@@ -157,6 +157,13 @@ function AvatarFace({ isSpeaking, isThinking, mode }: { isSpeaking: boolean; isT
   );
 }
 
+const SR_CLASS_VT: (new () => SpeechRecognition) | null =
+  typeof window !== "undefined"
+    ? ((window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition ?? null)
+    : null;
+
+const BASE_PATH = (import.meta.env.BASE_URL || "").replace(/\/$/, "");
+
 export default function VideoTeacher() {
   const { toast } = useToast();
   const [mode, setMode] = useState<TeacherMode>("quran");
@@ -169,6 +176,8 @@ export default function VideoTeacher() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [ttsEnabled, setTtsEnabled] = useState(true);
 
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const recognizedTextRef = useRef("");
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -210,7 +219,7 @@ export default function VideoTeacher() {
       const ctrl = new AbortController();
       abortRef.current = ctrl;
       const history = messages.slice(-8).map(m => ({ role: m.role, content: m.content }));
-      const r = await fetch("/api/video-teacher/message", {
+      const r = await fetch(`${BASE_PATH}/api/video-teacher/message`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -257,29 +266,92 @@ export default function VideoTeacher() {
     }
   }, [isStreaming, messages, mode, lang, speak, toast]);
 
+  const sendVoiceText = useCallback(async (spokenText: string) => {
+    if (!spokenText.trim()) return;
+    setIsProcessing(false);
+    sendMessage(spokenText);
+  }, [sendMessage]);
+
   const startRecording = async () => {
     if (isRecording || isProcessing) return;
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mimeType = ["audio/webm;codecs=opus", "audio/webm", "audio/ogg"].find(t => MediaRecorder.isTypeSupported(t)) || "";
-      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
-      chunksRef.current = [];
-      recorder.ondataavailable = e => { if (e.data.size > 0) chunksRef.current.push(e.data); };
-      recorder.start(100);
-      mediaRecorderRef.current = recorder;
-      setIsRecording(true);
-      stopSpeaking();
-    } catch {
-      toast({ title: "Microphone Error", description: "Could not access microphone.", variant: "destructive" });
+    stopSpeaking();
+
+    if (SR_CLASS_VT) {
+      recognizedTextRef.current = "";
+      const recognition = new SR_CLASS_VT();
+      const langCode = LANGS.find(l => l.value === lang)?.code ?? "en-US";
+      recognition.lang = langCode;
+      recognition.continuous = true;
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      recognition.onresult = (e) => {
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          if (e.results[i].isFinal) {
+            recognizedTextRef.current += e.results[i][0].transcript + " ";
+          }
+        }
+      };
+
+      recognition.onend = () => {
+        setIsRecording(false);
+        const recognized = recognizedTextRef.current.trim();
+        if (recognized) {
+          sendVoiceText(recognized);
+        } else {
+          setIsProcessing(false);
+          toast({ title: "No speech detected", description: "Nothing was heard. Try speaking louder or use the text box.", variant: "destructive" });
+        }
+      };
+
+      recognition.onerror = (e: any) => {
+        const code: string = e.error || "";
+        setIsRecording(false);
+        setIsProcessing(false);
+        if (code !== "aborted") {
+          toast({ title: "Voice error", description: `Could not recognize speech (${code}). Use the text box.`, variant: "destructive" });
+        }
+      };
+
+      try {
+        recognition.start();
+        recognitionRef.current = recognition;
+        setIsRecording(true);
+      } catch {
+        toast({ title: "Microphone Error", description: "Could not start voice recognition.", variant: "destructive" });
+      }
+    } else {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const mimeType = ["audio/webm;codecs=opus", "audio/webm", "audio/ogg"].find(t => MediaRecorder.isTypeSupported(t)) || "";
+        const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+        chunksRef.current = [];
+        recorder.ondataavailable = e => { if (e.data.size > 0) chunksRef.current.push(e.data); };
+        recorder.start(100);
+        mediaRecorderRef.current = recorder;
+        setIsRecording(true);
+      } catch {
+        toast({ title: "Microphone Error", description: "Could not access microphone.", variant: "destructive" });
+      }
     }
   };
 
   const stopRecording = useCallback(async () => {
-    if (!mediaRecorderRef.current || !isRecording) return;
+    if (!isRecording) return;
+
+    if (SR_CLASS_VT && recognitionRef.current) {
+      setIsProcessing(true);
+      recognitionRef.current.stop();
+      recognitionRef.current = null;
+      return;
+    }
+
+    if (!mediaRecorderRef.current) return;
     setIsRecording(false);
     setIsProcessing(true);
     const recorder = mediaRecorderRef.current;
     await new Promise<void>(r => { recorder.onstop = () => r(); recorder.stop(); recorder.stream.getTracks().forEach(t => t.stop()); });
+    mediaRecorderRef.current = null;
     if (chunksRef.current.length === 0) { setIsProcessing(false); return; }
 
     const blob = new Blob(chunksRef.current, { type: chunksRef.current[0]?.type || "audio/webm" });
@@ -292,7 +364,7 @@ export default function VideoTeacher() {
 
     try {
       const audioBase64 = await toBase64(blob);
-      const r = await fetch("/api/voice-teacher/message", {
+      const r = await fetch(`${BASE_PATH}/api/voice-teacher/message`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -336,11 +408,11 @@ export default function VideoTeacher() {
       }
       if (fullResponse) speak(fullResponse);
     } catch {
-      toast({ title: "Error", description: "Could not process audio.", variant: "destructive" });
+      toast({ title: "Error", description: "Could not process audio. Try the text box.", variant: "destructive" });
     } finally {
       setIsProcessing(false);
     }
-  }, [isRecording, messages, speak, toast]);
+  }, [isRecording, messages, speak, toast, sendVoiceText]);
 
   const currentMode = TEACHER_MODES.find(m => m.value === mode)!;
   const colorClass: Record<string, string> = {
