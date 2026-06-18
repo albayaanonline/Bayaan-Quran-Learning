@@ -21,6 +21,7 @@ import certificatesRouter from "./certificates";
 import cmsRouter from "./cms";
 import parentRouter from "./parent";
 import analyticsRouter from "./analytics";
+import notificationsRouter from "./notifications";
 
 const router = Router();
 
@@ -46,5 +47,6 @@ router.use(certificatesRouter);
 router.use(cmsRouter);
 router.use(parentRouter);
 router.use(analyticsRouter);
+router.use(notificationsRouter);
 
 export default router;

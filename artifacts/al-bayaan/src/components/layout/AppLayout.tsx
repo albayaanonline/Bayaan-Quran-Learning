@@ -4,17 +4,21 @@ import {
   BookOpen, LayoutDashboard, LineChart, Bookmark, Award, Trophy,
   LogOut, Menu, BotMessageSquare, Brain, Mic, CalendarDays,
   BookMarked, Shield, GraduationCap, Library, Users, ClipboardList,
-  BarChart3, FolderOpen,
+  BarChart3, FolderOpen, Globe, PenSquare,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useGetProfile } from "@workspace/api-client-react";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import NotificationBell from "@/components/NotificationBell";
+import { useI18n, type Locale } from "@/lib/i18n";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const { signOut } = useClerk();
   const { data: profile } = useGetProfile();
+  const { locale, setLocale, t, isRTL } = useI18n();
 
   const xpLevel = Math.floor((profile?.xp ?? 0) / 500) + 1;
 
@@ -22,62 +26,80 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     {
       label: "Learn",
       items: [
-        { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-        { href: "/learn", label: "Quran", icon: BookOpen },
-        { href: "/hifdh", label: "Hifdh Tracker", icon: Brain },
-        { href: "/library", label: "Library", icon: Library },
-        { href: "/cms", label: "Resources", icon: FolderOpen },
+        { href: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboard },
+        { href: "/learn", label: t("nav.quran"), icon: BookOpen },
+        { href: "/hifdh", label: t("nav.hifdh"), icon: Brain },
+        { href: "/library", label: t("nav.library"), icon: Library },
+        { href: "/cms", label: t("nav.resources"), icon: FolderOpen },
       ],
     },
     {
       label: "AI Teachers",
       items: [
-        { href: "/teacher", label: "AI Teacher", icon: BotMessageSquare },
-        { href: "/tajweed-teacher", label: "Tajweed Tutor", icon: BookMarked },
-        { href: "/voice-teacher", label: "Voice Teacher", icon: Mic, badge: "AI" },
-        { href: "/study-planner", label: "Study Planner", icon: CalendarDays },
+        { href: "/teacher", label: t("nav.aiTeacher"), icon: BotMessageSquare },
+        { href: "/tajweed-teacher", label: t("nav.tajweedTutor"), icon: BookMarked },
+        { href: "/voice-teacher", label: t("nav.voiceTeacher"), icon: Mic, badge: "AI" },
+        { href: "/study-planner", label: t("nav.studyPlanner"), icon: CalendarDays },
       ],
     },
     {
       label: "Progress",
       items: [
-        { href: "/progress", label: "My Progress", icon: LineChart },
-        { href: "/analytics", label: "Analytics", icon: BarChart3, badge: "NEW" },
-        { href: "/bookmarks", label: "Bookmarks", icon: Bookmark },
-        { href: "/achievements", label: "Achievements", icon: Award },
-        { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
+        { href: "/progress", label: t("nav.progress"), icon: LineChart },
+        { href: "/analytics", label: t("nav.analytics"), icon: BarChart3, badge: "NEW" },
+        { href: "/bookmarks", label: t("nav.bookmarks"), icon: Bookmark },
+        { href: "/achievements", label: t("nav.achievements"), icon: Award },
+        { href: "/leaderboard", label: t("nav.leaderboard"), icon: Trophy },
       ],
     },
     {
       label: "Exams",
       items: [
-        { href: "/exams", label: "Exam Centre", icon: ClipboardList, badge: "NEW" },
-        { href: "/certificates", label: "Certificates", icon: Award },
+        { href: "/exams", label: t("nav.examCentre"), icon: ClipboardList },
+        { href: "/certificates", label: t("nav.certificates"), icon: Award },
       ],
     },
     {
       label: "Family",
       items: [
-        { href: "/parent", label: "Parent Dashboard", icon: Users, badge: "NEW" },
+        { href: "/parent", label: t("nav.parentDashboard"), icon: Users },
       ],
     },
     {
       label: "Admin",
       items: [
-        { href: "/teacher-dashboard", label: "Teacher View", icon: GraduationCap },
-        { href: "/admin", label: "Admin", icon: Shield },
+        { href: "/exam-builder", label: t("nav.examBuilder"), icon: PenSquare, badge: "NEW" },
+        { href: "/teacher-dashboard", label: t("nav.teacherView"), icon: GraduationCap },
+        { href: "/admin", label: t("nav.admin"), icon: Shield },
       ],
     },
   ];
 
   const handleSignOut = () => signOut({ redirectUrl: "/" });
 
+  const LanguageSwitcher = () => (
+    <div className="flex items-center gap-1.5">
+      <Globe className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+      <Select value={locale} onValueChange={(v) => setLocale(v as Locale)}>
+        <SelectTrigger className="h-7 w-auto min-w-0 border-0 bg-transparent text-xs text-muted-foreground hover:text-emerald-700 focus:ring-0 px-1 gap-1">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="en">🇬🇧 English</SelectItem>
+          <SelectItem value="ar">🇸🇦 العربية</SelectItem>
+          <SelectItem value="so">🇸🇴 Somali</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+  );
+
   const NavContent = () => (
-    <div className="flex h-full flex-col gap-2">
-      <div className="flex h-14 items-center px-4 pt-3">
+    <div className={`flex h-full flex-col gap-2 ${isRTL ? "direction-rtl" : ""}`}>
+      <div className="flex h-14 items-center px-4 pt-3 justify-between">
         <Link href="/dashboard" className="flex items-center gap-2">
           <img src="/logo.svg" alt="Al Bayaan" className="h-8 w-auto" />
         </Link>
+        <NotificationBell />
       </div>
 
       <div className="flex-1 overflow-auto py-1">
@@ -114,8 +136,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </nav>
       </div>
 
-      <div className="p-3 border-t border-emerald-100">
-        <div className="mb-2.5 flex items-center gap-2.5">
+      <div className="p-3 border-t border-emerald-100 space-y-2">
+        <LanguageSwitcher />
+        <div className="flex items-center gap-2.5">
           {profile?.avatarUrl ? (
             <img src={profile.avatarUrl} alt="Avatar" className="h-8 w-8 rounded-full shrink-0" />
           ) : (
@@ -130,14 +153,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
         <Button variant="outline" size="sm" className="w-full justify-start gap-2 text-xs h-8" onClick={handleSignOut}>
           <LogOut className="h-3.5 w-3.5" />
-          Sign Out
+          {t("nav.signOut")}
         </Button>
       </div>
     </div>
   );
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-background/50 md:flex-row">
+    <div className={`flex min-h-screen w-full flex-col bg-background/50 md:flex-row ${isRTL ? "font-arabic" : ""}`}>
       <aside className="hidden w-56 flex-col border-r bg-background md:flex sticky top-0 h-screen">
         <NavContent />
       </aside>
@@ -155,12 +178,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               <NavContent />
             </SheetContent>
           </Sheet>
-          <div className="flex w-full items-center justify-center pr-10">
-            <img src="/logo.svg" alt="Al Bayaan" className="h-6 w-auto" />
+          <div className="flex w-full items-center justify-between pr-2">
+            <img src="/logo.svg" alt="Al Bayaan" className="h-6 w-auto mx-auto" />
+            <NotificationBell />
           </div>
         </header>
 
-        <main className="flex-1 p-4 md:p-6 lg:p-8">
+        <main className={`flex-1 p-4 md:p-6 lg:p-8 ${isRTL ? "text-right" : ""}`}>
           {children}
         </main>
       </div>

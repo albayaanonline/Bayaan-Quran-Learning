@@ -1,10 +1,10 @@
 ---
-name: Al Bayaan Phase 3-5 features
-description: All major features built across Phases 3, 4, and 5 of the Al Bayaan AI Academy project
+name: Al Bayaan Phase 3-6 features
+description: All major features built across Phases 3, 4, 5, and 6 of the Al Bayaan AI Academy project
 ---
 
 ## Routes registered (api-server/src/routes/index.ts)
-All routers imported and mounted: health, profile, surahs, progress, recordings, bookmarks, achievements, dashboard, leaderboard, transcribe, teacher, hifdh, voice-teacher, study-planner, admin, teacher-dashboard, library, exams, certificates, cms, parent, analytics.
+All routers imported and mounted: health, profile, surahs, progress, recordings, bookmarks, achievements, dashboard, leaderboard, transcribe, teacher, hifdh, voice-teacher, study-planner, admin, teacher-dashboard, library, exams, certificates, cms, parent, analytics, notifications.
 
 ## Admin guard
 ADMIN_USER_IDS env var (comma-separated Clerk user IDs). If env var is empty in dev, all authenticated users pass (dev convenience). Set it in production via environment-secrets skill.
@@ -44,5 +44,29 @@ All added to App.tsx router + AppLayout.tsx navigation:
 ## Phase 5 new DB tables
 exams, exam_results, certificates, cms_content, parent_profiles, student_analytics — all migrated. Schema files in lib/db/src/schema/.
 
-## Phase 5 new API routes
-exams.ts, certificates.ts, cms.ts, parent.ts, analytics.ts — all in artifacts/api-server/src/routes/.
+## Phase 6 features (June 2026)
+### 1. Exam Builder UI (/exam-builder)
+New teacher page with full CRUD — create/edit/publish/delete exams. Tabs: Details / Questions / Settings. Supports MCQ (radio correct answer), Short Answer, Recitation question types. Auto-calc marks from individual question marks. PATCH /api/exams/:id + DELETE /api/exams/:id added.
+
+### 2. Auto-certificate on exam pass
+In exams.ts submit endpoint: on `passed=true`, auto-inserts into certificates table with unique verification code. Returns `certificate` in response body. Also fires 2 notifications (exam_passed + certificate_earned).
+
+### 3. Notifications system
+DB table: notifications (userId, type, title, message, data jsonb, isRead, createdAt). Migrated.
+API: GET /notifications, POST /notifications, PATCH /notifications/:id/read, PATCH /notifications/read-all, DELETE /notifications/:id.
+Internal helper: createNotification() in routes/notifications.ts — used from exams.ts.
+Frontend: NotificationBell component with animated dropdown, unread badge, mark-read, delete, auto-polls every 30s.
+
+### 4. Security hardening
+helmet + express-rate-limit added to app.ts.
+- General: 300 req/15min per IP
+- AI routes (teacher, voice-teacher, study-planner, hifdh/ai-coach, exams/evaluate): 20 req/min
+- Request body limit: 10mb JSON, 2mb urlencoded
+
+### 5. Multi-language (i18n)
+I18nProvider context at artifacts/al-bayaan/src/lib/i18n.tsx.
+Languages: EN (English), AR (العربية, RTL), SO (Somali).
+Translations: ~40 keys covering all nav items + common UI strings.
+Stored in localStorage. Updates document.dir = "rtl" for Arabic.
+Language switcher (globe icon + select) in AppLayout.tsx sidebar bottom.
+NotificationBell in sidebar top (desktop) and mobile header.

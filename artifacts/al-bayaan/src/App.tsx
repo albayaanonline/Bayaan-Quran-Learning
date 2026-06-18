@@ -6,6 +6,7 @@ import { Switch, Route, useLocation, Router as WouterRouter, Redirect } from "wo
 import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { I18nProvider } from "@/lib/i18n";
 
 import Landing from "./pages/landing";
 import Dashboard from "./pages/dashboard";
@@ -29,6 +30,7 @@ import Exams from "./pages/exams";
 import Certificates from "./pages/certificates";
 import Analytics from "./pages/analytics";
 import CMS from "./pages/cms";
+import ExamBuilder from "./pages/exam-builder";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient();
@@ -182,6 +184,7 @@ function ClerkProviderWithRoutes() {
           <Route path="/parent" component={() => <ProtectedRoute component={ParentDashboard} />} />
           <Route path="/admin" component={() => <ProtectedRoute component={Admin} />} />
           <Route path="/teacher-dashboard" component={() => <ProtectedRoute component={TeacherDashboard} />} />
+          <Route path="/exam-builder" component={() => <ProtectedRoute component={ExamBuilder} />} />
           <Route component={NotFound} />
         </Switch>
       </QueryClientProvider>
@@ -191,12 +194,14 @@ function ClerkProviderWithRoutes() {
 
 function App() {
   return (
-    <TooltipProvider>
-      <WouterRouter base={basePath}>
-        <ClerkProviderWithRoutes />
-      </WouterRouter>
-      <Toaster />
-    </TooltipProvider>
+    <I18nProvider>
+      <TooltipProvider>
+        <WouterRouter base={basePath}>
+          <ClerkProviderWithRoutes />
+        </WouterRouter>
+        <Toaster />
+      </TooltipProvider>
+    </I18nProvider>
   );
 }
 
