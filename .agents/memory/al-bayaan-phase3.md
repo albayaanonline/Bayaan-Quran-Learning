@@ -1,10 +1,10 @@
 ---
-name: Al Bayaan Phase 3 features
-description: All Phase 3 and 4 features built — routes, pages, PWA config, admin guard, voice teacher architecture
+name: Al Bayaan Phase 3-5 features
+description: All major features built across Phases 3, 4, and 5 of the Al Bayaan AI Academy project
 ---
 
 ## Routes registered (api-server/src/routes/index.ts)
-All routers imported and mounted: health, profile, surahs, progress, recordings, bookmarks, achievements, dashboard, leaderboard, transcribe, teacher, hifdh, voice-teacher, study-planner, admin, teacher-dashboard.
+All routers imported and mounted: health, profile, surahs, progress, recordings, bookmarks, achievements, dashboard, leaderboard, transcribe, teacher, hifdh, voice-teacher, study-planner, admin, teacher-dashboard, library, exams, certificates, cms, parent, analytics.
 
 ## Admin guard
 ADMIN_USER_IDS env var (comma-separated Clerk user IDs). If env var is empty in dev, all authenticated users pass (dev convenience). Set it in production via environment-secrets skill.
@@ -32,3 +32,17 @@ State machine: idle → recording → preview → submitting. Web Audio API (Aud
 
 ## Qari player in surah.tsx
 6 Qaris defined with real metadata (name, nameAr, country, style). Dropdown Qari picker anchored below the selector button. Audio URL uses selectedQariId for everyayah.com path.
+
+## Phase 5 new pages (June 2026)
+All added to App.tsx router + AppLayout.tsx navigation:
+- /exams — Exam Centre (timer, MCQ + short answer, AI evaluation SSE stream)
+- /certificates — view/download/share + public verify-by-code panel
+- /analytics — score trends, Tajweed accuracy chart, surah completion, hifdh stats
+- /cms — Islamic Library (search/filter, add content dialog, file links)
+- /parent — Parent Dashboard (link children by Clerk ID, per-child progress + weak areas)
+
+## Phase 5 new DB tables
+exams, exam_results, certificates, cms_content, parent_profiles, student_analytics — all migrated. Schema files in lib/db/src/schema/.
+
+## Phase 5 new API routes
+exams.ts, certificates.ts, cms.ts, parent.ts, analytics.ts — all in artifacts/api-server/src/routes/.

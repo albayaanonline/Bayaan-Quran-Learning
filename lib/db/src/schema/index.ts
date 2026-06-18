@@ -8,3 +8,7 @@ export * from "./hifdh_progress";
 export * from "./conversations";
 export * from "./messages";
 export * from "./library";
+export * from "./exams";
+export * from "./certificates";
+export * from "./cms_content";
+export * from "./parent_profiles";

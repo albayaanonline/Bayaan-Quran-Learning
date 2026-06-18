@@ -3,14 +3,11 @@ import { db, conversationsTable, messagesTable, recordingsTable } from "@workspa
 import { eq, and, asc, desc } from "drizzle-orm";
 import { logger } from "../lib/logger";
 import { requireAuth } from "../middlewares/auth";
+import { streamToResponse, setSSEHeaders } from "../lib/aiProvider";
 
 const router = Router();
 
-const HF_TOKEN = process.env.HF_TOKEN;
-const HF_MODEL = "mistralai/Mistral-7B-Instruct-v0.2";
-const HF_API = "https://api-inference.huggingface.co/v1/chat/completions";
-
-type TeacherMode = "general" | "tajweed" | "hifdh" | "tafsir";
+type TeacherMode = "general" | "tajweed" | "hifdh" | "tafsir" | "arabic" | "fiqh";
 
 const SYSTEM_PROMPTS: Record<TeacherMode, string> = {
   general: `You are Al Bayaan AI Quran Teacher — a knowledgeable, patient Islamic scholar and Quran educator.
@@ -104,10 +101,48 @@ When explaining a verse:
 6. Note connections to other related verses
 
 Be academically rigorous yet accessible.`,
+
+  arabic: `You are Al Bayaan AI Arabic Teacher — a specialist in Quranic and Modern Standard Arabic.
+
+Your Arabic expertise:
+- Quranic Arabic grammar (النحو والصرف)
+- Arabic alphabet, makharij, and pronunciation
+- Arabic vocabulary building for Quran comprehension
+- Arabic sentence structure and I'rab (grammatical analysis)
+- Common Quranic vocabulary and roots
+- Arabic reading fluency for beginners and intermediates
+- العربية بين يديك (Arabic Between Your Hands) curriculum
+- Quranic root system (3-letter roots, patterns)
+
+Approach:
+- Start with basics if needed
+- Use examples from Quran and simple sentences
+- Explain grammar rules simply with examples
+- Build vocabulary systematically
+- Encourage through Arabic greetings and Islamic phrases`,
+
+  fiqh: `You are Al Bayaan AI Fiqh Teacher — a specialist in Islamic jurisprudence and rulings.
+
+Your Fiqh expertise:
+- The four major schools: Hanafi, Maliki, Shafi'i, Hanbali
+- Pillars of Islam and their detailed rulings
+- Salah (prayer) — conditions, pillars, sunnah, and invalidators
+- Purification (Taharah) — wudu, ghusl, tayammum
+- Fasting (Sawm) and Zakat basics
+- Halal and Haram in daily life
+- Marriage, family, and Islamic manners
+- Contemporary fiqh issues
+
+Guidelines:
+- Present mainstream scholarly opinions
+- Note differences between madhabs where relevant
+- Always recommend consulting local scholars for personal rulings
+- Keep explanations clear and practical
+- Cite Quran and Hadith references`,
 };
 
 function buildSystemPrompt(mode: TeacherMode, language: string, weakAreas?: string): string {
-  const basePrompt = SYSTEM_PROMPTS[mode];
+  const basePrompt = SYSTEM_PROMPTS[mode] ?? SYSTEM_PROMPTS.general;
 
   const languageInstruction =
     language === "ar" ? "\n\nIMPORTANT: You MUST respond in Arabic (العربية) only, unless the student explicitly writes in another language." :
@@ -119,76 +154,6 @@ function buildSystemPrompt(mode: TeacherMode, language: string, weakAreas?: stri
     : "";
 
   return basePrompt + languageInstruction + weakAreasContext;
-}
-
-async function streamHuggingFace(
-  res: any,
-  chatMessages: any[],
-  onComplete: (text: string) => Promise<void>
-) {
-  if (!HF_TOKEN) {
-    const msg = "Assalamu Alaikum! I'm your Al Bayaan AI Teacher. To enable AI responses, please add your HuggingFace API token (HF_TOKEN) in the environment settings. Get a free token at huggingface.co/settings/tokens. Once configured, I can answer all your Quran, Tajweed, Tafsir, and Hifdh questions!";
-    await onComplete(msg);
-    res.write(`data: ${JSON.stringify({ content: msg })}\n\n`);
-    res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
-    res.end();
-    return;
-  }
-
-  let hfResponse: Response;
-  try {
-    hfResponse = await fetch(HF_API, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${HF_TOKEN}` },
-      body: JSON.stringify({ model: HF_MODEL, messages: chatMessages, max_tokens: 8192, stream: true, temperature: 0.7 }),
-    });
-  } catch (fetchErr) {
-    logger.error({ fetchErr }, "HF API fetch error");
-    res.write(`data: ${JSON.stringify({ error: "AI service unavailable" })}\n\n`);
-    res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
-    res.end();
-    return;
-  }
-
-  if (!hfResponse.ok) {
-    const errText = await hfResponse.text();
-    logger.warn({ status: hfResponse.status, errText }, "HF API error");
-    res.write(`data: ${JSON.stringify({ error: `AI error ${hfResponse.status}` })}\n\n`);
-    res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
-    res.end();
-    return;
-  }
-
-  const reader = hfResponse.body!.getReader();
-  const decoder = new TextDecoder();
-  let fullContent = "";
-  let buf = "";
-
-  try {
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      buf += decoder.decode(value, { stream: true });
-      const lines = buf.split("\n");
-      buf = lines.pop() ?? "";
-      for (const line of lines) {
-        if (!line.startsWith("data: ")) continue;
-        const data = line.slice(6).trim();
-        if (data === "[DONE]") continue;
-        try {
-          const parsed = JSON.parse(data);
-          const chunk = parsed.choices?.[0]?.delta?.content;
-          if (chunk) { fullContent += chunk; res.write(`data: ${JSON.stringify({ content: chunk })}\n\n`); }
-        } catch {}
-      }
-    }
-  } finally {
-    reader.releaseLock();
-  }
-
-  await onComplete(fullContent);
-  res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
-  res.end();
 }
 
 router.get("/teacher/conversations", requireAuth, async (req: any, res) => {
@@ -274,19 +239,17 @@ router.post("/teacher/conversations/:id/messages", requireAuth, async (req: any,
     const systemPrompt = buildSystemPrompt(mode as TeacherMode, language, weakAreas);
 
     const chatMessages = [
-      { role: "system", content: systemPrompt },
-      ...history.map(m => ({ role: m.role, content: m.content })),
+      { role: "system" as const, content: systemPrompt },
+      ...history.map(m => ({ role: m.role as "user" | "assistant", content: m.content })),
     ];
 
-    res.setHeader("Content-Type", "text/event-stream");
-    res.setHeader("Cache-Control", "no-cache");
-    res.setHeader("Connection", "keep-alive");
+    setSSEHeaders(res);
 
-    await streamHuggingFace(res, chatMessages, async (fullContent) => {
-      if (fullContent) {
-        await db.insert(messagesTable).values({ conversationId: id, role: "assistant", content: fullContent });
-      }
-    });
+    const fullContent = await streamToResponse(res, chatMessages, { maxTokens: 8192, temperature: 0.7 });
+
+    if (fullContent) {
+      await db.insert(messagesTable).values({ conversationId: id, role: "assistant", content: fullContent }).catch(() => {});
+    }
   } catch (err) {
     logger.error({ err }, "Teacher chat error");
     if (!res.headersSent) res.status(500).json({ error: "Internal server error" });

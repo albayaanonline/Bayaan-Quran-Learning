@@ -3,7 +3,8 @@ import { useClerk } from "@clerk/react";
 import {
   BookOpen, LayoutDashboard, LineChart, Bookmark, Award, Trophy,
   LogOut, Menu, BotMessageSquare, Brain, Mic, CalendarDays,
-  BookMarked, Shield, GraduationCap, Library,
+  BookMarked, Shield, GraduationCap, Library, Users, ClipboardList,
+  BarChart3, FolderOpen,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -25,10 +26,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         { href: "/learn", label: "Quran", icon: BookOpen },
         { href: "/hifdh", label: "Hifdh Tracker", icon: Brain },
         { href: "/library", label: "Library", icon: Library },
+        { href: "/cms", label: "Resources", icon: FolderOpen },
       ],
     },
     {
-      label: "AI Tools",
+      label: "AI Teachers",
       items: [
         { href: "/teacher", label: "AI Teacher", icon: BotMessageSquare },
         { href: "/tajweed-teacher", label: "Tajweed Tutor", icon: BookMarked },
@@ -40,9 +42,23 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       label: "Progress",
       items: [
         { href: "/progress", label: "My Progress", icon: LineChart },
+        { href: "/analytics", label: "Analytics", icon: BarChart3, badge: "NEW" },
         { href: "/bookmarks", label: "Bookmarks", icon: Bookmark },
         { href: "/achievements", label: "Achievements", icon: Award },
         { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
+      ],
+    },
+    {
+      label: "Exams",
+      items: [
+        { href: "/exams", label: "Exam Centre", icon: ClipboardList, badge: "NEW" },
+        { href: "/certificates", label: "Certificates", icon: Award },
+      ],
+    },
+    {
+      label: "Family",
+      items: [
+        { href: "/parent", label: "Parent Dashboard", icon: Users, badge: "NEW" },
       ],
     },
     {
@@ -85,7 +101,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                       <item.icon className="h-4 w-4 shrink-0" />
                       <span className="flex-1 truncate">{item.label}</span>
                       {(item as any).badge && (
-                        <Badge className="text-[10px] px-1.5 py-0 bg-emerald-600 text-white border-0 rounded-full leading-4 h-4">
+                        <Badge className={`text-[10px] px-1.5 py-0 border-0 rounded-full leading-4 h-4 ${(item as any).badge === "NEW" ? "bg-blue-500 text-white" : "bg-emerald-600 text-white"}`}>
                           {(item as any).badge}
                         </Badge>
                       )}

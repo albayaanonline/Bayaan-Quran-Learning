@@ -16,6 +16,11 @@ import studyPlannerRouter from "./study-planner";
 import adminRouter from "./admin";
 import teacherDashboardRouter from "./teacher-dashboard";
 import libraryRouter from "./library";
+import examsRouter from "./exams";
+import certificatesRouter from "./certificates";
+import cmsRouter from "./cms";
+import parentRouter from "./parent";
+import analyticsRouter from "./analytics";
 
 const router = Router();
 
@@ -36,5 +41,10 @@ router.use(studyPlannerRouter);
 router.use(adminRouter);
 router.use(teacherDashboardRouter);
 router.use(libraryRouter);
+router.use(examsRouter);
+router.use(certificatesRouter);
+router.use(cmsRouter);
+router.use(parentRouter);
+router.use(analyticsRouter);
 
 export default router;

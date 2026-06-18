@@ -1,0 +1,25 @@
+import { pgTable, serial, text, integer, boolean, timestamp, jsonb } from "drizzle-orm/pg-core";
+
+export const cmsContentTable = pgTable("cms_content", {
+  id: serial("id").primaryKey(),
+  type: text("type").notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  subject: text("subject").notNull().default("quran"),
+  level: text("level").notNull().default("all"),
+  fileUrl: text("file_url"),
+  fileName: text("file_name"),
+  fileSize: integer("file_size"),
+  fileMimeType: text("file_mime_type"),
+  thumbnailUrl: text("thumbnail_url"),
+  content: text("content"),
+  metadata: jsonb("metadata"),
+  tags: text("tags").array(),
+  isPublished: boolean("is_published").notNull().default(false),
+  isFeatured: boolean("is_featured").notNull().default(false),
+  viewCount: integer("view_count").notNull().default(0),
+  downloadCount: integer("download_count").notNull().default(0),
+  createdBy: text("created_by").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});

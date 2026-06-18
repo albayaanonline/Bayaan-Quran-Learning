@@ -24,6 +24,11 @@ import VoiceTeacher from "./pages/voice-teacher";
 import Admin from "./pages/admin";
 import TeacherDashboard from "./pages/teacher-dashboard";
 import Library from "./pages/library";
+import ParentDashboard from "./pages/parent-dashboard";
+import Exams from "./pages/exams";
+import Certificates from "./pages/certificates";
+import Analytics from "./pages/analytics";
+import CMS from "./pages/cms";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient();
@@ -170,6 +175,11 @@ function ClerkProviderWithRoutes() {
           <Route path="/tajweed-teacher" component={() => <ProtectedRoute component={TajweedTeacher} />} />
           <Route path="/study-planner" component={() => <ProtectedRoute component={StudyPlanner} />} />
           <Route path="/voice-teacher" component={() => <ProtectedRoute component={VoiceTeacher} />} />
+          <Route path="/exams" component={() => <ProtectedRoute component={Exams} />} />
+          <Route path="/certificates" component={() => <ProtectedRoute component={Certificates} />} />
+          <Route path="/analytics" component={() => <ProtectedRoute component={Analytics} />} />
+          <Route path="/cms" component={() => <ProtectedRoute component={CMS} />} />
+          <Route path="/parent" component={() => <ProtectedRoute component={ParentDashboard} />} />
           <Route path="/admin" component={() => <ProtectedRoute component={Admin} />} />
           <Route path="/teacher-dashboard" component={() => <ProtectedRoute component={TeacherDashboard} />} />
           <Route component={NotFound} />
