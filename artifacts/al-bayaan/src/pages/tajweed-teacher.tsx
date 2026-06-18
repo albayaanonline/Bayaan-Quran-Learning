@@ -5,13 +5,28 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Send, Plus, Trash2, BotMessageSquare, User, Loader2, BookMarked, ChevronRight } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Send, Plus, Trash2, BotMessageSquare, User, Loader2, BookMarked, ChevronRight, AlertCircle, TrendingUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 
 interface Message {
   role: string;
   content: string;
+}
+
+interface WeakArea {
+  rule: string;
+  missedCount: number;
+  percentage: number;
+}
+
+interface WeakAreasData {
+  avgScore: number;
+  totalRecordings: number;
+  weakAreas: WeakArea[];
+  frequentWordErrors: string[];
+  message: string;
 }
 
 const TAJWEED_RULES = [
@@ -55,6 +70,89 @@ function MessageBubble({ msg }: { msg: Message }) {
         <p className="whitespace-pre-wrap">{msg.content}</p>
       </div>
     </motion.div>
+  );
+}
+
+const WEAKNESS_COLORS = ["bg-red-100 text-red-700 border-red-200", "bg-amber-100 text-amber-700 border-amber-200", "bg-orange-100 text-orange-700 border-orange-200"];
+
+function WeaknessPanel({ onPracticeRule }: { onPracticeRule: (rule: string) => void }) {
+  const [data, setData] = useState<WeakAreasData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/teacher/weak-areas", { credentials: "include" })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => setData(d))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return (
+    <div className="space-y-2 p-3">
+      <Skeleton className="h-3 w-3/4" />
+      <Skeleton className="h-3 w-1/2" />
+      <Skeleton className="h-3 w-2/3" />
+    </div>
+  );
+
+  if (!data || data.totalRecordings === 0) return (
+    <div className="px-3 pb-3">
+      <div className="flex items-start gap-2 text-xs text-muted-foreground bg-amber-50 rounded-lg p-3">
+        <AlertCircle className="h-3.5 w-3.5 shrink-0 mt-0.5 text-amber-500" />
+        <span>Record some Quran recitations to see your Tajweed weak areas here.</span>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="px-3 pb-3 space-y-2">
+      <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+        <span>{data.totalRecordings} recordings analyzed</span>
+        <span className="font-semibold text-emerald-700">Avg: {data.avgScore}%</span>
+      </div>
+      {data.weakAreas.length === 0 ? (
+        <div className="text-xs text-emerald-700 bg-emerald-50 rounded-lg p-2.5 flex items-center gap-1.5">
+          <TrendingUp className="h-3.5 w-3.5" /> No consistent issues detected!
+        </div>
+      ) : (
+        <div className="space-y-1.5">
+          {data.weakAreas.slice(0, 3).map((area, i) => (
+            <div key={area.rule} className="rounded-lg border bg-white overflow-hidden">
+              <div className="flex items-center justify-between px-2.5 py-2 gap-2">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <Badge variant="outline" className={`text-[9px] px-1 py-0 ${WEAKNESS_COLORS[i]}`}>
+                      #{i + 1}
+                    </Badge>
+                    <span className="text-xs font-medium text-foreground truncate">{area.rule}</span>
+                  </div>
+                  <div className="mt-1 h-1 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="h-full bg-red-400 rounded-full" style={{ width: `${area.percentage}%` }} />
+                  </div>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">Missed {area.percentage}% of the time</p>
+                </div>
+                <button
+                  onClick={() => onPracticeRule(area.rule)}
+                  className="shrink-0 text-[10px] bg-amber-100 hover:bg-amber-200 text-amber-800 px-2 py-1 rounded-md font-medium transition-colors whitespace-nowrap"
+                >
+                  Practice
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      {data.frequentWordErrors.length > 0 && (
+        <div className="mt-1">
+          <p className="text-[10px] font-semibold text-muted-foreground mb-1">Frequent word errors:</p>
+          <div className="flex flex-wrap gap-1">
+            {data.frequentWordErrors.map(w => (
+              <span key={w} className="text-[11px] bg-red-50 text-red-700 border border-red-100 rounded px-1.5 py-0.5 font-arabic">{w}</span>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -146,6 +244,10 @@ export default function TajweedTeacher() {
     send(`Please explain the ${rule.name} (${rule.ar}) rule in detail with Quranic examples, when it applies, and how to produce the sound correctly.`);
   };
 
+  const practiceWeakRule = (ruleName: string) => {
+    send(`I've been struggling with the ${ruleName} rule. Can you give me targeted exercises and tips specifically to improve my ${ruleName}? Include common mistakes students make and how to fix them.`);
+  };
+
   const startNew = () => {
     setMessages([]);
     setConvId(null);
@@ -169,32 +271,45 @@ export default function TajweedTeacher() {
         </div>
 
         <div className="flex gap-4 flex-1 min-h-0">
-          <div className="hidden lg:flex flex-col w-64 shrink-0 gap-3">
-            <Card className="border-amber-100">
+          {/* Left Sidebar */}
+          <div className="hidden lg:flex flex-col w-64 shrink-0 gap-3 overflow-y-auto">
+            {/* Tajweed Rules */}
+            <Card className="border-amber-100 shrink-0">
               <CardHeader className="pb-2 pt-4 px-4">
                 <CardTitle className="text-sm font-medium text-amber-800">Tajweed Rules</CardTitle>
                 <p className="text-xs text-muted-foreground">Click any rule to learn it</p>
               </CardHeader>
               <CardContent className="px-3 pb-3">
-                <ScrollArea className="h-[calc(100vh-18rem)]">
-                  <div className="space-y-1">
-                    {TAJWEED_RULES.map(rule => (
-                      <button key={rule.name} onClick={() => askAboutRule(rule)}
-                        className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-colors flex items-center justify-between group
-                          ${selectedRule?.name === rule.name ? "bg-amber-100 text-amber-900" : "hover:bg-amber-50 text-foreground"}`}>
-                        <div>
-                          <div className="font-medium">{rule.name}</div>
-                          <div className="text-xs text-muted-foreground font-arabic">{rule.ar}</div>
-                        </div>
-                        <ChevronRight className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                      </button>
-                    ))}
-                  </div>
-                </ScrollArea>
+                <div className="space-y-0.5">
+                  {TAJWEED_RULES.map(rule => (
+                    <button key={rule.name} onClick={() => askAboutRule(rule)}
+                      className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-colors flex items-center justify-between group
+                        ${selectedRule?.name === rule.name ? "bg-amber-100 text-amber-900" : "hover:bg-amber-50 text-foreground"}`}>
+                      <div>
+                        <div className="font-medium">{rule.name}</div>
+                        <div className="text-xs text-muted-foreground font-arabic">{rule.ar}</div>
+                      </div>
+                      <ChevronRight className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </button>
+                  ))}
+                </div>
               </CardContent>
+            </Card>
+
+            {/* My Weaknesses */}
+            <Card className="border-red-100">
+              <CardHeader className="pb-2 pt-4 px-4">
+                <CardTitle className="text-sm font-medium text-red-800 flex items-center gap-1.5">
+                  <TrendingUp className="h-3.5 w-3.5" />
+                  My Weak Areas
+                </CardTitle>
+                <p className="text-xs text-muted-foreground">From your recitation history</p>
+              </CardHeader>
+              <WeaknessPanel onPracticeRule={practiceWeakRule} />
             </Card>
           </div>
 
+          {/* Chat */}
           <div className="flex-1 flex flex-col min-h-0">
             <Card className="flex-1 flex flex-col min-h-0 border-amber-100">
               <ScrollArea className="flex-1 p-4" ref={scrollRef as any}>

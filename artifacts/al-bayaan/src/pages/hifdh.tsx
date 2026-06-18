@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import AppLayout from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -7,7 +7,8 @@ import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Brain, CheckCircle2, RotateCcw, BookOpen, Calendar, Trash2, Star, Flame } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Plus, Brain, CheckCircle2, RotateCcw, BookOpen, Calendar, Trash2, Star, Flame, Sparkles, Loader2, RefreshCw } from "lucide-react";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { useListSurahs } from "@workspace/api-client-react";
@@ -54,6 +55,34 @@ function formatDate(dateStr: string | null): string {
   return `In ${diff} days`;
 }
 
+function MarkdownRenderer({ content }: { content: string }) {
+  const lines = content.split("\n");
+  return (
+    <div className="space-y-1 text-sm">
+      {lines.map((line, i) => {
+        if (line.startsWith("# ")) return <h1 key={i} className="text-2xl font-bold font-serif text-emerald-950 mt-6 mb-3">{line.slice(2)}</h1>;
+        if (line.startsWith("## ")) return <h2 key={i} className="text-lg font-bold text-emerald-900 mt-5 mb-2 flex items-center gap-2"><Brain className="h-4 w-4 text-emerald-600 shrink-0" />{line.slice(3)}</h2>;
+        if (line.startsWith("### ")) return <h3 key={i} className="text-base font-semibold text-emerald-800 mt-4 mb-2">{line.slice(4)}</h3>;
+        if (line.startsWith("**") && line.endsWith("**") && line.length > 4) return <p key={i} className="font-semibold text-emerald-900 mt-3">{line.slice(2, -2)}</p>;
+        if (line.startsWith("- ")) return (
+          <div key={i} className="flex gap-2 my-0.5">
+            <span className="text-emerald-600 mt-0.5 shrink-0">•</span>
+            <span className="text-foreground">{line.slice(2).replace(/\*\*(.*?)\*\*/g, "$1")}</span>
+          </div>
+        );
+        if (/^\d+\./.test(line)) return (
+          <div key={i} className="flex gap-2 my-0.5">
+            <span className="text-emerald-600 font-medium shrink-0">{line.split(".")[0]}.</span>
+            <span className="text-foreground">{line.replace(/^\d+\.\s*/, "").replace(/\*\*(.*?)\*\*/g, "$1")}</span>
+          </div>
+        );
+        if (line.trim() === "") return <div key={i} className="h-2" />;
+        return <p key={i} className="text-foreground my-0.5">{line.replace(/\*\*(.*?)\*\*/g, "$1")}</p>;
+      })}
+    </div>
+  );
+}
+
 export default function Hifdh() {
   const { toast } = useToast();
   const { data: surahs } = useListSurahs();
@@ -64,9 +93,19 @@ export default function Hifdh() {
   const [selectedSurahId, setSelectedSurahId] = useState<string>("");
   const [revising, setRevising] = useState<number | null>(null);
 
+  // AI Coach state
+  const [aiPlan, setAiPlan] = useState("");
+  const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
+  const aiScrollRef = useRef<HTMLDivElement>(null);
+  const abortRef = useRef<AbortController | null>(null);
+
   useEffect(() => {
     loadData();
   }, []);
+
+  useEffect(() => {
+    if (aiScrollRef.current) aiScrollRef.current.scrollTop = aiScrollRef.current.scrollHeight;
+  }, [aiPlan]);
 
   const loadData = async () => {
     setLoading(true);
@@ -81,6 +120,45 @@ export default function Hifdh() {
       toast({ title: "Error", description: "Could not load Hifdh data.", variant: "destructive" });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const generateAiPlan = async () => {
+    setIsGeneratingPlan(true);
+    setAiPlan("");
+    abortRef.current?.abort();
+    const ctrl = new AbortController();
+    abortRef.current = ctrl;
+
+    try {
+      const r = await fetch("/api/hifdh/ai-coach", { credentials: "include", signal: ctrl.signal });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const reader = r.body!.getReader();
+      const decoder = new TextDecoder();
+      let buf = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += decoder.decode(value, { stream: true });
+        const lines = buf.split("\n");
+        buf = lines.pop() ?? "";
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue;
+          try {
+            const d = JSON.parse(line.slice(6));
+            if (d.done) break;
+            if (d.error) throw new Error(d.error);
+            if (d.content) setAiPlan(prev => prev + d.content);
+          } catch {}
+        }
+      }
+    } catch (err: any) {
+      if (err.name !== "AbortError") {
+        toast({ title: "Error", description: "Could not generate plan. Try again.", variant: "destructive" });
+      }
+    } finally {
+      setIsGeneratingPlan(false);
     }
   };
 
@@ -136,8 +214,7 @@ export default function Hifdh() {
 
   return (
     <AppLayout>
-      <div className="max-w-5xl mx-auto space-y-8">
-
+      <div className="max-w-5xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -205,119 +282,208 @@ export default function Hifdh() {
           </div>
         )}
 
-        {/* Due Today */}
-        {plan && plan.due.length > 0 && (
-          <Card className="border-red-200 bg-red-50/50 dark:bg-red-950/10">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base text-red-800 dark:text-red-300 flex items-center gap-2">
-                <Flame className="h-4 w-4" /> Due for Revision Today ({plan.due.length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {plan.due.map((entry) => (
-                <div key={entry.id} className="flex items-center justify-between gap-4 bg-white dark:bg-background rounded-xl p-4 border border-red-100">
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-emerald-950 dark:text-emerald-50">{entry.surahName}</p>
-                    <p className="text-xs text-muted-foreground">Ayahs {entry.ayahStart}–{entry.ayahEnd} · {entry.revisionCount} revisions</p>
-                    <div className="mt-2 flex items-center gap-2">
-                      <Progress value={entry.strengthScore} className="h-1.5 flex-1 bg-emerald-100" />
-                      <span className="text-xs font-medium text-emerald-700">{entry.strengthScore}%</span>
+        {/* Tabs */}
+        <Tabs defaultValue="surahs">
+          <TabsList className="border border-emerald-100">
+            <TabsTrigger value="surahs" className="gap-2"><Brain className="h-3.5 w-3.5" />My Surahs</TabsTrigger>
+            <TabsTrigger value="ai-coach" className="gap-2"><Sparkles className="h-3.5 w-3.5" />AI Coach</TabsTrigger>
+          </TabsList>
+
+          {/* ── My Surahs Tab ── */}
+          <TabsContent value="surahs" className="space-y-6 mt-4">
+            {/* Due Today */}
+            {plan && plan.due.length > 0 && (
+              <Card className="border-red-200 bg-red-50/50 dark:bg-red-950/10">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base text-red-800 dark:text-red-300 flex items-center gap-2">
+                    <Flame className="h-4 w-4" /> Due for Revision Today ({plan.due.length})
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {plan.due.map((entry) => (
+                    <div key={entry.id} className="flex items-center justify-between gap-4 bg-white dark:bg-background rounded-xl p-4 border border-red-100">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-emerald-950 dark:text-emerald-50">{entry.surahName}</p>
+                        <p className="text-xs text-muted-foreground">Ayahs {entry.ayahStart}–{entry.ayahEnd} · {entry.revisionCount} revisions</p>
+                        <div className="mt-2 flex items-center gap-2">
+                          <Progress value={entry.strengthScore} className="h-1.5 flex-1 bg-emerald-100" />
+                          <span className="text-xs font-medium text-emerald-700">{entry.strengthScore}%</span>
+                        </div>
+                      </div>
+                      <div className="flex gap-2 shrink-0">
+                        <Button size="sm" variant="outline" className="border-amber-300 text-amber-700 hover:bg-amber-50"
+                          onClick={() => revise(entry.id, "good")} disabled={revising === entry.id}>
+                          <RotateCcw className="h-3.5 w-3.5 mr-1" /> Good
+                        </Button>
+                        <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                          onClick={() => revise(entry.id, "excellent")} disabled={revising === entry.id}>
+                          <Star className="h-3.5 w-3.5 mr-1" /> Excellent
+                        </Button>
+                      </div>
                     </div>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* All Surahs */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">All Memorization Progress</CardTitle>
+                <CardDescription>Surah-by-surah breakdown with spaced repetition scheduling</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {loading && <div className="space-y-3">{Array(3).fill(0).map((_, i) => <Skeleton key={i} className="h-20" />)}</div>}
+                {!loading && entries.length === 0 && (
+                  <div className="text-center py-12">
+                    <Brain className="h-12 w-12 mx-auto text-emerald-300 mb-3" />
+                    <p className="text-muted-foreground text-sm">No surahs in your Hifdh plan yet.</p>
+                    <p className="text-muted-foreground text-sm">Click "Add Surah" to start your memorization journey.</p>
                   </div>
-                  <div className="flex gap-2 shrink-0">
-                    <Button size="sm" variant="outline" className="border-amber-300 text-amber-700 hover:bg-amber-50"
-                      onClick={() => revise(entry.id, "good")} disabled={revising === entry.id}>
-                      <RotateCcw className="h-3.5 w-3.5 mr-1" /> Good
-                    </Button>
-                    <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white"
-                      onClick={() => revise(entry.id, "excellent")} disabled={revising === entry.id}>
-                      <Star className="h-3.5 w-3.5 mr-1" /> Excellent
+                )}
+                <div className="space-y-3">
+                  {entries.map((entry, i) => (
+                    <motion.div key={entry.id} initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}
+                      className="flex items-center gap-4 p-4 rounded-xl border border-emerald-100 hover:border-emerald-200 transition-colors">
+                      <div className="h-10 w-10 rounded-full bg-emerald-100 dark:bg-emerald-900 flex items-center justify-center font-bold text-emerald-800 text-sm shrink-0">
+                        {entry.surahId}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <span className="font-semibold text-emerald-950 dark:text-emerald-50">{entry.surahName}</span>
+                          <Badge className={`text-xs border ${STATUS_COLORS[entry.status] ?? ""}`}>{STATUS_LABELS[entry.status] ?? entry.status}</Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground">Ayahs {entry.ayahStart}–{entry.ayahEnd} · {entry.revisionCount} revisions</p>
+                        <div className="mt-1.5 flex items-center gap-2">
+                          <Progress value={entry.strengthScore} className="h-1.5 flex-1 bg-emerald-100" />
+                          <span className="text-xs font-medium text-emerald-700 w-8 text-right">{entry.strengthScore}%</span>
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {formatDate(entry.nextRevision)}</div>
+                      </div>
+                      <div className="flex gap-1 shrink-0">
+                        <Button size="sm" variant="ghost" onClick={() => revise(entry.id, "good")} disabled={revising === entry.id}
+                          className="text-amber-600 hover:bg-amber-50 h-8 px-2">
+                          <RotateCcw className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => revise(entry.id, "excellent")} disabled={revising === entry.id}
+                          className="text-emerald-600 hover:bg-emerald-50 h-8 px-2">
+                          <Star className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => remove(entry.id)}
+                          className="text-red-400 hover:bg-red-50 h-8 px-2">
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Upcoming */}
+            {plan && plan.upcoming.length > 0 && (
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-emerald-600" /> Upcoming Revisions
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    {plan.upcoming.map((entry) => (
+                      <div key={entry.id} className="flex items-center justify-between text-sm py-2 border-b border-emerald-50 last:border-0">
+                        <span className="font-medium text-emerald-900 dark:text-emerald-100">{entry.surahName}</span>
+                        <span className="text-muted-foreground">{formatDate(entry.nextRevision)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          {/* ── AI Coach Tab ── */}
+          <TabsContent value="ai-coach" className="mt-4">
+            <Card className="border-emerald-100">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2 text-emerald-950">
+                      <Sparkles className="h-5 w-5 text-emerald-600" /> AI Hifdh Coach
+                    </CardTitle>
+                    <CardDescription className="mt-1">
+                      Get a personalized memorization plan powered by AI — based on your current progress
+                    </CardDescription>
+                  </div>
+                  <div className="flex gap-2">
+                    {aiPlan && (
+                      <Button variant="outline" size="sm" onClick={() => setAiPlan("")} className="gap-1.5 border-emerald-200 text-emerald-700">
+                        <Trash2 className="h-3.5 w-3.5" /> Clear
+                      </Button>
+                    )}
+                    <Button
+                      onClick={generateAiPlan}
+                      disabled={isGeneratingPlan}
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2"
+                    >
+                      {isGeneratingPlan
+                        ? <><Loader2 className="h-4 w-4 animate-spin" /> Generating…</>
+                        : <><RefreshCw className="h-4 w-4" />{aiPlan ? "Regenerate Plan" : "Generate My Plan"}</>
+                      }
                     </Button>
                   </div>
                 </div>
-              ))}
-            </CardContent>
-          </Card>
-        )}
-
-        {/* All Surahs */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">All Memorization Progress</CardTitle>
-            <CardDescription>Surah-by-surah breakdown with spaced repetition scheduling</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {loading && <div className="space-y-3">{Array(3).fill(0).map((_, i) => <Skeleton key={i} className="h-20" />)}</div>}
-
-            {!loading && entries.length === 0 && (
-              <div className="text-center py-12">
-                <Brain className="h-12 w-12 mx-auto text-emerald-300 mb-3" />
-                <p className="text-muted-foreground text-sm">No surahs in your Hifdh plan yet.</p>
-                <p className="text-muted-foreground text-sm">Click "Add Surah" to start your memorization journey.</p>
-              </div>
-            )}
-
-            <div className="space-y-3">
-              {entries.map((entry, i) => (
-                <motion.div key={entry.id} initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}
-                  className="flex items-center gap-4 p-4 rounded-xl border border-emerald-100 hover:border-emerald-200 transition-colors">
-                  <div className="h-10 w-10 rounded-full bg-emerald-100 dark:bg-emerald-900 flex items-center justify-center font-bold text-emerald-800 text-sm shrink-0">
-                    {entry.surahId}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <span className="font-semibold text-emerald-950 dark:text-emerald-50">{entry.surahName}</span>
-                      <Badge className={`text-xs border ${STATUS_COLORS[entry.status] ?? ""}`}>{STATUS_LABELS[entry.status] ?? entry.status}</Badge>
+              </CardHeader>
+              <CardContent>
+                {!aiPlan && !isGeneratingPlan && (
+                  <div className="text-center py-16">
+                    <div className="h-16 w-16 rounded-2xl bg-emerald-100 mx-auto flex items-center justify-center mb-4">
+                      <Brain className="h-8 w-8 text-emerald-600" />
                     </div>
-                    <p className="text-xs text-muted-foreground">Ayahs {entry.ayahStart}–{entry.ayahEnd} · {entry.revisionCount} revisions</p>
-                    <div className="mt-1.5 flex items-center gap-2">
-                      <Progress value={entry.strengthScore} className="h-1.5 flex-1 bg-emerald-100" />
-                      <span className="text-xs font-medium text-emerald-700 w-8 text-right">{entry.strengthScore}%</span>
+                    <h3 className="font-semibold text-lg text-emerald-950 mb-2">Get Your Personal Hifdh Plan</h3>
+                    <p className="text-sm text-muted-foreground max-w-sm mx-auto mb-6">
+                      The AI will analyze your memorization progress, strength scores, and revision schedule to create a tailored coaching plan.
+                    </p>
+                    <div className="flex flex-wrap justify-center gap-2 text-xs text-muted-foreground mb-8">
+                      {["Today's revision priority", "Weekly new ayah targets", "Strength analysis", "Memorization techniques"].map(f => (
+                        <span key={f} className="bg-emerald-50 border border-emerald-100 rounded-full px-3 py-1">{f}</span>
+                      ))}
+                    </div>
+                    <Button onClick={generateAiPlan} className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2 h-11 px-8">
+                      <Sparkles className="h-4 w-4" /> Generate My AI Coaching Plan
+                    </Button>
+                  </div>
+                )}
+
+                {isGeneratingPlan && !aiPlan && (
+                  <div className="flex flex-col items-center py-16 gap-4">
+                    <div className="h-12 w-12 rounded-2xl bg-emerald-100 flex items-center justify-center">
+                      <Loader2 className="h-6 w-6 text-emerald-600 animate-spin" />
+                    </div>
+                    <div className="text-center">
+                      <p className="font-medium text-emerald-900">Analyzing your memorization data…</p>
+                      <p className="text-sm text-muted-foreground mt-1">The AI is crafting your personalized plan</p>
                     </div>
                   </div>
-                  <div className="text-right shrink-0 text-xs text-muted-foreground">
-                    <div className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {formatDate(entry.nextRevision)}</div>
-                  </div>
-                  <div className="flex gap-1 shrink-0">
-                    <Button size="sm" variant="ghost" onClick={() => revise(entry.id, "good")} disabled={revising === entry.id}
-                      className="text-amber-600 hover:bg-amber-50 h-8 px-2">
-                      <RotateCcw className="h-3.5 w-3.5" />
-                    </Button>
-                    <Button size="sm" variant="ghost" onClick={() => revise(entry.id, "excellent")} disabled={revising === entry.id}
-                      className="text-emerald-600 hover:bg-emerald-50 h-8 px-2">
-                      <Star className="h-3.5 w-3.5" />
-                    </Button>
-                    <Button size="sm" variant="ghost" onClick={() => remove(entry.id)}
-                      className="text-red-400 hover:bg-red-50 h-8 px-2">
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                )}
 
-        {/* Upcoming */}
-        {plan && plan.upcoming.length > 0 && (
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-emerald-600" /> Upcoming Revisions
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {plan.upcoming.map((entry) => (
-                  <div key={entry.id} className="flex items-center justify-between text-sm py-2 border-b border-emerald-50 last:border-0">
-                    <span className="font-medium text-emerald-900 dark:text-emerald-100">{entry.surahName}</span>
-                    <span className="text-muted-foreground">{formatDate(entry.nextRevision)}</span>
+                {aiPlan && (
+                  <div
+                    ref={aiScrollRef}
+                    className="max-h-[60vh] overflow-y-auto prose-sm bg-emerald-50/50 rounded-xl p-6 border border-emerald-100"
+                  >
+                    <MarkdownRenderer content={aiPlan} />
+                    {isGeneratingPlan && (
+                      <span className="inline-block w-2 h-4 bg-emerald-500 animate-pulse ml-0.5 rounded-sm" />
+                    )}
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </AppLayout>
   );

@@ -7,3 +7,4 @@ export * from "./daily_activity";
 export * from "./hifdh_progress";
 export * from "./conversations";
 export * from "./messages";
+export * from "./library";

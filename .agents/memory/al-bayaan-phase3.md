@@ -20,3 +20,15 @@ No teacher-student schema — shows all users. Three endpoints: /students (pagin
 
 ## Why no WebSocket for Voice Teacher
 Replit's proxy layer does not reliably pass WebSocket upgrade headers in this monorepo setup; HTTP SSE + chunked response works cleanly through the proxy.
+
+## Library system
+Static book catalog (22 books across 7 categories) defined in artifacts/api-server/src/routes/library.ts as LIBRARY_BOOKS constant. No CMS yet — admin must edit the constant to add books. DB table library_progress tracks per-user per-book lesson completion. Migrated with `pnpm --filter @workspace/db run push`.
+
+## Onboarding smart routing
+10 subjects in onboarding. Each GOAL entry has a `dashboard` field that sets the post-onboarding redirect route. AI voice guide uses browser SpeechSynthesis (free, no API). Speaks STEP_VOICE_PROMPTS on each step change when enabled.
+
+## Advanced recording in surah.tsx
+State machine: idle → recording → preview → submitting. Web Audio API (AudioContext + AnalyserNode) for live waveform bars on canvas. Preview state shows pre-submit playback with Delete / Re-record / Submit buttons. Tap-to-toggle (not hold). previewUrl cleaned up with URL.revokeObjectURL on reset.
+
+## Qari player in surah.tsx
+6 Qaris defined with real metadata (name, nameAr, country, style). Dropdown Qari picker anchored below the selector button. Audio URL uses selectedQariId for everyayah.com path.

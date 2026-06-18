@@ -23,6 +23,7 @@ import StudyPlanner from "./pages/study-planner";
 import VoiceTeacher from "./pages/voice-teacher";
 import Admin from "./pages/admin";
 import TeacherDashboard from "./pages/teacher-dashboard";
+import Library from "./pages/library";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient();
@@ -102,8 +103,8 @@ function HomeRedirect() {
 
 function AuthPage({ type }: { type: "sign-in" | "sign-up" }) {
   return (
-    <div className="flex min-h-[100dvh] items-center justify-center bg-[#fdfdfc] bg-[url('/images/geometric-pattern.png')] bg-cover bg-center px-4">
-      <div className="absolute inset-0 bg-[#fdfdfc]/80 backdrop-blur-sm z-0" />
+    <div className="flex min-h-[100dvh] items-center justify-center bg-[#0a0f0a] bg-[url('/images/geometric-pattern.png')] bg-cover bg-center px-4">
+      <div className="absolute inset-0 bg-[#0a0f0a]/85 backdrop-blur-sm z-0" />
       <div className="relative z-10 w-full max-w-md">
         {type === "sign-in"
           ? <SignIn routing="path" path={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} />
@@ -159,6 +160,7 @@ function ClerkProviderWithRoutes() {
           <Route path="/dashboard" component={() => <ProtectedRoute component={Dashboard} />} />
           <Route path="/learn" component={() => <ProtectedRoute component={Learn} />} />
           <Route path="/learn/:surahId" component={() => <ProtectedRoute component={SurahDetail} />} />
+          <Route path="/library" component={() => <ProtectedRoute component={Library} />} />
           <Route path="/progress" component={() => <ProtectedRoute component={Progress} />} />
           <Route path="/bookmarks" component={() => <ProtectedRoute component={Bookmarks} />} />
           <Route path="/achievements" component={() => <ProtectedRoute component={Achievements} />} />

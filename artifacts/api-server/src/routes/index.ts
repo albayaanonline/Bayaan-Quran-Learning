@@ -15,6 +15,7 @@ import voiceTeacherRouter from "./voice-teacher";
 import studyPlannerRouter from "./study-planner";
 import adminRouter from "./admin";
 import teacherDashboardRouter from "./teacher-dashboard";
+import libraryRouter from "./library";
 
 const router = Router();
 
@@ -34,5 +35,6 @@ router.use(voiceTeacherRouter);
 router.use(studyPlannerRouter);
 router.use(adminRouter);
 router.use(teacherDashboardRouter);
+router.use(libraryRouter);
 
 export default router;
