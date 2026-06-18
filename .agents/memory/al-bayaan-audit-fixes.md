@@ -16,28 +16,33 @@ description: Full audit findings and what was fixed vs what remains outstanding
 - Teacher Dashboard, Admin Stats, Leaderboard, Dashboard, Progress, Bookmarks, Hifdh
 - Messages (direct messaging)
 
-### FIXES IMPLEMENTED THIS SESSION
-1. **DB exports**: Added `payment_records` and `live_classroom_sessions` to `lib/db/src/schema/index.ts` — they existed as files but were never exported or pushed to DB. Fixed + `pnpm --filter @workspace/db run push` ran successfully.
+### FIXES IMPLEMENTED (Phase A session)
+1. **DB exports**: Added `payment_records` and `live_classroom_sessions` to `lib/db/src/schema/index.ts`. Fixed + pushed.
+2. **Payment persistence**: Now saves every payment initiation to `payment_records` table.
+3. **Live Classroom persistence**: Fully migrated from in-memory array to `live_classroom_sessions` DB table.
+4. **Certificate PDF + QR Code**: Replaced `.txt` download with real jsPDF landscape PDF + QR code.
+5. **Parent auto-notifications**: After each recording with score > 0, auto-notifies linked parents.
 
-2. **Payment persistence** (`artifacts/api-server/src/routes/payments.ts`): Now saves every payment initiation to `payment_records` table. `GET /api/payments/history` now returns real DB rows.
+### FIXES IMPLEMENTED (June 2026 full audit session)
+6. **audit_logs table**: `routes/audit.ts` — was in-memory array. Now PostgreSQL `audit_logs` table. `addAuditEntry()` is now async.
+7. **marketing_leads table**: `routes/marketing.ts` — was in-memory array. Now PostgreSQL `marketing_leads` table with UNIQUE constraint.
+8. **Quran API 3-source failover**: `routes/surahs.ts` — was returning fake Bismillah on failure. Now 3-source chain (AlQuran.cloud → quranapi.pages.dev → jsDelivr CDN). HTTP 503 on total failure, no fake text.
+9. **Stripe real checkout**: `routes/payments.ts` — was "coming soon" stub. Now creates real Stripe Checkout Session. Webhook at POST /payments/stripe-webhook.
+10. **Email notifications**: Added `lib/emailNotifications.ts` (nodemailer). Requires SMTP_HOST/PORT/USER/PASS/FROM env vars. Silent skip if not configured.
+11. **profiles.email column**: Added optional `email TEXT` column to profiles table. Migrated.
+12. **notifications.ts**: Now calls `sendNotificationEmail` for cert/exam/achievement events via setImmediate (non-blocking).
 
-3. **Live Classroom persistence** (`artifacts/api-server/src/routes/live-classroom.ts`): Fully migrated from in-memory array to `live_classroom_sessions` DB table. Sessions survive server restarts. Added PATCH status update + DELETE endpoints.
+### DB Tables Added June 2026
+- `audit_logs`, `marketing_leads` — both exported from schema/index.ts, migrated to prod DB.
+- `profiles.email` — optional column, migrated June 18 2026.
 
-4. **Certificate PDF + QR Code** (`artifacts/al-bayaan/src/pages/certificates.tsx`): Replaced `.txt` download with real jsPDF landscape PDF with Islamic design, QR code embedded (via `qrcode` library). Added separate "Download QR Code" button. Both libraries installed: `jspdf`, `qrcode`.
-
-5. **Parent auto-notifications** (`artifacts/api-server/src/routes/recordings.ts`): After each recording with overallScore > 0, asynchronously queries `parent_profiles` for parents who have the student as a child and inserts a notification for each. Non-blocking (setImmediate).
-
-### STILL OUTSTANDING (not fixed — require external services or significant infra)
-- **Web/Push Notifications**: No service worker + VAPID keys. Only in-app notifications. Would need `web-push` npm package + VAPID key generation.
-- **Email Notifications**: No SMTP/SendGrid configured. No env vars for it.
-- **Stripe/PayPal**: Returns "coming soon" unless `STRIPE_SECRET_KEY`/`PAYPAL_CLIENT_ID` env vars are set. Code is ready to wire up.
-- **Audit log persistence**: In-memory ring buffer (10k entries), lost on restart. Would need a DB table.
-- **Marketing leads**: In-memory array, lost on restart. Minor.
+### 11 Final Reports Generated
+Location: `.local/reports/01-ai-stack-report.md` through `11-full-audit-summary.md`
 
 ### Math.random() uses that are LEGITIMATE (not fake data)
 - `surah.tsx:31` — genBars() for waveform visualization (UI animation)
 - `video-teacher.tsx:44,50,490` — blink timer, mouth animation, sound bar heights (UI animation)
 - `aiProvider.ts:197` — Pollinations image seed (legitimate randomness)
 - `exams.ts:13` — exam verification code generation (legitimate)
-- `audit.ts:29` — audit entry ID suffix (legitimate)
+- `audit.ts:29` — old audit entry ID suffix (now removed, uses DB serial)
 - `exam-builder.tsx:186` — local question UID (client-side only, not persisted)
