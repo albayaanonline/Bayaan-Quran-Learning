@@ -3,13 +3,10 @@ import { db, hifdhProgressTable, recordingsTable } from "@workspace/db";
 import { eq, and } from "drizzle-orm";
 import { logger } from "../lib/logger";
 import { requireAuth } from "../middlewares/auth";
+import { streamToResponse, setSSEHeaders } from "../lib/aiProvider";
 import { SURAHS } from "./surahs";
 
 const router = Router();
-
-const HF_TOKEN = process.env.HF_TOKEN;
-const HF_MODEL = "mistralai/Mistral-7B-Instruct-v0.2";
-const HF_API = "https://api-inference.huggingface.co/v1/chat/completions";
 
 function getNextRevisionDate(strengthScore: number): Date {
   const now = new Date();
@@ -134,101 +131,49 @@ router.get("/hifdh/ai-coach", requireAuth, async (req: any, res) => {
     const reviewing = allRows.filter(r => r.status === "reviewing");
     const learning = allRows.filter(r => r.status === "learning");
 
-    const avgScore = recentRecs.length > 0
-      ? Math.round(recentRecs.map(r => ((r.feedback as any)?.overallScore ?? 0) as number).filter(s => s > 0).reduce((a, b) => a + b, 0) / Math.max(recentRecs.length, 1))
+    const scoreList = recentRecs
+      .map(r => ((r.feedback as any)?.overallScore ?? 0) as number)
+      .filter(s => s > 0);
+    const avgScore = scoreList.length > 0
+      ? Math.round(scoreList.reduce((a, b) => a + b, 0) / scoreList.length)
       : 0;
 
-    const contextPrompt = `Create a personalized Hifdh (Quran memorization) coaching plan for this student:
+    const prompt = `Create a personalized Hifdh (Quran memorization) coaching plan for this student:
 
 Current Hifdh Status:
 - Total surahs in program: ${allRows.length}
-- Memorized (strength ≥80%): ${memorized.map(r => r.surahName).join(", ") || "None"}
-- Currently reviewing (40-79%): ${reviewing.map(r => `${r.surahName} (strength: ${r.strengthScore}%)`).join(", ") || "None"}
-- Currently learning (<40%): ${learning.map(r => r.surahName).join(", ") || "None"}
-- Due for revision today: ${dueToday.map(r => r.surahName).join(", ") || "None"}
-- Recent recitation accuracy: ${avgScore}%
+- Memorized (strength ≥80%): ${memorized.map(r => r.surahName).join(", ") || "None yet"}
+- Reviewing (40-79%): ${reviewing.map(r => `${r.surahName} (${r.strengthScore}%)`).join(", ") || "None"}
+- Learning (<40%): ${learning.map(r => r.surahName).join(", ") || "None"}
+- Due for revision today: ${dueToday.map(r => r.surahName).join(", ") || "None — all up to date!"}
+- Recent recitation accuracy: ${avgScore > 0 ? `${avgScore}%` : "No recitations yet"}
 
 Please provide:
-1. **Today's Revision Plan** — what to review in what order (priority: due items first)
-2. **This Week's New Memorization Target** — realistic new ayahs based on their level
-3. **Strength Analysis** — weak spots and how to improve them
-4. **Technique Recommendations** — specific techniques for their current surahs
-5. **Motivation & Tips** — Islamic wisdom about Quran memorization`;
+1. **Today's Revision Plan** — what to review and in what order
+2. **This Week's Memorization Target** — realistic new ayahs to add
+3. **Strength Analysis** — which surahs need the most attention
+4. **Technique Tips** — practical memorization methods for their level
+5. **Motivation** — an Islamic reminder about the virtue of Quran memorization
 
-    res.setHeader("Content-Type", "text/event-stream");
-    res.setHeader("Cache-Control", "no-cache");
-    res.setHeader("Connection", "keep-alive");
+Use markdown formatting. Be encouraging and specific.`;
 
-    if (!HF_TOKEN) {
-      const fallback = `# Your Hifdh Coaching Report\n\n**Today's Review**: ${dueToday.length > 0 ? dueToday.map(r => r.surahName).join(", ") : "No surahs due today — great job!"}\n\n**Status**: ${memorized.length} memorized, ${reviewing.length} reviewing, ${learning.length} learning.\n\n**Tip**: Add your HuggingFace token (HF_TOKEN) for AI-personalized coaching advice!\n\n**General Advice**: Review each surah at least once daily. Use the 20-page method: memorize 5 new lines and review 1 page from recent memory every day.`;
-      res.write(`data: ${JSON.stringify({ content: fallback })}\n\n`);
-      res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
-      res.end();
-      return;
-    }
+    const messages = [
+      {
+        role: "system" as const,
+        content: "You are an expert Hifdh coach with deep knowledge of the Quran and memorization science. You give warm, practical, personalized coaching. Always include a relevant hadith or Quranic verse about the virtue of Hifdh."
+      },
+      { role: "user" as const, content: prompt },
+    ];
 
-    let hfResponse: Response;
-    try {
-      hfResponse = await fetch(HF_API, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${HF_TOKEN}` },
-        body: JSON.stringify({
-          model: HF_MODEL,
-          messages: [
-            { role: "system", content: "You are an expert Hifdh coach with 20 years of experience helping students memorize the Quran. Give practical, personalized advice. Use markdown formatting." },
-            { role: "user", content: contextPrompt },
-          ],
-          max_tokens: 2048,
-          stream: true,
-          temperature: 0.6,
-        }),
-      });
-    } catch (fetchErr) {
-      logger.error({ fetchErr }, "HF API error in hifdh coach");
-      res.write(`data: ${JSON.stringify({ error: "AI service unavailable", done: true })}\n\n`);
-      res.end();
-      return;
-    }
+    const fallback = `# Your Hifdh Coaching Report\n\n**Today's Review**: ${
+      dueToday.length > 0 ? dueToday.map(r => r.surahName).join(", ") : "No surahs due today — excellent progress!"
+    }\n\n**Status**: ${memorized.length} memorized · ${reviewing.length} reviewing · ${learning.length} learning\n\n**Tip**: The Prophet ﷺ said: *"The best of you are those who learn the Quran and teach it."* (Bukhari)\n\n**General Advice**: Revise each surah daily. New memorization is best done in the morning after Fajr. Focus on 5–10 new lines per day and review at least one full page from recent memory.`;
 
-    if (!hfResponse.ok) {
-      logger.warn({ status: hfResponse.status }, "HF API error in hifdh coach");
-      res.write(`data: ${JSON.stringify({ error: "AI error", done: true })}\n\n`);
-      res.end();
-      return;
-    }
-
-    const reader = hfResponse.body!.getReader();
-    const decoder = new TextDecoder();
-    let buf = "";
-
-    try {
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buf += decoder.decode(value, { stream: true });
-        const lines = buf.split("\n");
-        buf = lines.pop() ?? "";
-        for (const line of lines) {
-          if (!line.startsWith("data: ")) continue;
-          const data = line.slice(6).trim();
-          if (data === "[DONE]") continue;
-          try {
-            const parsed = JSON.parse(data);
-            const chunk = parsed.choices?.[0]?.delta?.content;
-            if (chunk) res.write(`data: ${JSON.stringify({ content: chunk })}\n\n`);
-          } catch {}
-        }
-      }
-    } finally {
-      reader.releaseLock();
-    }
-
-    res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
-    res.end();
+    setSSEHeaders(res);
+    await streamToResponse(res, messages, { maxTokens: 2048, temperature: 0.65, fallback });
   } catch (err) {
     logger.error({ err }, "Hifdh AI coach error");
     if (!res.headersSent) res.status(500).json({ error: "Internal server error" });
-    else { res.write(`data: ${JSON.stringify({ error: "Error", done: true })}\n\n`); res.end(); }
   }
 });
 

@@ -296,7 +296,7 @@ export default function Teacher() {
               </Button>
             </div>
             <p className="text-xs text-muted-foreground mt-2 text-center">
-              AI Teacher uses open-source Mistral-7B via HuggingFace · Add HF_TOKEN for full AI features
+              Powered by free open-source AI · Groq · Pollinations · HuggingFace
             </p>
           </div>
         </div>
