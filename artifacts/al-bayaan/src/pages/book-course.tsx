@@ -237,7 +237,7 @@ export default function BookCourse() {
                     <Progress value={pct} className="h-2 bg-white/20 mb-4" />
                     <Button
                       className="w-full bg-white text-emerald-900 hover:bg-white/90 font-semibold shadow-sm"
-                      onClick={() => setExpandedLesson(currentLesson)}
+                      onClick={() => navigate(`/library/${bookId}/lesson/${currentLesson}`)}
                     >
                       {completedLessons === 0 ? "Start Learning" : "Continue"}
                       <ArrowRight className="h-4 w-4 ml-1" />
@@ -403,24 +403,22 @@ export default function BookCourse() {
                           <p className="text-sm text-gray-600 leading-relaxed mt-3 mb-4">
                             {lesson.description}
                           </p>
-                          <div className="flex items-center gap-3">
-                            {!isCompleted ? (
-                              <Button
-                                size="sm"
-                                className="bg-emerald-600 hover:bg-emerald-700 text-white"
-                                onClick={() => markLessonComplete(lesson.number)}
-                                disabled={savingLesson === lesson.number}
-                              >
-                                {savingLesson === lesson.number ? (
-                                  "Saving..."
-                                ) : (
-                                  <>
-                                    <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />
-                                    Mark Complete
-                                  </>
-                                )}
-                              </Button>
-                            ) : (
+                          <div className="flex items-center gap-3 flex-wrap">
+                            {/* Primary action: open the lesson page */}
+                            <Button
+                              size="sm"
+                              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                              onClick={() => navigate(`/library/${bookId}/lesson/${lesson.number}`)}
+                            >
+                              {isCompleted ? (
+                                <><BookOpen className="h-3.5 w-3.5 mr-1.5" />Review Lesson</>
+                              ) : isCurrent ? (
+                                <><PlayCircle className="h-3.5 w-3.5 mr-1.5" />Start Lesson</>
+                              ) : (
+                                <><BookOpen className="h-3.5 w-3.5 mr-1.5" />Open Lesson</>
+                              )}
+                            </Button>
+                            {isCompleted && (
                               <span className="flex items-center gap-1.5 text-sm text-emerald-600 font-medium">
                                 <CheckCircle2 className="h-4 w-4" /> Completed
                               </span>

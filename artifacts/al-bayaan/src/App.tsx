@@ -40,6 +40,7 @@ import Marketing from "./pages/marketing";
 import Mushaf from "./pages/mushaf";
 import Muraajacah from "./pages/muraajacah";
 import BookCourse from "./pages/book-course";
+import BookLesson from "./pages/book-lesson";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient();
@@ -227,6 +228,7 @@ function ClerkProviderWithRoutes() {
           <Route path="/mushaf" component={() => <ProtectedRoute component={Mushaf} />} />
           <Route path="/muraajacah" component={() => <ProtectedRoute component={Muraajacah} />} />
           <Route path="/library/:bookId" component={() => <ProtectedRoute component={BookCourse} />} />
+          <Route path="/library/:bookId/lesson/:lessonNum" component={() => <ProtectedRoute component={BookLesson} />} />
           <Route path="/about" component={Marketing} />
           <Route component={NotFound} />
         </Switch>

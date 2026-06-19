@@ -76,8 +76,25 @@ description: New features built across Phases A-L for Al Bayaan AI Academy — a
 - Rate limits added for /api/video-teacher and /api/content-generator
 - PWA manifest + proper meta tags for SEO
 
+## Arabic Book Lesson System (June 2026)
+- Backend: artifacts/api-server/src/routes/arabic-lessons.ts
+  - GET /api/arabic/lessons/:bookId/:lessonNum — returns full lesson (pages, vocab, grammar, exercises)
+  - POST /api/arabic/feedback — SSE AI evaluation of student reading (transcription vs target Arabic)
+  - Real lesson content: 5 lessons for arabic-bayna-yadayk-1, 2 for madinah-arabic-1, 1 for arabic-nasheeen-1
+  - Auto-generates fallback content for lessons beyond hand-authored range
+- Frontend: artifacts/al-bayaan/src/pages/book-lesson.tsx
+  - Route: /library/:bookId/lesson/:lessonNum
+  - 4 tabs: Reading (page-by-page), Vocabulary (with TTS), Grammar (with examples), Exercises
+  - Voice recording → POST /api/transcribe → POST /api/arabic/feedback → SSE streamed feedback
+  - Page dots navigation, show/hide translation/transliteration toggles
+  - Progress saved to /api/library/progress/:bookId on lesson complete
+- New books added to LIBRARY_BOOKS in library.ts: madinah-arabic-1, arabic-nasheeen-1
+- book-course.tsx: "Start Learning"/"Continue" → navigates to /library/:bookId/lesson/:lessonNum
+- book-course.tsx: lesson expand → "Start Lesson" button → navigates to lesson page
+- App.tsx: /library/:bookId/lesson/:lessonNum route added
+
 ## Route index.ts (all routes registered)
-health, profile, surahs, progress, recordings, bookmarks, achievements, dashboard, leaderboard, transcribe, teacher, hifdh, voice-teacher, study-planner, admin, teacher-dashboard, library, exams, certificates, cms, parent, analytics, notifications, videoTeacher, contentGenerator, messages, payments, liveClassroom, analyticsReports, audit, marketing
+health, profile, surahs, progress, recordings, bookmarks, achievements, dashboard, leaderboard, transcribe, teacher, hifdh, voice-teacher, study-planner, admin, teacher-dashboard, library, exams, certificates, cms, parent, analytics, notifications, videoTeacher, contentGenerator, messages, payments, liveClassroom, analyticsReports, audit, marketing, tts, mushafRecitation, arabicLessons
 
 ## App.tsx routes (all pages registered)
-/video-teacher, /content-generator, /messages, /payments, /live-classroom, /about (public)
+/video-teacher, /content-generator, /messages, /payments, /live-classroom, /about (public), /library/:bookId/lesson/:lessonNum
