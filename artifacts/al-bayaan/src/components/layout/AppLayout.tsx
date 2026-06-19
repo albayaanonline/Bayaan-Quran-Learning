@@ -4,7 +4,8 @@ import {
   BookOpen, LayoutDashboard, LineChart, Bookmark, Award, Trophy,
   LogOut, Menu, BotMessageSquare, Brain, Mic, CalendarDays,
   BookMarked, Shield, GraduationCap, Library, Users, ClipboardList,
-  BarChart3, FolderOpen, Globe, PenSquare, Video, MessageCircle, Sparkles, CreditCard, MonitorPlay,
+  BarChart3, FolderOpen, Globe, PenSquare, Video, MessageCircle,
+  Sparkles, CreditCard, MonitorPlay, ScrollText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -24,63 +25,64 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   const navGroups = [
     {
-      label: "Learn",
+      label: t("nav.group.learn", "Learn"),
       items: [
-        { href: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboard },
-        { href: "/learn", label: t("nav.quran"), icon: BookOpen },
-        { href: "/hifdh", label: t("nav.hifdh"), icon: Brain },
-        { href: "/library", label: t("nav.library"), icon: Library },
-        { href: "/cms", label: t("nav.resources"), icon: FolderOpen },
+        { href: "/dashboard",  label: t("nav.dashboard"),   icon: LayoutDashboard },
+        { href: "/learn",      label: t("nav.quran"),       icon: BookOpen },
+        { href: "/mushaf",     label: t("nav.mushaf"),      icon: ScrollText, badge: "NEW" },
+        { href: "/hifdh",      label: t("nav.hifdh"),       icon: Brain },
+        { href: "/library",    label: t("nav.library"),     icon: Library },
+        { href: "/cms",        label: t("nav.resources"),   icon: FolderOpen },
       ],
     },
     {
-      label: "AI Teachers",
+      label: t("nav.group.aiTeachers", "AI Teachers"),
       items: [
-        { href: "/teacher", label: t("nav.aiTeacher"), icon: BotMessageSquare },
-        { href: "/tajweed-teacher", label: t("nav.tajweedTutor"), icon: BookMarked },
-        { href: "/voice-teacher", label: t("nav.voiceTeacher"), icon: Mic, badge: "AI" },
-        { href: "/video-teacher", label: "Video Teacher", icon: Video, badge: "NEW" },
-        { href: "/study-planner", label: t("nav.studyPlanner"), icon: CalendarDays },
+        { href: "/teacher",        label: t("nav.aiTeacher"),    icon: BotMessageSquare },
+        { href: "/tajweed-teacher",label: t("nav.tajweedTutor"), icon: BookMarked },
+        { href: "/voice-teacher",  label: t("nav.voiceTeacher"), icon: Mic,   badge: "AI" },
+        { href: "/video-teacher",  label: t("nav.videoTeacher"), icon: Video, badge: "NEW" },
+        { href: "/study-planner",  label: t("nav.studyPlanner"), icon: CalendarDays },
       ],
     },
     {
-      label: "Progress",
+      label: t("nav.group.progress", "Progress"),
       items: [
-        { href: "/progress", label: t("nav.progress"), icon: LineChart },
-        { href: "/analytics", label: t("nav.analytics"), icon: BarChart3, badge: "NEW" },
-        { href: "/bookmarks", label: t("nav.bookmarks"), icon: Bookmark },
-        { href: "/achievements", label: t("nav.achievements"), icon: Award },
-        { href: "/leaderboard", label: t("nav.leaderboard"), icon: Trophy },
+        { href: "/progress",      label: t("nav.progress"),     icon: LineChart },
+        { href: "/analytics",     label: t("nav.analytics"),    icon: BarChart3, badge: "NEW" },
+        { href: "/bookmarks",     label: t("nav.bookmarks"),    icon: Bookmark },
+        { href: "/achievements",  label: t("nav.achievements"), icon: Award },
+        { href: "/leaderboard",   label: t("nav.leaderboard"),  icon: Trophy },
       ],
     },
     {
-      label: "Exams",
+      label: t("nav.group.exams", "Exams"),
       items: [
-        { href: "/exams", label: t("nav.examCentre"), icon: ClipboardList },
+        { href: "/exams",        label: t("nav.examCentre"),   icon: ClipboardList },
         { href: "/certificates", label: t("nav.certificates"), icon: Award },
       ],
     },
     {
-      label: "Family",
+      label: t("nav.group.family", "Family"),
       items: [
         { href: "/parent", label: t("nav.parentDashboard"), icon: Users },
       ],
     },
     {
-      label: "Communication",
+      label: t("nav.group.community", "Community"),
       items: [
-        { href: "/messages", label: "Messages", icon: MessageCircle, badge: "NEW" },
-        { href: "/live-classroom", label: "Live Classroom", icon: MonitorPlay, badge: "NEW" },
-        { href: "/payments", label: "Upgrade Plan", icon: CreditCard },
+        { href: "/messages",       label: t("nav.messages"),     icon: MessageCircle, badge: "NEW" },
+        { href: "/live-classroom", label: t("nav.liveClassroom"),icon: MonitorPlay,   badge: "NEW" },
+        { href: "/payments",       label: t("nav.payments"),     icon: CreditCard },
       ],
     },
     {
-      label: "Admin",
+      label: t("nav.group.admin", "Admin"),
       items: [
-        { href: "/content-generator", label: "AI Content", icon: Sparkles, badge: "NEW" },
-        { href: "/exam-builder", label: t("nav.examBuilder"), icon: PenSquare },
-        { href: "/teacher-dashboard", label: t("nav.teacherView"), icon: GraduationCap },
-        { href: "/admin", label: t("nav.admin"), icon: Shield },
+        { href: "/content-generator",  label: t("nav.contentGen"),  icon: Sparkles, badge: "NEW" },
+        { href: "/exam-builder",       label: t("nav.examBuilder"), icon: PenSquare },
+        { href: "/teacher-dashboard",  label: t("nav.teacherView"), icon: GraduationCap },
+        { href: "/admin",              label: t("nav.admin"),       icon: Shield },
       ],
     },
   ];
@@ -116,7 +118,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <nav className="px-3 space-y-4">
           {navGroups.map((group) => (
             <div key={group.label}>
-              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest px-2 mb-1">{group.label}</p>
+              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest px-2 mb-1">
+                {group.label}
+              </p>
               <div className="space-y-0.5">
                 {group.items.map((item) => {
                   const isActive = location === item.href || location.startsWith(`${item.href}/`);

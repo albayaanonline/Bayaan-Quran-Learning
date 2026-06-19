@@ -13,8 +13,20 @@ interface Book {
   author: string; authorArabic: string; description: string;
   category: string; difficulty: "beginner" | "intermediate" | "advanced";
   lessonCount: number; coverGradient: [string, string]; accentColor: string;
-  tags: string[]; featured?: boolean;
+  tags: string[]; featured?: boolean; thumbnailUrl?: string;
 }
+
+const CATEGORY_IMAGES: Record<string, string> = {
+  quran:    "https://images.unsplash.com/photo-1609599006353-e629aaabfeae?auto=format&fit=crop&w=400&q=75",
+  arabic:   "https://images.unsplash.com/photo-1527525443983-6e60c75fff46?auto=format&fit=crop&w=400&q=75",
+  hadith:   "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&w=400&q=75",
+  fiqh:     "https://images.unsplash.com/photo-1589578527966-fdac0f44566c?auto=format&fit=crop&w=400&q=75",
+  aqeedah:  "https://images.unsplash.com/photo-1564769625905-50e93615e769?auto=format&fit=crop&w=400&q=75",
+  tafsir:   "https://images.unsplash.com/photo-1471107340929-a87cd0f5b5f3?auto=format&fit=crop&w=400&q=75",
+  seerah:   "https://images.unsplash.com/photo-1547234935-80c7145ec969?auto=format&fit=crop&w=400&q=75",
+  tajweed:  "https://images.unsplash.com/photo-1503676382389-4809596d5290?auto=format&fit=crop&w=400&q=75",
+  hingaad:  "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=400&q=75",
+};
 
 const CATEGORIES = [
   { id: "all", label: "All", icon: "📚" },
@@ -36,6 +48,7 @@ const DIFFICULTY_COLORS = {
 function BookCard({ book, completedLessons, onOpen }: { book: Book; completedLessons: number; onOpen: () => void }) {
   const pct = book.lessonCount > 0 ? Math.round((completedLessons / book.lessonCount) * 100) : 0;
   const started = completedLessons > 0;
+  const imgUrl = book.thumbnailUrl ?? CATEGORY_IMAGES[book.category];
 
   return (
     <motion.div
@@ -51,19 +64,28 @@ function BookCard({ book, completedLessons, onOpen }: { book: Book; completedLes
         className="relative h-44 flex flex-col items-center justify-center px-4 overflow-hidden"
         style={{ background: `linear-gradient(135deg, ${book.coverGradient[0]}, ${book.coverGradient[1]})` }}
       >
-        <div className="absolute inset-0 bg-[url('/images/geometric-pattern.png')] opacity-10 bg-repeat bg-[length:120px]" />
+        {imgUrl && (
+          <img
+            src={imgUrl}
+            alt={book.title}
+            className="absolute inset-0 w-full h-full object-cover opacity-55 group-hover:opacity-65 transition-opacity duration-300"
+            onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
+          />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent" />
+        <div className="absolute inset-0 bg-[url('/images/geometric-pattern.png')] opacity-5 bg-repeat bg-[length:120px]" />
         {book.featured && (
-          <div className="absolute top-3 right-3 flex items-center gap-1 bg-white/20 backdrop-blur-sm rounded-full px-2 py-0.5 text-[10px] text-white font-semibold">
+          <div className="absolute top-3 right-3 flex items-center gap-1 bg-white/20 backdrop-blur-sm rounded-full px-2 py-0.5 text-[10px] text-white font-semibold z-10">
             <Star className="h-2.5 w-2.5 fill-current" /> Featured
           </div>
         )}
         {started && (
-          <div className="absolute top-3 left-3 bg-white/20 backdrop-blur-sm rounded-full px-2 py-0.5 text-[10px] text-white font-semibold">
+          <div className="absolute top-3 left-3 bg-white/20 backdrop-blur-sm rounded-full px-2 py-0.5 text-[10px] text-white font-semibold z-10">
             {pct}% done
           </div>
         )}
-        <p className="text-white/90 text-2xl font-arabic text-center relative z-10 leading-relaxed"
-          style={{ fontFamily: "var(--font-arabic)", textShadow: "0 2px 8px rgba(0,0,0,0.3)" }}>
+        <p className="text-white text-2xl font-arabic text-center relative z-10 leading-relaxed"
+          style={{ fontFamily: "var(--font-arabic)", textShadow: "0 2px 12px rgba(0,0,0,0.6)" }}>
           {book.titleArabic}
         </p>
       </div>

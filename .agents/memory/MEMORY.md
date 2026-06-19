@@ -7,3 +7,4 @@
 - [Al Bayaan TTS proxy](al-bayaan-tts-proxy.md) — Google TTS confirmed working server-side (HTTP 200 MPEG); proxy at /api/tts; rate-limited 30/min; trust proxy must be set on Express for rate limiter to not error
 - [Al Bayaan production hardening](al-bayaan-prod-hardening.md) — Vite must not throw on missing PORT/BASE_PATH (use defaults); tajweed must include confidence field per rule; 21 DB indexes added via direct psql
 - [Al Bayaan root cause: blank screen](al-bayaan-blank-screen.md) — All 500 errors + blank page caused by missing Clerk keys; fix = run setupClerkWhitelabelAuth() in code_execution
+- [Al Bayaan bug fixes session 2](al-bayaan-bug-fixes-2.md) — Repetitive feedback fixed (deterministic seed-based pick()); i18n expanded to 150+ keys (EN/AR/SO); Mushaf reader page at /mushaf; real Unsplash thumbnails in library; Google OAuth button IS showing in Clerk — issue is Redirect URI config in Google Console
