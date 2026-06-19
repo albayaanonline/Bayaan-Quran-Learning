@@ -38,6 +38,7 @@ import Payments from "./pages/payments";
 import LiveClassroom from "./pages/live-classroom";
 import Marketing from "./pages/marketing";
 import Mushaf from "./pages/mushaf";
+import Muraajacah from "./pages/muraajacah";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient();
@@ -223,6 +224,7 @@ function ClerkProviderWithRoutes() {
           <Route path="/payments" component={() => <ProtectedRoute component={Payments} />} />
           <Route path="/live-classroom" component={() => <ProtectedRoute component={LiveClassroom} />} />
           <Route path="/mushaf" component={() => <ProtectedRoute component={Mushaf} />} />
+          <Route path="/muraajacah" component={() => <ProtectedRoute component={Muraajacah} />} />
           <Route path="/about" component={Marketing} />
           <Route component={NotFound} />
         </Switch>

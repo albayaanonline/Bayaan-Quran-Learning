@@ -5,7 +5,7 @@ import {
   LogOut, Menu, BotMessageSquare, Brain, Mic, CalendarDays,
   BookMarked, Shield, GraduationCap, Library, Users, ClipboardList,
   BarChart3, FolderOpen, Globe, PenSquare, Video, MessageCircle,
-  Sparkles, CreditCard, MonitorPlay, ScrollText,
+  Sparkles, CreditCard, MonitorPlay, ScrollText, RotateCcw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -30,7 +30,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         { href: "/dashboard",  label: t("nav.dashboard"),   icon: LayoutDashboard },
         { href: "/learn",      label: t("nav.quran"),       icon: BookOpen },
         { href: "/mushaf",     label: t("nav.mushaf"),      icon: ScrollText, badge: "NEW" },
-        { href: "/hifdh",      label: t("nav.hifdh"),       icon: Brain },
+        { href: "/hifdh",       label: t("nav.hifdh"),       icon: Brain },
+        { href: "/muraajacah", label: t("nav.muraajacah"),  icon: RotateCcw },
         { href: "/library",    label: t("nav.library"),     icon: Library },
         { href: "/cms",        label: t("nav.resources"),   icon: FolderOpen },
       ],
