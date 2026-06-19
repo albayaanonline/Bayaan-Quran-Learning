@@ -223,8 +223,10 @@ async function transcribeLocal(
       }
     );
 
-    // Write payload to stdin
+    // Write payload to stdin — attach error handler first to prevent
+    // unhandled EPIPE from crashing the process when the child exits early.
     if (child.stdin) {
+      child.stdin.on("error", () => {/* swallow EPIPE/write errors — callback handles the failure */});
       child.stdin.write(payload);
       child.stdin.end();
     }
