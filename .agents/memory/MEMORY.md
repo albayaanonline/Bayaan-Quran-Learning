@@ -9,3 +9,4 @@
 - [Al Bayaan root cause: blank screen](al-bayaan-blank-screen.md) — All 500 errors + blank page caused by missing Clerk keys; fix = run setupClerkWhitelabelAuth() in code_execution
 - [Al Bayaan correction engine seed fix](al-bayaan-correction-engine.md) — pick() seed must include transcribed text + timestamp; old seed (reference only) caused identical feedback every attempt; GROQ_API_KEY needed for live STT
 - [Al Bayaan new account setup](al-bayaan-new-account-setup.md) — New Replit account: run pnpm install then pnpm --filter @workspace/db run push then setupClerkWhitelabelAuth(); GROQ_API_KEY+HF_TOKEN+STRIPE_SECRET_KEY+SMTP_* are optional but unlock features; Muraajacah page at /muraajacah added June 2026
+- [Al Bayaan Somali default](al-bayaan-somali-default.md) — Default locale is "so" (Somali); i18n.tsx has 100+ keys in EN/AR/SO; t() has NO English fallback when SO/AR selected; DB schema default also "so"; all pages use useI18n()

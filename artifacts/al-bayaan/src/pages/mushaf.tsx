@@ -441,7 +441,7 @@ export default function Mushaf() {
             }`}
           >
             <BookOpen className="h-4 w-4" />
-            Read
+            {t("mushaf.read")}
           </button>
           <button
             onClick={() => { setPageMode("recite"); stopAudio(); }}
@@ -452,7 +452,7 @@ export default function Mushaf() {
             }`}
           >
             <Mic className="h-4 w-4" />
-            Recite & Check
+            {t("mushaf.recite")}
           </button>
         </div>
 
@@ -630,9 +630,9 @@ export default function Mushaf() {
                   <div className="bg-white dark:bg-emerald-950/30 border border-emerald-100 rounded-2xl overflow-hidden shadow-sm">
                     {recitationResult && (
                       <div className="px-4 py-2 bg-gray-50 border-b border-gray-100 flex items-center gap-4 text-xs">
-                        <span className="flex items-center gap-1"><span className="inline-block w-3 h-3 rounded-sm bg-emerald-200 border border-emerald-400"></span> Correct</span>
-                        <span className="flex items-center gap-1"><span className="inline-block w-3 h-3 rounded-sm bg-red-200 border border-red-400"></span> Missing</span>
-                        <span className="flex items-center gap-1"><span className="inline-block w-3 h-3 rounded-sm bg-orange-200 border border-orange-400"></span> Extra</span>
+                        <span className="flex items-center gap-1"><span className="inline-block w-3 h-3 rounded-sm bg-emerald-200 border border-emerald-400"></span> {t("mushaf.correct")}</span>
+                        <span className="flex items-center gap-1"><span className="inline-block w-3 h-3 rounded-sm bg-red-200 border border-red-400"></span> {t("mushaf.missing")}</span>
+                        <span className="flex items-center gap-1"><span className="inline-block w-3 h-3 rounded-sm bg-orange-200 border border-orange-400"></span> {t("mushaf.extra")}</span>
                       </div>
                     )}
                     {(() => {
@@ -676,8 +676,8 @@ export default function Mushaf() {
                                     }`}
                                     style={{ fontFamily: "var(--font-arabic)" }}
                                     title={
-                                      status === "correct" ? "✓ Correct" :
-                                      status === "missing" ? "✗ Missing / Skipped" :
+                                      status === "correct" ? `✓ ${t("mushaf.correct")}` :
+                                      status === "missing" ? `✗ ${t("mushaf.missing")}` :
                                       undefined
                                     }
                                   >
@@ -705,7 +705,7 @@ export default function Mushaf() {
                       <div className="px-6 pb-4 border-t border-gray-100">
                         <p className="text-xs font-medium text-orange-700 mt-3 mb-1 flex items-center gap-1">
                           <AlertTriangle className="h-3.5 w-3.5" />
-                          Extra words you said (not in this reference):
+                          {t("mushaf.extra")} — 
                         </p>
                         <div className="flex flex-wrap gap-1.5" dir="rtl">
                           {recitationResult.correction.incorrectWords.map((w, i) => (
@@ -722,10 +722,10 @@ export default function Mushaf() {
                   {/* ── Recording Controls ── */}
                   <div className="bg-white border border-emerald-100 rounded-2xl p-5 shadow-sm">
                     <div className="flex items-center justify-between mb-4">
-                      <p className="font-semibold text-emerald-900">Recitation Recording</p>
+                      <p className="font-semibold text-emerald-900">{t("mushaf.recitationRec")}</p>
                       {recordState === "done" && recitationResult && (
                         <Button variant="outline" size="sm" onClick={resetRecitation} className="gap-1.5 text-xs">
-                          <RefreshCw className="h-3.5 w-3.5" /> Record Again
+                          <RefreshCw className="h-3.5 w-3.5" /> {t("mushaf.tryAgain")}
                         </Button>
                       )}
                     </div>
@@ -764,18 +764,18 @@ export default function Mushaf() {
                       </div>
 
                       <p className="text-sm text-center text-muted-foreground">
-                        {recordState === "idle" && "Press the button and recite. Press again to stop."}
+                        {recordState === "idle" && t("mushaf.startRecording")}
                         {recordState === "recording" && (
                           <span className="text-red-600 font-medium animate-pulse">
-                            Recording… recite clearly. Press stop when done.
+                            {t("mushaf.recording")}
                           </span>
                         )}
                         {recordState === "analyzing" && (
-                          <span className="text-amber-700 font-medium">Analyzing your recitation with Groq Whisper AI…</span>
+                          <span className="text-amber-700 font-medium">{t("mushaf.analyzing")}</span>
                         )}
-                        {recordState === "done" && "Analysis complete. See results below."}
+                        {recordState === "done" && t("mushaf.stopRecording")}
                         {recordState === "error" && (
-                          <span className="text-red-600">An error occurred. Please try again.</span>
+                          <span className="text-red-600">{t("general.error")} — {t("general.tryAgain")}</span>
                         )}
                       </p>
 
@@ -805,16 +805,16 @@ export default function Mushaf() {
                             <div className="flex items-start gap-3">
                               <MicOff className="h-5 w-5 text-red-600 mt-0.5 shrink-0" />
                               <div>
-                                <p className="font-semibold text-red-800 text-sm">Speech recognition failed</p>
+                                <p className="font-semibold text-red-800 text-sm">{t("mushaf.sttFailed")}</p>
                                 <p className="text-xs text-red-700 mt-1">
-                                  {recitationResult.transcription.error ?? "No speech was detected in your recording."}
+                                  {recitationResult.transcription.error ?? t("mushaf.noSpeech")}
                                 </p>
                               </div>
                             </div>
 
                             {recitationResult.transcription.providerErrors && recitationResult.transcription.providerErrors.length > 0 && (
                               <div className="bg-red-100 rounded-xl p-3 space-y-1">
-                                <p className="text-xs font-semibold text-red-800 mb-1">Provider details:</p>
+                                <p className="text-xs font-semibold text-red-800 mb-1">{t("mushaf.providerDetails")}</p>
                                 {recitationResult.transcription.providerErrors.map((e, i) => (
                                   <p key={i} className="text-xs text-red-700 font-mono">• {e}</p>
                                 ))}
@@ -822,10 +822,10 @@ export default function Mushaf() {
                             )}
 
                             <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-800 space-y-1">
-                              <p className="font-semibold">How to fix:</p>
-                              <p>1. Add <strong>GROQ_API_KEY</strong> in Replit Secrets (fastest — Groq Whisper is free)</p>
-                              <p>2. Speak clearly for at least 3 seconds in a quiet environment</p>
-                              <p>3. Check your microphone is working and allowed in the browser</p>
+                              <p className="font-semibold">{t("mushaf.howToFix")}</p>
+                              <p>1. {t("mushaf.fixStep1")}</p>
+                              <p>2. {t("mushaf.fixStep2")}</p>
+                              <p>3. {t("mushaf.fixStep3")}</p>
                             </div>
 
                             <Button
@@ -834,7 +834,7 @@ export default function Mushaf() {
                               onClick={resetRecitation}
                               className="gap-1.5 text-xs border-red-200 text-red-700 hover:bg-red-50"
                             >
-                              <RefreshCw className="h-3.5 w-3.5" /> Try Again
+                              <RefreshCw className="h-3.5 w-3.5" /> {t("mushaf.tryAgain")}
                             </Button>
                           </div>
                         )}
@@ -848,21 +848,21 @@ export default function Mushaf() {
                                 <AccuracyRing score={recitationResult.correction.accuracyScore} />
                                 <div className="flex-1 min-w-0 space-y-3">
                                   <div>
-                                    <p className="text-xs text-muted-foreground mb-1">Overall Accuracy</p>
+                                    <p className="text-xs text-muted-foreground mb-1">{t("mushaf.accuracy")}</p>
                                     <Progress value={recitationResult.correction.accuracyScore} className="h-3" />
                                   </div>
                                   <div className="grid grid-cols-3 gap-2 text-center">
                                     <div className="bg-emerald-50 rounded-lg p-2">
                                       <p className="text-lg font-bold text-emerald-700">{recitationResult.correction.wordStats.correct}</p>
-                                      <p className="text-xs text-emerald-600">Correct</p>
+                                      <p className="text-xs text-emerald-600">{t("mushaf.correct")}</p>
                                     </div>
                                     <div className="bg-red-50 rounded-lg p-2">
                                       <p className="text-lg font-bold text-red-700">{recitationResult.correction.wordStats.missing}</p>
-                                      <p className="text-xs text-red-600">Missing</p>
+                                      <p className="text-xs text-red-600">{t("mushaf.missing")}</p>
                                     </div>
                                     <div className="bg-orange-50 rounded-lg p-2">
                                       <p className="text-lg font-bold text-orange-700">{recitationResult.correction.wordStats.extra}</p>
-                                      <p className="text-xs text-orange-600">Extra</p>
+                                      <p className="text-xs text-orange-600">{t("mushaf.extra")}</p>
                                     </div>
                                   </div>
                                 </div>
@@ -874,12 +874,12 @@ export default function Mushaf() {
                               <div className="flex items-center justify-between flex-wrap gap-2">
                                 <p className="text-sm font-semibold text-emerald-900 flex items-center gap-1.5">
                                   <Mic className="h-4 w-4 text-emerald-600" />
-                                  Recognized Arabic Text
+                                  {t("mushaf.recognizedText")}
                                 </p>
                                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                                   <span className="bg-gray-100 rounded px-2 py-0.5">{recitationResult.transcription.model}</span>
                                   <span className="bg-blue-50 text-blue-700 rounded px-2 py-0.5 font-medium">
-                                    {Math.round(recitationResult.transcription.confidence * 100)}% confidence
+                                    {Math.round(recitationResult.transcription.confidence * 100)}% {t("mushaf.confidence")}
                                   </span>
                                 </div>
                               </div>
@@ -893,10 +893,10 @@ export default function Mushaf() {
                               </div>
 
                               <div className="text-xs text-muted-foreground flex flex-wrap gap-x-4 gap-y-1">
-                                <span><span className="font-medium text-gray-700">Reference words:</span> {recitationResult.correction.wordStats.total}</span>
-                                <span><span className="font-medium text-gray-700">Recognized:</span> {recitationResult.correction.analysisLog.transcribedWordCount}</span>
-                                <span><span className="font-medium text-gray-700">LCS match:</span> {recitationResult.correction.analysisLog.lcsLength}</span>
-                                <span><span className="font-medium text-gray-700">Pattern:</span> {recitationResult.correction.analysisLog.errorPattern}</span>
+                                <span><span className="font-medium text-gray-700">{t("mushaf.refWords")}:</span> {recitationResult.correction.wordStats.total}</span>
+                                <span><span className="font-medium text-gray-700">{t("mushaf.recognized")}:</span> {recitationResult.correction.analysisLog.transcribedWordCount}</span>
+                                <span><span className="font-medium text-gray-700">{t("mushaf.lcsMatch")}:</span> {recitationResult.correction.analysisLog.lcsLength}</span>
+                                <span><span className="font-medium text-gray-700">{t("mushaf.pattern")}:</span> {recitationResult.correction.analysisLog.errorPattern}</span>
                               </div>
                             </div>
 
@@ -905,7 +905,7 @@ export default function Mushaf() {
                               <div className="bg-red-50 border border-red-100 rounded-2xl p-5">
                                 <p className="text-sm font-semibold text-red-800 mb-3 flex items-center gap-1.5">
                                   <XCircle className="h-4 w-4" />
-                                  Missing / Skipped Words ({recitationResult.correction.missingWords.length})
+                                  {t("mushaf.missingWords")} ({recitationResult.correction.missingWords.length})
                                 </p>
                                 <div className="flex flex-wrap gap-2" dir="rtl">
                                   {recitationResult.correction.missingWords.map((w, i) => (
@@ -921,7 +921,7 @@ export default function Mushaf() {
                               <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-5">
                                 <p className="text-sm font-semibold text-emerald-800 mb-3 flex items-center gap-1.5">
                                   <CheckCircle2 className="h-4 w-4" />
-                                  Correctly Recited ({recitationResult.correction.correctWords.length} words)
+                                  {t("mushaf.correctWords")} ({recitationResult.correction.correctWords.length})
                                 </p>
                                 <div className="flex flex-wrap gap-2" dir="rtl">
                                   {recitationResult.correction.correctWords.map((w, i) => (
@@ -937,7 +937,7 @@ export default function Mushaf() {
                               <div className="bg-gradient-to-br from-emerald-700 to-emerald-600 rounded-2xl p-5 text-white shadow-lg">
                                 <p className="text-sm font-semibold mb-3 flex items-center gap-2">
                                   <Sparkles className="h-4 w-4 text-amber-300" />
-                                  Al Bayaan AI Teacher Feedback
+                                  {t("mushaf.aiFeedback")}
                                 </p>
                                 <div className="space-y-2">
                                   {recitationResult.correction.suggestions.map((s, i) => (
@@ -961,13 +961,13 @@ export default function Mushaf() {
         <div className="flex items-center justify-between">
           <Button variant="outline" onClick={() => goToPage(page - 1)} disabled={page <= 1} className="gap-2 border-emerald-200 hover:bg-emerald-50">
             <ChevronLeft className="h-4 w-4" />
-            Previous Page
+            {t("general.back")}
           </Button>
           <span className="text-sm text-muted-foreground">
-            {Math.round((page / TOTAL_PAGES) * 100)}% complete
+            {Math.round((page / TOTAL_PAGES) * 100)}% {t("mushaf.complete")}
           </span>
           <Button variant="outline" onClick={() => goToPage(page + 1)} disabled={page >= TOTAL_PAGES} className="gap-2 border-emerald-200 hover:bg-emerald-50">
-            Next Page
+            {t("general.next")}
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>

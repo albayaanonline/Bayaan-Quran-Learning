@@ -73,7 +73,7 @@ Format your responses clearly:
 }
 
 router.post("/video-teacher/message", requireAuth, async (req: any, res) => {
-  const { text, mode = "quran", language = "en", history = [] } = req.body;
+  const { text, mode = "quran", language = "so", history = [] } = req.body;
 
   if (!text?.trim()) {
     res.status(400).json({ error: "Text message is required" });

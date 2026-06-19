@@ -25,7 +25,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   const navGroups = [
     {
-      label: t("nav.group.learn", "Learn"),
+      label: t("nav.group.learn"),
       items: [
         { href: "/dashboard",  label: t("nav.dashboard"),   icon: LayoutDashboard },
         { href: "/learn",      label: t("nav.quran"),       icon: BookOpen },
@@ -37,7 +37,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       ],
     },
     {
-      label: t("nav.group.aiTeachers", "AI Teachers"),
+      label: t("nav.group.aiTeachers"),
       items: [
         { href: "/teacher",        label: t("nav.aiTeacher"),    icon: BotMessageSquare },
         { href: "/tajweed-teacher",label: t("nav.tajweedTutor"), icon: BookMarked },
@@ -47,7 +47,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       ],
     },
     {
-      label: t("nav.group.progress", "Progress"),
+      label: t("nav.group.progress"),
       items: [
         { href: "/progress",      label: t("nav.progress"),     icon: LineChart },
         { href: "/analytics",     label: t("nav.analytics"),    icon: BarChart3, badge: "NEW" },
@@ -57,20 +57,20 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       ],
     },
     {
-      label: t("nav.group.exams", "Exams"),
+      label: t("nav.group.exams"),
       items: [
         { href: "/exams",        label: t("nav.examCentre"),   icon: ClipboardList },
         { href: "/certificates", label: t("nav.certificates"), icon: Award },
       ],
     },
     {
-      label: t("nav.group.family", "Family"),
+      label: t("nav.group.family"),
       items: [
         { href: "/parent", label: t("nav.parentDashboard"), icon: Users },
       ],
     },
     {
-      label: t("nav.group.community", "Community"),
+      label: t("nav.group.community"),
       items: [
         { href: "/messages",       label: t("nav.messages"),     icon: MessageCircle, badge: "NEW" },
         { href: "/live-classroom", label: t("nav.liveClassroom"),icon: MonitorPlay,   badge: "NEW" },
@@ -78,7 +78,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       ],
     },
     {
-      label: t("nav.group.admin", "Admin"),
+      label: t("nav.group.admin"),
       items: [
         { href: "/content-generator",  label: t("nav.contentGen"),  icon: Sparkles, badge: "NEW" },
         { href: "/exam-builder",       label: t("nav.examBuilder"), icon: PenSquare },

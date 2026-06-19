@@ -9,7 +9,7 @@ export const profilesTable = pgTable("profiles", {
   email: text("email"),
   avatarUrl: text("avatar_url"),
   onboardingComplete: boolean("onboarding_complete").notNull().default(false),
-  language: text("language").notNull().default("en"),
+  language: text("language").notNull().default("so"),
   learningGoals: text("learning_goals").notNull().default("[]"),
   level: text("level").notNull().default("beginner"),
   ageGroup: text("age_group").notNull().default("adult"),

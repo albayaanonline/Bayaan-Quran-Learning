@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import AppLayout from "@/components/layout/AppLayout";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,6 +10,7 @@ import { Progress } from "@/components/ui/progress";
 import { BookOpen, Clock, CheckCircle2, XCircle, Loader2, ArrowLeft, Star, ClipboardList, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
+import { useI18n } from "@/lib/i18n";
 
 interface Exam {
   id: number;
@@ -53,6 +54,7 @@ function SubjectBadge({ subject }: { subject: string }) {
 }
 
 function ExamCard({ exam, onStart }: { exam: Exam; onStart: () => void }) {
+  const { t } = useI18n();
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
       <Card className="border-emerald-100 hover:shadow-md transition-shadow cursor-pointer" onClick={onStart}>
@@ -65,13 +67,13 @@ function ExamCard({ exam, onStart }: { exam: Exam; onStart: () => void }) {
             <SubjectBadge subject={exam.subject} />
           </div>
           <div className="flex items-center gap-4 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" />{exam.durationMinutes} min</span>
-            <span className="flex items-center gap-1"><Star className="h-3.5 w-3.5" />{exam.totalMarks} marks</span>
-            <span className="flex items-center gap-1"><ClipboardList className="h-3.5 w-3.5" />{exam.questions?.length ?? 0} questions</span>
+            <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" />{exam.durationMinutes} {t("exams.min")}</span>
+            <span className="flex items-center gap-1"><Star className="h-3.5 w-3.5" />{exam.totalMarks} {t("exams.marks")}</span>
+            <span className="flex items-center gap-1"><ClipboardList className="h-3.5 w-3.5" />{exam.questions?.length ?? 0} {t("exams.questions")}</span>
           </div>
           <div className="mt-3 flex items-center justify-between">
-            <span className="text-[11px] text-muted-foreground">Pass: {exam.passingMarks}/{exam.totalMarks}</span>
-            <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 h-7 text-xs px-3">Start Exam</Button>
+            <span className="text-[11px] text-muted-foreground">{t("exams.pass")}: {exam.passingMarks}/{exam.totalMarks}</span>
+            <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 h-7 text-xs px-3">{t("exams.startExam")}</Button>
           </div>
         </CardContent>
       </Card>
@@ -80,19 +82,20 @@ function ExamCard({ exam, onStart }: { exam: Exam; onStart: () => void }) {
 }
 
 function ResultView({ result, exam, evaluation, onBack }: { result: ExamResult; exam: Exam; evaluation: string; onBack: () => void }) {
+  const { t } = useI18n();
   const percentage = result.percentage ?? Math.round((result.score / result.totalMarks) * 100);
   return (
     <div className="space-y-4">
-      <Button variant="ghost" size="sm" onClick={onBack} className="gap-2"><ArrowLeft className="h-4 w-4" /> Back to Exams</Button>
+      <Button variant="ghost" size="sm" onClick={onBack} className="gap-2"><ArrowLeft className="h-4 w-4" /> {t("exams.backToExams")}</Button>
       <Card className={`border-2 ${result.passed ? "border-emerald-400 bg-emerald-50" : "border-red-300 bg-red-50"}`}>
         <CardContent className="p-6 text-center">
           {result.passed
             ? <CheckCircle2 className="h-16 w-16 text-emerald-600 mx-auto mb-3" />
             : <XCircle className="h-16 w-16 text-red-500 mx-auto mb-3" />
           }
-          <h2 className="text-2xl font-bold mb-1">{result.passed ? "Passed! 🎉" : "Try Again"}</h2>
+          <h2 className="text-2xl font-bold mb-1">{result.passed ? t("exams.passed") : t("exams.tryAgain")}</h2>
           <p className="text-4xl font-bold text-emerald-900 mt-2">{percentage}%</p>
-          <p className="text-muted-foreground text-sm mt-1">{result.score}/{result.totalMarks} marks</p>
+          <p className="text-muted-foreground text-sm mt-1">{result.score}/{result.totalMarks} {t("exams.marks")}</p>
           <Progress value={percentage} className="mt-4 h-3" />
         </CardContent>
       </Card>
@@ -100,7 +103,7 @@ function ResultView({ result, exam, evaluation, onBack }: { result: ExamResult; 
       {evaluation && (
         <Card className="border-emerald-100">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm flex items-center gap-2"><Sparkles className="h-4 w-4 text-emerald-600" />AI Evaluation</CardTitle>
+            <CardTitle className="text-sm flex items-center gap-2"><Sparkles className="h-4 w-4 text-emerald-600" />{t("exams.aiEvaluation")}</CardTitle>
           </CardHeader>
           <CardContent>
             <ScrollArea className="h-48">
@@ -114,6 +117,7 @@ function ResultView({ result, exam, evaluation, onBack }: { result: ExamResult; 
 }
 
 export default function Exams() {
+  const { t } = useI18n();
   const { toast } = useToast();
   const [exams, setExams] = useState<Exam[]>([]);
   const [loading, setLoading] = useState(true);
@@ -128,7 +132,8 @@ export default function Exams() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    fetch("/api/exams", { credentials: "include" })
+    const basePath = (import.meta.env.BASE_URL || "").replace(/\/$/, "");
+    fetch(`${basePath}/api/exams`, { credentials: "include" })
       .then(r => r.ok ? r.json() : [])
       .then(data => setExams(Array.isArray(data) ? data : []))
       .catch(() => {})
@@ -138,16 +143,17 @@ export default function Exams() {
   useEffect(() => {
     if (!activeExam || result) return;
     setTimeLeft(activeExam.durationMinutes * 60);
-    timerRef.current = setInterval(() => setTimeLeft(t => {
-      if (t <= 1) { clearInterval(timerRef.current!); handleSubmit(); return 0; }
-      return t - 1;
+    timerRef.current = setInterval(() => setTimeLeft(tv => {
+      if (tv <= 1) { clearInterval(timerRef.current!); handleSubmit(); return 0; }
+      return tv - 1;
     }), 1000);
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [activeExam, result]);
 
   const startExam = async (exam: Exam) => {
     try {
-      const r = await fetch(`/api/exams/${exam.id}/start`, { method: "POST", credentials: "include" });
+      const basePath = (import.meta.env.BASE_URL || "").replace(/\/$/, "");
+      const r = await fetch(`${basePath}/api/exams/${exam.id}/start`, { method: "POST", credentials: "include" });
       if (r.ok) {
         const data = await r.json();
         setResultId(data.id);
@@ -156,7 +162,7 @@ export default function Exams() {
         setResult(null);
         setEvaluation("");
       }
-    } catch { toast({ title: "Failed to start exam", variant: "destructive" }); }
+    } catch { toast({ title: t("exams.failStart"), variant: "destructive" }); }
   };
 
   const handleSubmit = async () => {
@@ -164,7 +170,8 @@ export default function Exams() {
     if (timerRef.current) clearInterval(timerRef.current);
     setSubmitting(true);
     try {
-      const r = await fetch(`/api/exams/${activeExam.id}/submit`, {
+      const basePath = (import.meta.env.BASE_URL || "").replace(/\/$/, "");
+      const r = await fetch(`${basePath}/api/exams/${activeExam.id}/submit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -175,7 +182,7 @@ export default function Exams() {
         setResult(data);
         fetchEvaluation();
       }
-    } catch { toast({ title: "Failed to submit", variant: "destructive" }); }
+    } catch { toast({ title: t("exams.failSubmit"), variant: "destructive" }); }
     finally { setSubmitting(false); }
   };
 
@@ -183,7 +190,8 @@ export default function Exams() {
     if (!activeExam) return;
     setEvaluating(true);
     try {
-      const r = await fetch(`/api/exams/${activeExam.id}/evaluate`, {
+      const basePath = (import.meta.env.BASE_URL || "").replace(/\/$/, "");
+      const r = await fetch(`${basePath}/api/exams/${activeExam.id}/evaluate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -236,7 +244,7 @@ export default function Exams() {
             </div>
           </div>
           <Progress value={(answered / Math.max(questions.length, 1)) * 100} className="h-2" />
-          <p className="text-xs text-muted-foreground">{answered}/{questions.length} answered</p>
+          <p className="text-xs text-muted-foreground">{answered}/{questions.length} {t("exams.answered")}</p>
 
           <div className="space-y-4">
             {questions.map((q, i) => (
@@ -245,7 +253,7 @@ export default function Exams() {
                   <div className="flex gap-2 mb-3">
                     <span className="text-xs font-bold bg-emerald-100 text-emerald-700 rounded-full h-5 w-5 flex items-center justify-center shrink-0">{i + 1}</span>
                     <p className="text-sm font-medium">{q.text}</p>
-                    <Badge variant="outline" className="ml-auto shrink-0 text-xs">{q.marks}m</Badge>
+                    <Badge variant="outline" className="ml-auto shrink-0 text-xs">{q.marks}{t("exams.marks")}</Badge>
                   </div>
                   {q.type === "mcq" && q.options ? (
                     <div className="space-y-2 pl-7">
@@ -262,7 +270,7 @@ export default function Exams() {
                     <Textarea
                       value={answers[q.id] ?? ""}
                       onChange={e => setAnswers(a => ({ ...a, [q.id]: e.target.value }))}
-                      placeholder="Write your answer here..."
+                      placeholder={t("exams.writeAnswer")}
                       className="mt-2 text-sm min-h-[80px]"
                     />
                   )}
@@ -272,9 +280,9 @@ export default function Exams() {
           </div>
 
           <div className="flex gap-3">
-            <Button variant="outline" onClick={() => { if (timerRef.current) clearInterval(timerRef.current); setActiveExam(null); }}>Cancel</Button>
+            <Button variant="outline" onClick={() => { if (timerRef.current) clearInterval(timerRef.current); setActiveExam(null); }}>{t("exams.cancel")}</Button>
             <Button onClick={handleSubmit} disabled={submitting} className="bg-emerald-600 hover:bg-emerald-700 flex-1">
-              {submitting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Submitting…</> : "Submit Exam"}
+              {submitting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />{t("exams.submitting")}</> : t("exams.submitExam")}
             </Button>
           </div>
         </div>
@@ -287,9 +295,9 @@ export default function Exams() {
       <div className="max-w-3xl mx-auto space-y-6">
         <div>
           <h1 className="text-2xl font-serif font-bold text-emerald-950 flex items-center gap-2">
-            <ClipboardList className="h-6 w-6 text-emerald-600" /> Exam Centre
+            <ClipboardList className="h-6 w-6 text-emerald-600" /> {t("exams.title")}
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">Test your knowledge with Quran, Tajweed, and Islamic studies exams</p>
+          <p className="text-sm text-muted-foreground mt-1">{t("exams.subtitle")}</p>
         </div>
 
         {loading ? (
@@ -300,8 +308,8 @@ export default function Exams() {
           <Card className="border-dashed">
             <CardContent className="p-12 text-center">
               <ClipboardList className="h-12 w-12 text-emerald-300 mx-auto mb-4" />
-              <h3 className="font-semibold text-lg">No exams available yet</h3>
-              <p className="text-sm text-muted-foreground mt-1">Your teacher will publish exams here for you to take</p>
+              <h3 className="font-semibold text-lg">{t("exams.noExams")}</h3>
+              <p className="text-sm text-muted-foreground mt-1">{t("exams.noExamsSub")}</p>
             </CardContent>
           </Card>
         ) : (
