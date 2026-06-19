@@ -218,7 +218,8 @@ export function analyzeTajweed(referenceText: string, accuracyScore: number): Ta
 
   const ruleBonus = Math.min(20, presentRules.length * 2);
   const waqfPenalty = waqfAnalysis.hasForbiddenStop ? -10 : 0;
-  const tajweedScore = Math.min(100, Math.max(0, Math.round(accuracyScore * 0.7 + ruleBonus + 10 + waqfPenalty)));
+  // No artificial base bonus — score is purely accuracy + detected rule richness + waqf penalty
+  const tajweedScore = Math.min(100, Math.max(0, Math.round(accuracyScore * 0.75 + ruleBonus + waqfPenalty)));
 
   const ruleBreakdown: Record<string, { found: boolean; count: number; weight: number }> = {};
   rules.forEach(r => { ruleBreakdown[r.name] = { found: r.found, count: r.count, weight: r.severity === "critical" ? 3 : r.severity === "warning" ? 2 : 1 }; });

@@ -52,9 +52,8 @@ function stripBase(path: string): string {
   return basePath && path.startsWith(basePath) ? path.slice(basePath.length) || "/" : path;
 }
 
-if (!clerkPubKey) {
-  throw new Error("Missing VITE_CLERK_PUBLISHABLE_KEY in .env file");
-}
+// NOTE: If clerkPubKey is missing, ClerkProviderWithRoutes will render a
+// configuration error UI. We do NOT throw here to prevent white screen.
 
 const clerkAppearance = {
   theme: shadcn,
@@ -151,8 +150,34 @@ function ClerkQueryClientCacheInvalidator() {
   return null;
 }
 
+function MissingConfigError({ message }: { message: string }) {
+  return (
+    <div className="flex min-h-[100dvh] items-center justify-center bg-emerald-50 p-6">
+      <div className="max-w-md w-full bg-white rounded-2xl border border-emerald-100 shadow-xl p-10 text-center">
+        <div className="text-5xl mb-4">⚙️</div>
+        <h1 className="text-2xl font-serif font-bold text-emerald-900 mb-3">Configuration Required</h1>
+        <p className="text-emerald-700 mb-4 leading-relaxed">
+          Al Bayaan requires authentication to be configured before it can start.
+          Please contact the administrator or check the environment setup.
+        </p>
+        <div className="bg-emerald-50 rounded-lg px-4 py-3 text-left text-sm text-emerald-800 font-mono break-words mb-6">
+          {message}
+        </div>
+        <p className="text-sm text-emerald-600">
+          Set <code className="bg-emerald-100 px-1 rounded">VITE_CLERK_PUBLISHABLE_KEY</code> in the environment variables and restart.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 function ClerkProviderWithRoutes() {
   const [, setLocation] = useLocation();
+
+  if (!clerkPubKey) {
+    return <MissingConfigError message="VITE_CLERK_PUBLISHABLE_KEY is not set. Authentication cannot initialize." />;
+  }
+
   return (
     <ClerkProvider
       publishableKey={clerkPubKey}
