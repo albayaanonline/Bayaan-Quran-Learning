@@ -8,12 +8,13 @@
 
 function removeArabicDiacritics(text: string): string {
   return text
-    .replace(/[\u064B-\u065F]/g, "")
-    .replace(/\u0640/g, "")
-    .replace(/[\u06D6-\u06DC]/g, "")
-    .replace(/[\u06DF-\u06E8]/g, "")
-    .replace(/[\u06EA-\u06ED]/g, "")
-    .replace(/[﴾﴿]/g, "")
+    .replace(/[\u064B-\u065F]/g, "")   // standard diacritics (fathatan → sukun)
+    .replace(/\u0670/g, "")            // superscript alef (ٰ) in الرَّحْمَٰنِ etc.
+    .replace(/\u0640/g, "")            // tatweel / kashida
+    .replace(/[\u06D6-\u06DC]/g, "")   // Quranic annotation signs
+    .replace(/[\u06DF-\u06E8]/g, "")   // Quranic annotation signs
+    .replace(/[\u06EA-\u06ED]/g, "")   // Quranic annotation signs
+    .replace(/[﴾﴿\u06D6\u06D7\u06D8\u06D9\u06DA\u06DB]/g, "")
     .trim();
 }
 

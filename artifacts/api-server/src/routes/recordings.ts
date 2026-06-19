@@ -10,6 +10,51 @@ import { SURAHS } from "./surahs";
 
 const router = Router();
 
+/**
+ * Convert raw provider error strings into a single human-readable sentence.
+ * Shown on the student's screen when all STT providers fail.
+ */
+function deriveHumanReason(errors: string[]): string {
+  if (!errors || errors.length === 0) return "Speech recognition failed for an unknown reason.";
+  const joined = errors.join(" | ").toLowerCase();
+  if (joined.includes("no audio") || joined.includes("too small") || joined.includes("too short")) {
+    return "No audio was received. Please record for at least 2 seconds and allow microphone access.";
+  }
+  if (joined.includes("timed out")) {
+    return "The speech recognition service timed out. Check your internet connection and try again.";
+  }
+  if (joined.includes("empty transcription") || joined.includes("no speech") || joined.includes("vad")) {
+    return "No Arabic speech was detected. Speak clearly and close to the microphone in a quiet environment.";
+  }
+  if (joined.includes("groq_api_key") && joined.includes("503")) {
+    return "The cloud speech service is temporarily unavailable (cold start). The local fallback also failed. Try again in 30 seconds.";
+  }
+  if (joined.includes("groq_api_key")) {
+    return "Cloud speech recognition is not configured (no GROQ_API_KEY). The local fallback failed. Try again or add a GROQ_API_KEY secret.";
+  }
+  return "Speech recognition failed. Please try again in a quiet environment.";
+}
+
+/**
+ * Build a structured list of which providers were attempted and their status.
+ */
+function buildProviderAttempts(errors: string[]): Array<{ provider: string; status: string; detail: string }> {
+  const attempts: Array<{ provider: string; status: string; detail: string }> = [];
+  const known = [
+    { key: "groq", label: "Groq Whisper-large-v3" },
+    { key: "tarteel", label: "HF tarteel-ai/whisper-large-v2-ar" },
+    { key: "whisper-large-v3", label: "HF openai/whisper-large-v3" },
+    { key: "faster-whisper", label: "Local faster-whisper (tiny)" },
+  ];
+  for (const p of known) {
+    const match = (errors ?? []).find(e => e.toLowerCase().includes(p.key));
+    if (match) {
+      attempts.push({ provider: p.label, status: "failed", detail: match });
+    }
+  }
+  return attempts;
+}
+
 function formatRecording(r: any) {
   return {
     id: r.id,
@@ -43,37 +88,51 @@ router.post("/recordings", requireAuth, async (req: any, res) => {
   try {
     const { surahId, ayahId, ayahNumber, ayahText, audioBase64, audioMimeType, durationSeconds } = req.body;
 
-    let transcribedText = "";
-    let transcriptionSuccess = false;
-    let transcriptionModel = "none";
+    const audioBytes = audioBase64 ? Math.round(audioBase64.length * 0.75) : 0;
 
-    if (audioBase64 && audioBase64.length > 100) {
-      logger.info({ surahId, ayahNumber }, "Transcribing audio with Whisper");
-      const result = await transcribeAudio(audioBase64, audioMimeType || "audio/webm");
-      transcribedText = result.text;
-      transcriptionSuccess = result.success;
-      transcriptionModel = result.model;
-      if (!result.success) {
-        logger.warn({ error: result.error }, "Transcription failed, using text-only analysis");
-      }
+    // ── STEP 1: Transcribe audio (4-provider chain) ──────────────────────────
+    if (!audioBase64 || audioBase64.length < 100) {
+      res.status(400).json({
+        transcriptionFailed: true,
+        reason: "No audio received by the server.",
+        providerErrors: ["No audio data in request"],
+        diagnostics: { audioBytes: 0, durationSeconds: durationSeconds ?? 0 },
+      });
+      return;
     }
 
-    // Unique key per attempt: timestamp + audio size + ayah number
-    const audioBytes = audioBase64 ? Math.round(audioBase64.length * 0.75) : 0;
-    const attemptKey = `${Date.now()}_${audioBytes}_a${ayahNumber ?? 0}`;
+    logger.info({ surahId, ayahNumber, audioBytes }, "Starting STT chain");
+    const sttResult = await transcribeAudio(audioBase64, audioMimeType || "audio/webm");
 
-    const correction = analyzeRecitation(ayahText ?? "", transcribedText, attemptKey);
+    // ── HARD GATE: no feedback from empty transcription ──────────────────────
+    if (!sttResult.success || !sttResult.text || sttResult.text.trim().length === 0) {
+      logger.warn({ errors: sttResult.providerErrors }, "All STT providers failed — returning failure response");
+      res.status(200).json({
+        transcriptionFailed: true,
+        reason: deriveHumanReason(sttResult.providerErrors),
+        providerErrors: sttResult.providerErrors,
+        diagnostics: {
+          audioBytes,
+          durationSeconds: durationSeconds ?? 0,
+          providersAttempted: buildProviderAttempts(sttResult.providerErrors),
+        },
+      });
+      return;
+    }
+
+    // ── STEP 2: Correction analysis (only runs when real text exists) ─────────
+    const attemptKey = `${Date.now()}_${audioBytes}_a${ayahNumber ?? 0}`;
+    const correction = analyzeRecitation(ayahText ?? "", sttResult.text, attemptKey);
     const tajweed = analyzeTajweed(ayahText ?? "", correction.accuracyScore);
 
     const accuracyScore = correction.accuracyScore;
     const tajweedScore = tajweed.score;
     const pronunciationScore = Math.min(100, Math.round(accuracyScore * 0.85 + tajweedScore * 0.15));
-    const fluencyScore = transcribedText.length > 0 ? Math.min(100, Math.round(accuracyScore * 0.75 + 25)) : 0;
-    const confidenceScore = transcribedText.length > 0 ? Math.min(100, fluencyScore + 5) : 0;
-    const overallScore =
-      transcribedText.length > 0
-        ? Math.round((accuracyScore + tajweedScore + pronunciationScore + fluencyScore + confidenceScore) / 5)
-        : 0;
+    const fluencyScore = Math.min(100, Math.round(accuracyScore * 0.75 + 25));
+    const confidenceScore = Math.min(100, Math.round(sttResult.confidence * 100 * 0.5 + fluencyScore * 0.5));
+    const overallScore = Math.round(
+      (accuracyScore + tajweedScore + pronunciationScore + fluencyScore + confidenceScore) / 5
+    );
 
     const allSuggestions = [
       ...correction.suggestions,
@@ -81,32 +140,36 @@ router.post("/recordings", requireAuth, async (req: any, res) => {
     ].filter(Boolean).slice(0, 6);
 
     const feedback = {
+      // ── Scores ──
       pronunciationScore,
       fluencyScore,
       tajweedScore,
       accuracyScore,
       confidenceScore,
       overallScore,
+      // ── Word diff ──
       correctWords: correction.correctWords,
       incorrectWords: correction.incorrectWords,
       missingWords: correction.missingWords,
+      wordStats: correction.wordStats,
+      // ── AI suggestions ──
       suggestions: allSuggestions.length > 0 ? allSuggestions : ["Keep practicing!"],
-      transcribedText,
-      transcriptionSuccess,
-      transcriptionModel,
-      transcriptionError: transcriptionSuccess ? null : "STT providers could not process audio",
+      // ── Transcription info ──
+      transcribedText: sttResult.text,
+      transcriptionSuccess: true,
+      transcriptionModel: sttResult.model,
+      transcriptionConfidence: sttResult.confidence,
+      // ── Tajweed ──
       presentTajweedRules: tajweed.presentRules,
       tajweedRules: tajweed.rules.filter((r) => r.found),
-      wordStats: correction.wordStats,
+      // ── Diagnostics ──
       diagnostics: {
         audioDurationSeconds: durationSeconds ?? 0,
         audioBytes,
-        transcriptionProvider: transcriptionModel,
-        transcriptionAttempted: !!(audioBase64 && audioBase64.length > 100),
+        transcriptionProvider: sttResult.model,
+        transcriptionConfidence: sttResult.confidence,
         analysisLog: correction.analysisLog,
-        scoreFormula: transcribedText
-          ? `Overall = (accuracy:${accuracyScore} + tajweed:${tajweedScore} + pronunciation:${pronunciationScore} + fluency:${fluencyScore} + confidence:${confidenceScore}) / 5`
-          : "Overall = 0 (transcription failed — no speech detected)",
+        scoreFormula: `Overall=(accuracy:${accuracyScore}+tajweed:${tajweedScore}+pronunciation:${pronunciationScore}+fluency:${fluencyScore}+confidence:${confidenceScore})/5=${overallScore}`,
       },
     };
 

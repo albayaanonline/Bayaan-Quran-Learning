@@ -105,6 +105,7 @@ export default function SurahDetail() {
   const [currentAyahIndex, setCurrentAyahIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [feedback, setFeedback] = useState<any>(null);
+  const [sttFailure, setSttFailure] = useState<any>(null);
   const [showTranslation, setShowTranslation] = useState(false);
   const [translation, setTranslation] = useState<string | null>(null);
   const [loadingTranslation, setLoadingTranslation] = useState(false);
@@ -142,6 +143,7 @@ export default function SurahDetail() {
   useEffect(() => {
     resetRecording();
     setFeedback(null);
+    setSttFailure(null);
     setTranslation(null);
     setShowTranslation(false);
     setIsPlaying(false);
@@ -288,9 +290,19 @@ export default function SurahDetail() {
           durationSeconds: recordingSeconds,
         }),
       });
-      if (!resp.ok) throw new Error("API error");
       const data = await resp.json();
-      setFeedback(data.feedback);
+
+      // STT failure — all 4 providers failed, no feedback generated
+      if (data.transcriptionFailed) {
+        setSttFailure(data);
+        resetRecording();
+        return;
+      }
+
+      if (!resp.ok) throw new Error("API error");
+
+      // Success — feedback is nested under .feedback from formatRecording
+      setFeedback(data.feedback ?? data);
       resetRecording();
     } catch {
       toast({ title: "Error", description: "Could not submit recording. Please try again.", variant: "destructive" });
@@ -542,6 +554,116 @@ export default function SurahDetail() {
             </Button>
           </div>
         </div>
+
+        {/* ── STT Failure Panel — shown when ALL 4 providers fail ── */}
+        <AnimatePresence>
+          {sttFailure && (
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}>
+              <Card className="border-red-200 shadow-lg overflow-hidden bg-gradient-to-br from-white to-red-50 dark:from-red-950 dark:to-red-900">
+                <CardContent className="p-6 md:p-8 space-y-5">
+
+                  {/* Header */}
+                  <div className="flex items-start gap-4">
+                    <div className="h-12 w-12 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+                      <AlertCircle className="h-6 w-6 text-red-500" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-red-900">Speech Recognition Failed</h3>
+                      <p className="text-sm text-red-700 mt-0.5">{sttFailure.reason}</p>
+                    </div>
+                  </div>
+
+                  {/* Audio diagnostics */}
+                  {sttFailure.diagnostics && (
+                    <div className="grid grid-cols-2 gap-3">
+                      {sttFailure.diagnostics.audioBytes > 0 && (
+                        <div className="bg-white rounded-xl p-3 border border-red-100 text-center">
+                          <p className="text-2xl font-bold text-red-700">
+                            {Math.round(sttFailure.diagnostics.audioBytes / 1024)} KB
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-0.5">Audio received</p>
+                        </div>
+                      )}
+                      {sttFailure.diagnostics.durationSeconds > 0 && (
+                        <div className="bg-white rounded-xl p-3 border border-red-100 text-center">
+                          <p className="text-2xl font-bold text-red-700">
+                            {sttFailure.diagnostics.durationSeconds}s
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-0.5">Recording length</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Provider attempts table */}
+                  {sttFailure.diagnostics?.providersAttempted?.length > 0 && (
+                    <div className="bg-white rounded-xl border border-red-100 overflow-hidden">
+                      <p className="text-xs font-semibold text-red-600 uppercase tracking-wider px-4 pt-3 pb-2">
+                        Providers Attempted
+                      </p>
+                      <div className="divide-y divide-red-50">
+                        {sttFailure.diagnostics.providersAttempted.map((p: any, i: number) => (
+                          <div key={i} className="px-4 py-2.5 flex items-start gap-3">
+                            <span className="mt-0.5 h-2 w-2 rounded-full bg-red-400 shrink-0" />
+                            <div className="min-w-0">
+                              <p className="text-xs font-medium text-red-800">{p.provider}</p>
+                              <p className="text-[10px] text-muted-foreground truncate">{p.detail}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* All raw errors (collapsed) */}
+                  {sttFailure.providerErrors?.length > 0 && (
+                    <details className="group">
+                      <summary className="cursor-pointer text-xs text-red-400 hover:text-red-600 flex items-center gap-1 select-none">
+                        <span className="group-open:rotate-90 transition-transform inline-block">▶</span>
+                        Full error log
+                      </summary>
+                      <div className="mt-2 bg-gray-50 rounded-lg p-3 font-mono text-[10px] text-gray-600 space-y-1">
+                        {sttFailure.providerErrors.map((e: string, i: number) => (
+                          <p key={i} className="break-all">{i + 1}. {e}</p>
+                        ))}
+                      </div>
+                    </details>
+                  )}
+
+                  {/* Tips */}
+                  <div className="bg-amber-50 rounded-xl p-4 border border-amber-100 space-y-1.5">
+                    <p className="text-xs font-semibold text-amber-700 uppercase tracking-wider">Tips to fix this</p>
+                    <ul className="space-y-1">
+                      {[
+                        "Speak clearly and close to your microphone",
+                        "Record in a quiet room (no background noise)",
+                        "Record for at least 3 seconds",
+                        "Add a GROQ_API_KEY secret for fastest, most reliable STT",
+                        "Try again — the local AI model downloads ~39MB on first use",
+                      ].map((tip, i) => (
+                        <li key={i} className="flex items-start gap-2 text-xs text-amber-800">
+                          <span className="mt-0.5 text-amber-500">•</span>{tip}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex gap-3 pt-2 border-t border-red-100">
+                    <Button variant="outline" className="flex-1 border-red-200 text-red-700 hover:bg-red-50"
+                      onClick={() => { setSttFailure(null); }}>
+                      <RotateCcw className="mr-2 h-4 w-4" /> Try Again
+                    </Button>
+                    <Button className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white" onClick={handleNext}
+                      disabled={currentAyahIndex === ayahs.length - 1}>
+                      Skip to Next <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* ── AI Feedback Panel ── */}
         <AnimatePresence>
