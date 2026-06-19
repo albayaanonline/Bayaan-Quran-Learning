@@ -31,6 +31,7 @@ import analyticsReportsRouter from "./analytics-reports";
 import auditRouter from "./audit";
 import marketingRouter from "./marketing";
 import ttsRouter from "./tts";
+import mushafRecitationRouter from "./mushaf-recitation";
 
 const router = Router();
 
@@ -66,5 +67,6 @@ router.use(analyticsReportsRouter);
 router.use(auditRouter);
 router.use(marketingRouter);
 router.use(ttsRouter);
+router.use(mushafRecitationRouter);
 
 export default router;
