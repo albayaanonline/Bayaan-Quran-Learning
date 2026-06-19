@@ -1,15 +1,10 @@
 /**
  * Al Bayaan — Audio Transcription Engine
  *
- * Four-provider fallback chain. Each provider is tried in order.
- * The first successful transcription (non-empty Arabic text) is returned.
- * If every provider fails the caller receives { success: false } with the
- * exact per-provider error strings — no silent empty results.
- *
- * Provider order:
+ * Provider chain (first success wins):
  *   1. Groq Whisper-large-v3        — fast cloud, needs GROQ_API_KEY
- *   2. HF tarteel-ai/whisper-large-v2-ar — Quran-specialised (x-wait-for-model)
- *   3. HF openai/whisper-large-v3   — general Arabic (x-wait-for-model)
+ *   2. HF tarteel-ai/whisper-large-v2-ar — Quran-specialised (skipped if no HF_TOKEN or network unreachable)
+ *   3. HF openai/whisper-large-v3   — general Arabic (skipped if no HF_TOKEN or network unreachable)
  *   4. Local faster-whisper tiny    — runs on-server, no API key needed
  */
 
@@ -18,22 +13,17 @@ import * as path from "path";
 import * as fs from "fs";
 import { logger } from "./logger";
 
-// ---------------------------------------------------------------------------
-// Shared types
-// ---------------------------------------------------------------------------
-
 export interface TranscriptionResult {
   text: string;
   success: boolean;
   model: string;
-  confidence: number;        // 0–1, best estimate from provider
-  providerErrors: string[];  // per-provider failure messages
-  error?: string;            // summary error (set when success===false)
+  confidence: number;
+  providerErrors: string[];
+  error?: string;
 }
 
 // ---------------------------------------------------------------------------
 // 1. Groq Whisper-large-v3
-//    Requires GROQ_API_KEY. Returns verbose_json for per-word confidence.
 // ---------------------------------------------------------------------------
 async function transcribeGroq(
   audioBuffer: Buffer,
@@ -42,7 +32,7 @@ async function transcribeGroq(
 ): Promise<TranscriptionResult | null> {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) {
-    errors.push("Groq: no GROQ_API_KEY set");
+    errors.push("Groq: no GROQ_API_KEY set — add it in Replit Secrets to enable Groq Whisper");
     return null;
   }
 
@@ -78,7 +68,6 @@ async function transcribeGroq(
       return null;
     }
 
-    // Average confidence from word-level segments if available
     const segs: any[] = data?.segments ?? [];
     const avgConf = segs.length > 0
       ? segs.reduce((s: number, g: any) => s + (g.avg_logprob ?? -0.5), 0) / segs.length
@@ -96,8 +85,9 @@ async function transcribeGroq(
 
 // ---------------------------------------------------------------------------
 // 2 & 3. HuggingFace Inference API
-//    Uses x-wait-for-model: true so HF waits for model instead of 503.
-//    HF_TOKEN is optional (higher rate limits when set).
+//    Only attempted when HF_TOKEN is set; without it the free tier is
+//    heavily rate-limited and often network-blocked in sandboxed environments.
+//    Timeout is intentionally short (12 s) to fail fast and reach the local fallback.
 // ---------------------------------------------------------------------------
 async function transcribeHuggingFace(
   model: string,
@@ -106,15 +96,19 @@ async function transcribeHuggingFace(
   errors: string[]
 ): Promise<TranscriptionResult | null> {
   const hfToken = process.env.HF_TOKEN;
+  if (!hfToken) {
+    errors.push(`HF/${model}: skipped — no HF_TOKEN set (add to Replit Secrets for this provider)`);
+    return null;
+  }
+
   const headers: Record<string, string> = {
     "Content-Type": mimeType,
     "x-wait-for-model": "true",
+    "Authorization": `Bearer ${hfToken}`,
   };
-  if (hfToken) headers["Authorization"] = `Bearer ${hfToken}`;
 
   const controller = new AbortController();
-  // Allow up to 90 s — HF may need ~60 s to warm up the model
-  const timeout = setTimeout(() => controller.abort(), 90_000);
+  const timeout = setTimeout(() => controller.abort(), 12_000);
 
   try {
     const resp = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
@@ -126,7 +120,7 @@ async function transcribeHuggingFace(
     clearTimeout(timeout);
 
     if (resp.status === 503) {
-      errors.push(`HF/${model}: model unavailable (503) even with wait`);
+      errors.push(`HF/${model}: model unavailable (503)`);
       return null;
     }
     if (!resp.ok) {
@@ -152,14 +146,14 @@ async function transcribeHuggingFace(
       text,
       success: true,
       model: `hf/${model}`,
-      confidence: 0.7,  // HF API doesn't expose confidence; use reasonable default
+      confidence: 0.7,
       providerErrors: errors,
     };
   } catch (err: any) {
     clearTimeout(timeout);
     const msg = err?.name === "AbortError"
-      ? `HF/${model}: timed out (90s)`
-      : `HF/${model}: ${String(err)}`;
+      ? `HF/${model}: timed out (12s)`
+      : `HF/${model}: network unreachable — ${String(err)}`;
     errors.push(msg);
     return null;
   }
@@ -167,19 +161,19 @@ async function transcribeHuggingFace(
 
 // ---------------------------------------------------------------------------
 // 4. Local faster-whisper (tiny, CPU, Arabic)
-//    Runs a Python subprocess — no API key needed, works fully offline.
-//    Model (~39 MB) is downloaded to /tmp/fw_model on first use.
+//    Model (~39 MB) downloaded to /tmp/fw_model on first run.
+//    Script path: <project-root>/scripts/transcribe_local.py
+//    (one level above dist/ at runtime)
 // ---------------------------------------------------------------------------
 async function transcribeLocal(
   audioBuffer: Buffer,
   mimeType: string,
   errors: string[]
 ): Promise<TranscriptionResult | null> {
-  // __dirname points to dist/ at runtime; script lives one level up in scripts/
   const scriptPath = path.resolve(__dirname, "../scripts/transcribe_local.py");
 
   if (!fs.existsSync(scriptPath)) {
-    errors.push("Local: transcribe_local.py not found");
+    errors.push(`Local faster-whisper: script not found at ${scriptPath}`);
     return null;
   }
 
@@ -189,14 +183,14 @@ async function transcribeLocal(
   });
 
   return new Promise((resolve) => {
-    // Allow up to 120 s for first run (model download ~39 MB)
+    // Allow up to 180 s — first run downloads the 39 MB model
     const child = execFile(
       "python3",
       [scriptPath],
-      { timeout: 120_000, maxBuffer: 512 * 1024 },
+      { timeout: 180_000, maxBuffer: 512 * 1024 },
       (err, stdout, stderr) => {
         if (err) {
-          const msg = `Local faster-whisper: ${err.message}${stderr ? ` | ${stderr.slice(0, 200)}` : ""}`;
+          const msg = `Local faster-whisper: ${err.message}${stderr ? ` | ${stderr.slice(0, 300)}` : ""}`;
           errors.push(msg);
           resolve(null);
           return;
@@ -217,16 +211,14 @@ async function transcribeLocal(
             providerErrors: errors,
           });
         } catch (parseErr) {
-          errors.push(`Local faster-whisper: invalid JSON output — ${stdout.slice(0, 200)}`);
+          errors.push(`Local faster-whisper: invalid JSON — ${stdout.slice(0, 200)}`);
           resolve(null);
         }
       }
     );
 
-    // Write payload to stdin — attach error handler first to prevent
-    // unhandled EPIPE from crashing the process when the child exits early.
     if (child.stdin) {
-      child.stdin.on("error", () => {/* swallow EPIPE/write errors — callback handles the failure */});
+      child.stdin.on("error", () => {/* swallow EPIPE — callback handles failure */});
       child.stdin.write(payload);
       child.stdin.end();
     }
@@ -255,45 +247,45 @@ export async function transcribeAudio(
   if (audioBuffer.length < 1000) {
     return {
       text: "", success: false, model: "none", confidence: 0,
-      providerErrors: [`Audio too small (${audioBuffer.length} bytes — minimum 1 KB)`],
-      error: "Audio too short — minimum ~1 second of speech",
+      providerErrors: [`Audio too small: ${audioBuffer.length} bytes (minimum ~1 KB)`],
+      error: "Recording too short — hold the button and speak for at least 2–3 seconds",
     };
   }
 
   const errors: string[] = [];
-  logger.info({ bytes: audioBuffer.length, mimeType }, "Starting 4-provider STT chain");
+  logger.info({ bytes: audioBuffer.length, mimeType }, "Starting STT provider chain");
 
   // ── Provider 1: Groq ────────────────────────────────────────────────────
   const groq = await transcribeGroq(audioBuffer, mimeType, errors);
   if (groq) {
-    logger.info({ model: groq.model, chars: groq.text.length, conf: groq.confidence }, "STT via Groq");
+    logger.info({ model: groq.model, chars: groq.text.length, conf: groq.confidence }, "STT: Groq success");
     return groq;
   }
 
   // ── Provider 2: HF tarteel (Quran-specialised) ──────────────────────────
   const tarteel = await transcribeHuggingFace("tarteel-ai/whisper-large-v2-ar", audioBuffer, mimeType, errors);
   if (tarteel) {
-    logger.info({ model: tarteel.model, chars: tarteel.text.length }, "STT via HF tarteel");
+    logger.info({ model: tarteel.model, chars: tarteel.text.length }, "STT: HF tarteel success");
     return tarteel;
   }
 
   // ── Provider 3: HF openai/whisper-large-v3 ──────────────────────────────
   const hfWhisper = await transcribeHuggingFace("openai/whisper-large-v3", audioBuffer, mimeType, errors);
   if (hfWhisper) {
-    logger.info({ model: hfWhisper.model, chars: hfWhisper.text.length }, "STT via HF whisper");
+    logger.info({ model: hfWhisper.model, chars: hfWhisper.text.length }, "STT: HF whisper success");
     return hfWhisper;
   }
 
   // ── Provider 4: local faster-whisper ────────────────────────────────────
-  logger.info("Cloud STT failed, falling back to local faster-whisper");
+  logger.info({ errors }, "Cloud STT unavailable, trying local faster-whisper");
   const local = await transcribeLocal(audioBuffer, mimeType, errors);
   if (local) {
-    logger.info({ model: local.model, chars: local.text.length, conf: local.confidence }, "STT via local faster-whisper");
+    logger.info({ model: local.model, chars: local.text.length, conf: local.confidence }, "STT: local faster-whisper success");
     return local;
   }
 
   // ── All providers failed ─────────────────────────────────────────────────
-  logger.error({ errors }, "All 4 STT providers failed");
+  logger.error({ errors }, "All STT providers failed");
   return {
     text: "", success: false, model: "none", confidence: 0,
     providerErrors: errors,

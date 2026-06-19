@@ -73,10 +73,38 @@ router.post("/mushaf-recitation/analyze", requireAuth, async (req: any, res) => 
 
     const transcriptionResult = await transcribeAudio(audioBase64, mimeType || "audio/webm");
 
-    const attemptKey = `mushaf-p${pageNumber ?? 0}-${Date.now()}`;
+    // ── CRITICAL: Never run correction when transcription failed ─────────────
+    // Return the transcription failure info directly so the UI can show the
+    // real reason rather than fake 0% results.
+    if (!transcriptionResult.success || !transcriptionResult.text.trim()) {
+      logger.warn(
+        { providerErrors: transcriptionResult.providerErrors },
+        "Mushaf recitation: transcription failed — skipping correction"
+      );
 
-    const transcribedText = transcriptionResult.success ? transcriptionResult.text : "";
-    const correction = analyzeRecitation(referenceText, transcribedText, attemptKey);
+      const originalRefWords = referenceText.split(/\s+/).filter((w) => w.length > 0);
+
+      res.json({
+        transcription: {
+          text: "",
+          success: false,
+          model: transcriptionResult.model,
+          confidence: 0,
+          error: transcriptionResult.error ?? "Speech recognition failed",
+          providerErrors: transcriptionResult.providerErrors,
+        },
+        correction: null,
+        referenceWords: originalRefWords,
+        wordStatuses: originalRefWords.map(() => "missing" as WordStatus),
+        referenceText,
+        sttFailed: true,
+      });
+      return;
+    }
+
+    // ── Transcription succeeded — run the correction engine ─────────────────
+    const attemptKey = `mushaf-p${pageNumber ?? 0}-${Date.now()}`;
+    const correction = analyzeRecitation(referenceText, transcriptionResult.text, attemptKey);
 
     const originalRefWords = referenceText
       .split(/\s+/)
@@ -93,7 +121,8 @@ router.post("/mushaf-recitation/analyze", requireAuth, async (req: any, res) => 
         userId: req.userId,
         model: transcriptionResult.model,
         accuracy: correction.accuracyScore,
-        transcribed: transcribedText.slice(0, 60),
+        confidence: transcriptionResult.confidence,
+        transcribed: transcriptionResult.text.slice(0, 80),
       },
       "Mushaf recitation: analysis complete"
     );
@@ -101,16 +130,17 @@ router.post("/mushaf-recitation/analyze", requireAuth, async (req: any, res) => 
     res.json({
       transcription: {
         text: transcriptionResult.text,
-        success: transcriptionResult.success,
+        success: true,
         model: transcriptionResult.model,
         confidence: transcriptionResult.confidence,
-        error: transcriptionResult.error ?? null,
+        error: null,
         providerErrors: transcriptionResult.providerErrors,
       },
       correction,
       referenceWords: originalRefWords,
       wordStatuses,
       referenceText,
+      sttFailed: false,
     });
   } catch (err) {
     logger.error({ err }, "Mushaf recitation analyze error");

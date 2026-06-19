@@ -48,6 +48,7 @@ interface RecitationResult {
     model: string;
     confidence: number;
     error: string | null;
+    providerErrors?: string[];
   };
   correction: {
     correctWords: string[];
@@ -64,10 +65,11 @@ interface RecitationResult {
       referenceNormalized: string;
       transcribedNormalized: string;
     };
-  };
+  } | null;
   referenceWords: string[];
   wordStatuses: WordStatus[];
   referenceText: string;
+  sttFailed?: boolean;
 }
 
 const TOTAL_PAGES = 604;
@@ -797,142 +799,155 @@ export default function Mushaf() {
                         transition={{ duration: 0.3 }}
                         className="space-y-4"
                       >
-                        {/* Score header */}
-                        <div className="bg-white border border-emerald-100 rounded-2xl p-5 shadow-sm">
-                          <div className="flex items-center gap-4 flex-wrap">
-                            <AccuracyRing score={recitationResult.correction.accuracyScore} />
-                            <div className="flex-1 min-w-0 space-y-3">
+                        {/* ── STT FAILED: show real reason, no correction ── */}
+                        {recitationResult.sttFailed && (
+                          <div className="bg-red-50 border border-red-200 rounded-2xl p-5 space-y-3">
+                            <div className="flex items-start gap-3">
+                              <MicOff className="h-5 w-5 text-red-600 mt-0.5 shrink-0" />
                               <div>
-                                <p className="text-xs text-muted-foreground mb-1">Overall Accuracy</p>
-                                <Progress
-                                  value={recitationResult.correction.accuracyScore}
-                                  className="h-3"
-                                />
-                              </div>
-                              <div className="grid grid-cols-3 gap-2 text-center">
-                                <div className="bg-emerald-50 rounded-lg p-2">
-                                  <p className="text-lg font-bold text-emerald-700">{recitationResult.correction.wordStats.correct}</p>
-                                  <p className="text-xs text-emerald-600">Correct</p>
-                                </div>
-                                <div className="bg-red-50 rounded-lg p-2">
-                                  <p className="text-lg font-bold text-red-700">{recitationResult.correction.wordStats.missing}</p>
-                                  <p className="text-xs text-red-600">Missing</p>
-                                </div>
-                                <div className="bg-orange-50 rounded-lg p-2">
-                                  <p className="text-lg font-bold text-orange-700">{recitationResult.correction.wordStats.extra}</p>
-                                  <p className="text-xs text-orange-600">Extra</p>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Transcription & confidence */}
-                        <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm space-y-3">
-                          <div className="flex items-center justify-between">
-                            <p className="text-sm font-semibold text-emerald-900 flex items-center gap-1.5">
-                              <Mic className="h-4 w-4 text-emerald-600" />
-                              Recognized Arabic Text
-                            </p>
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                              <span className="bg-gray-100 rounded px-2 py-0.5">
-                                {recitationResult.transcription.model}
-                              </span>
-                              <span className="bg-blue-50 text-blue-700 rounded px-2 py-0.5 font-medium">
-                                {Math.round(recitationResult.transcription.confidence * 100)}% confidence
-                              </span>
-                            </div>
-                          </div>
-
-                          {recitationResult.transcription.success && recitationResult.transcription.text ? (
-                            <div
-                              className="bg-gray-50 rounded-xl p-4 text-xl text-right leading-loose text-gray-900"
-                              dir="rtl"
-                              style={{ fontFamily: "var(--font-arabic)" }}
-                            >
-                              {recitationResult.transcription.text}
-                            </div>
-                          ) : (
-                            <div className="bg-red-50 rounded-xl p-4 text-sm text-red-700 flex items-center gap-2">
-                              <MicOff className="h-4 w-4 shrink-0" />
-                              {recitationResult.transcription.error ?? "No Arabic speech was detected."}
-                            </div>
-                          )}
-
-                          {/* Word accuracy breakdown */}
-                          <div className="text-xs text-muted-foreground">
-                            <span className="font-medium text-gray-700">Total reference words: </span>
-                            {recitationResult.correction.wordStats.total}
-                            <span className="mx-2">·</span>
-                            <span className="font-medium text-gray-700">Recognized words: </span>
-                            {recitationResult.correction.analysisLog.transcribedWordCount}
-                            <span className="mx-2">·</span>
-                            <span className="font-medium text-gray-700">LCS match: </span>
-                            {recitationResult.correction.analysisLog.lcsLength}
-                          </div>
-                        </div>
-
-                        {/* Missing words */}
-                        {recitationResult.correction.missingWords.length > 0 && (
-                          <div className="bg-red-50 border border-red-100 rounded-2xl p-5">
-                            <p className="text-sm font-semibold text-red-800 mb-3 flex items-center gap-1.5">
-                              <XCircle className="h-4 w-4" />
-                              Missing / Skipped Words ({recitationResult.correction.missingWords.length})
-                            </p>
-                            <div className="flex flex-wrap gap-2" dir="rtl">
-                              {recitationResult.correction.missingWords.map((w, i) => (
-                                <span key={i} className="bg-red-100 text-red-900 border border-red-200 rounded-lg px-3 py-1 text-lg"
-                                  style={{ fontFamily: "var(--font-arabic)" }}>
-                                  {w}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Correct words */}
-                        {recitationResult.correction.correctWords.length > 0 && (
-                          <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-5">
-                            <p className="text-sm font-semibold text-emerald-800 mb-3 flex items-center gap-1.5">
-                              <CheckCircle2 className="h-4 w-4" />
-                              Correctly Recited Words ({recitationResult.correction.correctWords.length})
-                            </p>
-                            <div className="flex flex-wrap gap-2" dir="rtl">
-                              {recitationResult.correction.correctWords.map((w, i) => (
-                                <span key={i} className="bg-emerald-100 text-emerald-900 border border-emerald-200 rounded-lg px-3 py-1 text-lg"
-                                  style={{ fontFamily: "var(--font-arabic)" }}>
-                                  {w}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* AI Teacher Feedback */}
-                        {recitationResult.correction.suggestions.length > 0 && (
-                          <div className="bg-gradient-to-br from-emerald-700 to-emerald-600 rounded-2xl p-5 text-white shadow-lg">
-                            <p className="text-sm font-semibold mb-3 flex items-center gap-2">
-                              <Sparkles className="h-4 w-4 text-amber-300" />
-                              Al Bayaan AI Teacher Feedback
-                            </p>
-                            <div className="space-y-2">
-                              {recitationResult.correction.suggestions.map((s, i) => (
-                                <p key={i} className="text-sm text-emerald-50 leading-relaxed bg-white/10 rounded-xl px-4 py-3">
-                                  {s}
+                                <p className="font-semibold text-red-800 text-sm">Speech recognition failed</p>
+                                <p className="text-xs text-red-700 mt-1">
+                                  {recitationResult.transcription.error ?? "No speech was detected in your recording."}
                                 </p>
-                              ))}
+                              </div>
                             </div>
+
+                            {recitationResult.transcription.providerErrors && recitationResult.transcription.providerErrors.length > 0 && (
+                              <div className="bg-red-100 rounded-xl p-3 space-y-1">
+                                <p className="text-xs font-semibold text-red-800 mb-1">Provider details:</p>
+                                {recitationResult.transcription.providerErrors.map((e, i) => (
+                                  <p key={i} className="text-xs text-red-700 font-mono">• {e}</p>
+                                ))}
+                              </div>
+                            )}
+
+                            <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-800 space-y-1">
+                              <p className="font-semibold">How to fix:</p>
+                              <p>1. Add <strong>GROQ_API_KEY</strong> in Replit Secrets (fastest — Groq Whisper is free)</p>
+                              <p>2. Speak clearly for at least 3 seconds in a quiet environment</p>
+                              <p>3. Check your microphone is working and allowed in the browser</p>
+                            </div>
+
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={resetRecitation}
+                              className="gap-1.5 text-xs border-red-200 text-red-700 hover:bg-red-50"
+                            >
+                              <RefreshCw className="h-3.5 w-3.5" /> Try Again
+                            </Button>
                           </div>
                         )}
 
-                        {/* Error pattern debug info */}
-                        <div className="bg-gray-50 border border-gray-100 rounded-xl p-3 text-xs text-muted-foreground">
-                          <span className="font-medium">Error pattern: </span>
-                          <span className="text-gray-700">{recitationResult.correction.analysisLog.errorPattern}</span>
-                          <span className="mx-2">·</span>
-                          <span className="font-medium">Analysis engine: </span>
-                          <span className="text-gray-700">LCS Diff + Groq Whisper</span>
-                        </div>
+                        {/* ── SUCCESS: show full correction results ── */}
+                        {!recitationResult.sttFailed && recitationResult.correction && (
+                          <>
+                            {/* Score header */}
+                            <div className="bg-white border border-emerald-100 rounded-2xl p-5 shadow-sm">
+                              <div className="flex items-center gap-4 flex-wrap">
+                                <AccuracyRing score={recitationResult.correction.accuracyScore} />
+                                <div className="flex-1 min-w-0 space-y-3">
+                                  <div>
+                                    <p className="text-xs text-muted-foreground mb-1">Overall Accuracy</p>
+                                    <Progress value={recitationResult.correction.accuracyScore} className="h-3" />
+                                  </div>
+                                  <div className="grid grid-cols-3 gap-2 text-center">
+                                    <div className="bg-emerald-50 rounded-lg p-2">
+                                      <p className="text-lg font-bold text-emerald-700">{recitationResult.correction.wordStats.correct}</p>
+                                      <p className="text-xs text-emerald-600">Correct</p>
+                                    </div>
+                                    <div className="bg-red-50 rounded-lg p-2">
+                                      <p className="text-lg font-bold text-red-700">{recitationResult.correction.wordStats.missing}</p>
+                                      <p className="text-xs text-red-600">Missing</p>
+                                    </div>
+                                    <div className="bg-orange-50 rounded-lg p-2">
+                                      <p className="text-lg font-bold text-orange-700">{recitationResult.correction.wordStats.extra}</p>
+                                      <p className="text-xs text-orange-600">Extra</p>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Transcription & confidence */}
+                            <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm space-y-3">
+                              <div className="flex items-center justify-between flex-wrap gap-2">
+                                <p className="text-sm font-semibold text-emerald-900 flex items-center gap-1.5">
+                                  <Mic className="h-4 w-4 text-emerald-600" />
+                                  Recognized Arabic Text
+                                </p>
+                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                  <span className="bg-gray-100 rounded px-2 py-0.5">{recitationResult.transcription.model}</span>
+                                  <span className="bg-blue-50 text-blue-700 rounded px-2 py-0.5 font-medium">
+                                    {Math.round(recitationResult.transcription.confidence * 100)}% confidence
+                                  </span>
+                                </div>
+                              </div>
+
+                              <div
+                                className="bg-gray-50 rounded-xl p-4 text-xl text-right leading-loose text-gray-900"
+                                dir="rtl"
+                                style={{ fontFamily: "var(--font-arabic)" }}
+                              >
+                                {recitationResult.transcription.text}
+                              </div>
+
+                              <div className="text-xs text-muted-foreground flex flex-wrap gap-x-4 gap-y-1">
+                                <span><span className="font-medium text-gray-700">Reference words:</span> {recitationResult.correction.wordStats.total}</span>
+                                <span><span className="font-medium text-gray-700">Recognized:</span> {recitationResult.correction.analysisLog.transcribedWordCount}</span>
+                                <span><span className="font-medium text-gray-700">LCS match:</span> {recitationResult.correction.analysisLog.lcsLength}</span>
+                                <span><span className="font-medium text-gray-700">Pattern:</span> {recitationResult.correction.analysisLog.errorPattern}</span>
+                              </div>
+                            </div>
+
+                            {/* Missing words */}
+                            {recitationResult.correction.missingWords.length > 0 && (
+                              <div className="bg-red-50 border border-red-100 rounded-2xl p-5">
+                                <p className="text-sm font-semibold text-red-800 mb-3 flex items-center gap-1.5">
+                                  <XCircle className="h-4 w-4" />
+                                  Missing / Skipped Words ({recitationResult.correction.missingWords.length})
+                                </p>
+                                <div className="flex flex-wrap gap-2" dir="rtl">
+                                  {recitationResult.correction.missingWords.map((w, i) => (
+                                    <span key={i} className="bg-red-100 text-red-900 border border-red-200 rounded-lg px-3 py-1 text-lg"
+                                      style={{ fontFamily: "var(--font-arabic)" }}>{w}</span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Correct words */}
+                            {recitationResult.correction.correctWords.length > 0 && (
+                              <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-5">
+                                <p className="text-sm font-semibold text-emerald-800 mb-3 flex items-center gap-1.5">
+                                  <CheckCircle2 className="h-4 w-4" />
+                                  Correctly Recited ({recitationResult.correction.correctWords.length} words)
+                                </p>
+                                <div className="flex flex-wrap gap-2" dir="rtl">
+                                  {recitationResult.correction.correctWords.map((w, i) => (
+                                    <span key={i} className="bg-emerald-100 text-emerald-900 border border-emerald-200 rounded-lg px-3 py-1 text-lg"
+                                      style={{ fontFamily: "var(--font-arabic)" }}>{w}</span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* AI Teacher Feedback */}
+                            {recitationResult.correction.suggestions.length > 0 && (
+                              <div className="bg-gradient-to-br from-emerald-700 to-emerald-600 rounded-2xl p-5 text-white shadow-lg">
+                                <p className="text-sm font-semibold mb-3 flex items-center gap-2">
+                                  <Sparkles className="h-4 w-4 text-amber-300" />
+                                  Al Bayaan AI Teacher Feedback
+                                </p>
+                                <div className="space-y-2">
+                                  {recitationResult.correction.suggestions.map((s, i) => (
+                                    <p key={i} className="text-sm text-emerald-50 leading-relaxed bg-white/10 rounded-xl px-4 py-3">{s}</p>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </>
+                        )}
                       </motion.div>
                     )}
                   </AnimatePresence>
