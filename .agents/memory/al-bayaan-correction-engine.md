@@ -4,12 +4,16 @@ description: Architecture of the real audio-driven Quran correction engine and l
 ---
 
 ## Provider Chain (4 providers, automatic fallback)
-1. **Groq Whisper-large-v3** — fastest, needs GROQ_API_KEY env secret
+1. **Groq Whisper-large-v3** — fastest, GROQ_API_KEY is SET and VERIFIED WORKING (June 2026)
 2. **HF tarteel-ai/whisper-large-v2-ar** — Quran-specialised, uses x-wait-for-model header
 3. **HF openai/whisper-large-v3** — general Arabic, uses x-wait-for-model header
 4. **Local faster-whisper-tiny** — runs on CPU, no key needed, model cached at /tmp/fw_model
 
-**Critical**: HuggingFace (api-inference.huggingface.co) is BLOCKED by Replit's network firewall (curl returns 000). Provider 4 (local) is the reliable fallback without GROQ_API_KEY.
+**Critical network notes**:
+- `api.groq.com` is REACHABLE via Node.js `fetch` (HTTP 200) — verified June 2026
+- `api.groq.com` returns HTTP 000 via `curl` — Replit sandboxes node differently from shell curl
+- HuggingFace (api-inference.huggingface.co) is BLOCKED by Replit firewall for both curl and Node.js fetch
+- Provider 1 (Groq) is the active primary provider as long as GROQ_API_KEY remains set
 
 ## Python Script Location
 - Source: `artifacts/api-server/src/scripts/transcribe_local.py`
