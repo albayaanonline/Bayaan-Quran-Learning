@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Mic, MicOff, Send, Volume2, VolumeX, Loader2, RefreshCw, User, Video, Globe } from "lucide-react";
+import { Mic, MicOff, Send, Volume2, VolumeX, Loader2, RefreshCw, Video, Globe } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 
@@ -19,37 +19,37 @@ interface ChatMessage {
 }
 
 const TEACHER_MODES: { value: TeacherMode; label: string; labelAr: string; color: string; emoji: string; desc: string }[] = [
-  { value: "quran", label: "Quran Teacher", labelAr: "معلم القرآن", color: "emerald", emoji: "📖", desc: "Recitation, memorization & understanding" },
-  { value: "tajweed", label: "Tajweed Teacher", labelAr: "معلم التجويد", color: "amber", emoji: "🎵", desc: "Pronunciation & articulation rules" },
-  { value: "hifdh", label: "Hifdh Coach", labelAr: "مدرب الحفظ", color: "blue", emoji: "🧠", desc: "Memorization strategies & plans" },
-  { value: "arabic", label: "Arabic Teacher", labelAr: "معلم العربية", color: "purple", emoji: "🌙", desc: "Classical Arabic language" },
-  { value: "fiqh", label: "Fiqh Teacher", labelAr: "معلم الفقه", color: "teal", emoji: "⚖️", desc: "Islamic jurisprudence" },
-  { value: "tafsir", label: "Tafsir Teacher", labelAr: "معلم التفسير", color: "rose", emoji: "✨", desc: "Quran explanation & commentary" },
+  { value: "quran",  label: "Quran Teacher",  labelAr: "معلم القرآن",  color: "emerald", emoji: "📖", desc: "Recitation, memorization & understanding" },
+  { value: "tajweed",label: "Tajweed Teacher",labelAr: "معلم التجويد", color: "amber",   emoji: "🎵", desc: "Pronunciation & articulation rules" },
+  { value: "hifdh",  label: "Hifdh Coach",    labelAr: "مدرب الحفظ",  color: "blue",    emoji: "🧠", desc: "Memorization strategies & plans" },
+  { value: "arabic", label: "Arabic Teacher", labelAr: "معلم العربية", color: "purple",  emoji: "🌙", desc: "Classical Arabic language" },
+  { value: "fiqh",   label: "Fiqh Teacher",   labelAr: "معلم الفقه",  color: "teal",    emoji: "⚖️", desc: "Islamic jurisprudence" },
+  { value: "tafsir", label: "Tafsir Teacher", labelAr: "معلم التفسير",color: "rose",    emoji: "✨", desc: "Quran explanation & commentary" },
 ];
 
-const LANGS: { value: Language; label: string; code: string }[] = [
-  { value: "en", label: "English", code: "en-US" },
-  { value: "ar", label: "العربية", code: "ar-SA" },
-  { value: "so", label: "Somali", code: "so-SO" },
+const LANGS: { value: Language; label: string; ttsCode: string }[] = [
+  { value: "en", label: "English",  ttsCode: "en" },
+  { value: "ar", label: "العربية", ttsCode: "ar" },
+  { value: "so", label: "Somali",   ttsCode: "so" },
 ];
 
-function AvatarFace({ isSpeaking, isThinking, mode }: { isSpeaking: boolean; isThinking: boolean; mode: TeacherMode }) {
+// ── AudioContext-driven lip sync ──────────────────────────────────────────────
+// mouthAmount: 0.0 = closed, 1.0 = wide open — driven by real audio RMS amplitude
+function AvatarFace({ isSpeaking, isThinking, mode, mouthAmount }: {
+  isSpeaking: boolean;
+  isThinking: boolean;
+  mode: TeacherMode;
+  mouthAmount: number;
+}) {
   const [blink, setBlink] = useState(false);
-  const [mouthOpen, setMouthOpen] = useState(false);
 
   useEffect(() => {
-    const blinkInterval = setInterval(() => {
+    const interval = setInterval(() => {
       setBlink(true);
       setTimeout(() => setBlink(false), 150);
     }, 3000 + Math.random() * 2000);
-    return () => clearInterval(blinkInterval);
+    return () => clearInterval(interval);
   }, []);
-
-  useEffect(() => {
-    if (!isSpeaking) { setMouthOpen(false); return; }
-    const mouthInterval = setInterval(() => setMouthOpen(v => !v), 120 + Math.random() * 80);
-    return () => clearInterval(mouthInterval);
-  }, [isSpeaking]);
 
   const colorMap: Record<TeacherMode, { skin: string; robe: string; bg: string; glow: string }> = {
     quran:  { skin: "#f4c78a", robe: "#10b981", bg: "#d1fae5", glow: "#10b981" },
@@ -59,12 +59,14 @@ function AvatarFace({ isSpeaking, isThinking, mode }: { isSpeaking: boolean; isT
     fiqh:   { skin: "#f4c78a", robe: "#0d9488", bg: "#ccfbf1", glow: "#0d9488" },
     tafsir: { skin: "#f4c78a", robe: "#e11d48", bg: "#ffe4e6", glow: "#e11d48" },
   };
-
   const c = colorMap[mode];
+
+  // Real audio amplitude → mouth opening height (px)
+  const mouthRy = Math.round(mouthAmount * 8);  // 0–8px vertical radius
+  const mouthRx = 10;
 
   return (
     <div className="relative flex items-center justify-center" style={{ width: 240, height: 260 }}>
-      {/* Glow ring */}
       <motion.div
         animate={{ scale: isSpeaking ? [1, 1.05, 1] : 1, opacity: isSpeaking ? [0.4, 0.7, 0.4] : 0.2 }}
         transition={{ repeat: Infinity, duration: 0.6 }}
@@ -77,59 +79,39 @@ function AvatarFace({ isSpeaking, isThinking, mode }: { isSpeaking: boolean; isT
         transition={{ repeat: Infinity, duration: isSpeaking ? 0.5 : 2, ease: "easeInOut" }}
       >
         <svg width="200" height="240" viewBox="0 0 200 240" fill="none" xmlns="http://www.w3.org/2000/svg">
-          {/* Background circle */}
           <circle cx="100" cy="110" r="90" fill={c.bg} opacity="0.6" />
-
-          {/* Robe/body */}
           <path d="M40 200 Q55 155 100 145 Q145 155 160 200 L170 240 L30 240 Z" fill={c.robe} />
-          {/* Collar */}
           <path d="M80 148 Q100 160 120 148 L115 175 Q100 168 85 175 Z" fill={c.skin} />
-
-          {/* Neck */}
           <rect x="88" y="140" width="24" height="16" rx="4" fill={c.skin} />
-
-          {/* Head */}
           <ellipse cx="100" cy="105" rx="42" ry="46" fill={c.skin} />
-
-          {/* Kufi/cap */}
           <ellipse cx="100" cy="62" rx="38" ry="12" fill={c.robe} />
           <rect x="62" y="55" width="76" height="12" rx="4" fill={c.robe} />
-
-          {/* Ears */}
           <ellipse cx="58" cy="110" rx="7" ry="10" fill={c.skin} />
           <ellipse cx="142" cy="110" rx="7" ry="10" fill={c.skin} />
-
-          {/* Eyes */}
           <g>
-            {/* Left eye */}
             <ellipse cx="84" cy="105" rx="8" ry={blink ? 1.5 : 9} fill="white" />
             {!blink && <ellipse cx="84" cy="107" rx="5" ry="6" fill="#1a3a1a" />}
             {!blink && <circle cx="86" cy="104" r="2" fill="white" />}
-            {/* Right eye */}
             <ellipse cx="116" cy="105" rx="8" ry={blink ? 1.5 : 9} fill="white" />
             {!blink && <ellipse cx="116" cy="107" rx="5" ry="6" fill="#1a3a1a" />}
             {!blink && <circle cx="118" cy="104" r="2" fill="white" />}
           </g>
-
-          {/* Eyebrows */}
           <path d="M75 93 Q84 88 93 93" stroke="#5a3a1a" strokeWidth="2.5" strokeLinecap="round" fill="none" />
           <path d="M107 93 Q116 88 125 93" stroke="#5a3a1a" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-
-          {/* Nose */}
           <path d="M97 112 Q100 118 103 112" stroke="#c4965a" strokeWidth="1.5" fill="none" strokeLinecap="round" />
 
-          {/* Mouth */}
-          {mouthOpen ? (
-            <ellipse cx="100" cy="130" rx="10" ry="7" fill="#8b3a3a" />
+          {/* Mouth — driven by real audio amplitude via mouthRy */}
+          {mouthRy > 1 ? (
+            <ellipse cx="100" cy="130" rx={mouthRx} ry={mouthRy} fill="#8b3a3a" />
           ) : (
-            <path d={isThinking ? "M90 130 Q100 128 110 130" : "M90 130 Q100 135 110 130"}
-              stroke="#b06060" strokeWidth="2" strokeLinecap="round" fill="none" />
+            <path
+              d={isThinking ? "M90 130 Q100 128 110 130" : "M90 130 Q100 135 110 130"}
+              stroke="#b06060" strokeWidth="2" strokeLinecap="round" fill="none"
+            />
           )}
 
-          {/* Beard */}
           <path d="M72 135 Q80 148 100 150 Q120 148 128 135" stroke="#5a3a1a" strokeWidth="2" fill="none" opacity="0.5" />
 
-          {/* Thinking dots */}
           {isThinking && (
             <g>
               <motion.circle cx="85" cy="82" r="3" fill={c.glow} animate={{ opacity: [0, 1, 0] }} transition={{ duration: 1, repeat: Infinity, delay: 0 }} />
@@ -138,7 +120,6 @@ function AvatarFace({ isSpeaking, isThinking, mode }: { isSpeaking: boolean; isT
             </g>
           )}
 
-          {/* Speaking wave lines */}
           {isSpeaking && (
             <g>
               {[0, 1, 2].map(i => (
@@ -175,6 +156,8 @@ export default function VideoTeacher() {
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [ttsEnabled, setTtsEnabled] = useState(true);
+  const [mouthAmount, setMouthAmount] = useState(0);
+  const [ttsMode, setTtsMode] = useState<"api" | "browser" | "unknown">("unknown");
 
   const recognitionRef = useRef<any | null>(null);
   const recognizedTextRef = useRef("");
@@ -183,34 +166,155 @@ export default function VideoTeacher() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
 
+  // Audio / lip-sync refs
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const sourceRef = useRef<AudioBufferSourceNode | null>(null);
+  const animFrameRef = useRef<number | null>(null);
+
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages]);
 
-  const speak = useCallback((text: string) => {
-    if (!ttsEnabled || !("speechSynthesis" in window)) return;
+  // ── Cleanup audio on unmount ──────────────────────────────────────────────
+  useEffect(() => {
+    return () => {
+      stopAudio();
+      window.speechSynthesis?.cancel();
+    };
+  }, []);
+
+  // ── Stop all audio ────────────────────────────────────────────────────────
+  const stopAudio = useCallback(() => {
+    if (animFrameRef.current) { cancelAnimationFrame(animFrameRef.current); animFrameRef.current = null; }
+    if (sourceRef.current) { try { sourceRef.current.stop(); } catch {} sourceRef.current = null; }
+    window.speechSynthesis?.cancel();
+    setIsSpeaking(false);
+    setMouthAmount(0);
+  }, []);
+
+  // ── Real-time lip sync loop — reads AudioContext AnalyserNode ─────────────
+  const startLipSyncLoop = useCallback((analyser: AnalyserNode) => {
+    const dataArray = new Uint8Array(analyser.fftSize);
+    let smoothed = 0;
+    const tick = () => {
+      analyser.getByteTimeDomainData(dataArray);
+      let sumSq = 0;
+      for (let i = 0; i < dataArray.length; i++) {
+        const n = (dataArray[i] - 128) / 128;
+        sumSq += n * n;
+      }
+      const rms = Math.sqrt(sumSq / dataArray.length);
+      // Exponential smoothing to avoid jitter
+      smoothed = smoothed * 0.7 + rms * 0.3;
+      const amount = Math.min(1, smoothed * 10);
+      setMouthAmount(amount);
+      animFrameRef.current = requestAnimationFrame(tick);
+    };
+    animFrameRef.current = requestAnimationFrame(tick);
+  }, []);
+
+  // ── Primary TTS: fetch audio from API proxy → AudioContext → AnalyserNode ─
+  const speakViaAudioContext = useCallback(async (text: string): Promise<boolean> => {
+    try {
+      const langInfo = LANGS.find(l => l.value === lang);
+      const ttsLang = langInfo?.ttsCode ?? "en";
+      const snippet = text.replace(/[#*`]/g, "").slice(0, 250);
+
+      const resp = await fetch(
+        `${BASE_PATH}/api/tts?text=${encodeURIComponent(snippet)}&lang=${ttsLang}`,
+        { credentials: "include", signal: AbortSignal.timeout(12_000) }
+      );
+      if (!resp.ok) return false;
+
+      const arrayBuffer = await resp.arrayBuffer();
+      if (arrayBuffer.byteLength < 512) return false;
+
+      // Create or resume AudioContext
+      if (!audioCtxRef.current || audioCtxRef.current.state === "closed") {
+        audioCtxRef.current = new AudioContext();
+      }
+      const ctx = audioCtxRef.current;
+      if (ctx.state === "suspended") await ctx.resume();
+
+      // Decode MP3 audio
+      const audioBuffer = await ctx.decodeAudioData(arrayBuffer.slice(0));
+
+      // Pipeline: BufferSource → Analyser → Destination
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 256;
+      analyser.smoothingTimeConstant = 0.6;
+      analyserRef.current = analyser;
+
+      const source = ctx.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(analyser);
+      analyser.connect(ctx.destination);
+      sourceRef.current = source;
+
+      setIsSpeaking(true);
+      setTtsMode("api");
+      startLipSyncLoop(analyser);
+
+      source.onended = () => {
+        if (animFrameRef.current) { cancelAnimationFrame(animFrameRef.current); animFrameRef.current = null; }
+        setIsSpeaking(false);
+        setMouthAmount(0);
+        sourceRef.current = null;
+      };
+
+      source.start(0);
+      return true;
+    } catch {
+      return false;
+    }
+  }, [lang, startLipSyncLoop]);
+
+  // ── Fallback TTS: browser SpeechSynthesis + word-boundary lip sync ─────────
+  const speakViaBrowser = useCallback((text: string) => {
+    if (!("speechSynthesis" in window)) return;
     window.speechSynthesis.cancel();
     const utter = new SpeechSynthesisUtterance(text);
     const langInfo = LANGS.find(l => l.value === lang);
-    utter.lang = langInfo?.code ?? "en-US";
+    utter.lang = langInfo?.ttsCode === "ar" ? "ar-SA" : langInfo?.ttsCode === "so" ? "so-SO" : "en-US";
     utter.rate = 0.88;
     utter.pitch = 1.05;
-
     const voices = window.speechSynthesis.getVoices();
-    const preferred = voices.find(v => v.lang.startsWith(utter.lang.split("-")[0]) && (v.name.includes("Google") || v.name.includes("Microsoft"))) ?? voices.find(v => v.lang.startsWith(utter.lang.split("-")[0])) ?? voices[0];
+    const preferred = voices.find(v => v.lang.startsWith(utter.lang.split("-")[0]) && (v.name.includes("Google") || v.name.includes("Microsoft")))
+      ?? voices.find(v => v.lang.startsWith(utter.lang.split("-")[0]))
+      ?? voices[0];
     if (preferred) utter.voice = preferred;
 
-    utter.onstart = () => setIsSpeaking(true);
-    utter.onend = () => setIsSpeaking(false);
-    utter.onerror = () => setIsSpeaking(false);
-    window.speechSynthesis.speak(utter);
-  }, [ttsEnabled, lang]);
+    // Word-boundary events drive lip sync (better than timer)
+    utter.onboundary = (e) => {
+      if (e.name === "word") {
+        const word = text.slice(e.charIndex, e.charIndex + (e.charLength ?? 4));
+        // Approximate mouth opening by word length (longer words = more movement)
+        const intensity = Math.min(1, word.length / 8);
+        setMouthAmount(intensity);
+        setTimeout(() => setMouthAmount(0), Math.min(e.charLength ?? 150, 200));
+      }
+    };
 
-  const stopSpeaking = () => { window.speechSynthesis.cancel(); setIsSpeaking(false); };
+    utter.onstart = () => { setIsSpeaking(true); setTtsMode("browser"); };
+    utter.onend = () => { setIsSpeaking(false); setMouthAmount(0); };
+    utter.onerror = () => { setIsSpeaking(false); setMouthAmount(0); };
+    window.speechSynthesis.speak(utter);
+  }, [lang]);
+
+  // ── Main speak dispatcher ─────────────────────────────────────────────────
+  const speak = useCallback(async (text: string) => {
+    if (!ttsEnabled) return;
+    stopAudio();
+    const usedAudioContext = await speakViaAudioContext(text);
+    if (!usedAudioContext) {
+      speakViaBrowser(text);
+    }
+  }, [ttsEnabled, stopAudio, speakViaAudioContext, speakViaBrowser]);
 
   const sendMessage = useCallback(async (content: string) => {
     if (!content.trim() || isStreaming) return;
-    stopSpeaking();
+    stopAudio();
     setInput("");
     setMessages(m => [...m, { role: "user", content }]);
     setIsStreaming(true);
@@ -259,12 +363,12 @@ export default function VideoTeacher() {
       if (fullText) speak(fullText);
     } catch (err: any) {
       if (err.name !== "AbortError") {
-        toast({ title: "Error", description: "Failed to get response", variant: "destructive" });
+        toast({ title: "Error", description: "Failed to get response from AI teacher.", variant: "destructive" });
       }
     } finally {
       setIsStreaming(false);
     }
-  }, [isStreaming, messages, mode, lang, speak, toast]);
+  }, [isStreaming, messages, mode, lang, speak, stopAudio, toast]);
 
   const sendVoiceText = useCallback(async (spokenText: string) => {
     if (!spokenText.trim()) return;
@@ -274,12 +378,12 @@ export default function VideoTeacher() {
 
   const startRecording = async () => {
     if (isRecording || isProcessing) return;
-    stopSpeaking();
+    stopAudio();
 
     if (SR_CLASS_VT) {
       recognizedTextRef.current = "";
       const recognition = new SR_CLASS_VT();
-      const langCode = LANGS.find(l => l.value === lang)?.code ?? "en-US";
+      const langCode = LANGS.find(l => l.value === lang)?.ttsCode === "ar" ? "ar-SA" : lang === "so" ? "so-SO" : "en-US";
       recognition.lang = langCode;
       recognition.continuous = true;
       recognition.interimResults = false;
@@ -287,9 +391,7 @@ export default function VideoTeacher() {
 
       recognition.onresult = (e: any) => {
         for (let i = e.resultIndex; i < e.results.length; i++) {
-          if (e.results[i].isFinal) {
-            recognizedTextRef.current += e.results[i][0].transcript + " ";
-          }
+          if (e.results[i].isFinal) recognizedTextRef.current += e.results[i][0].transcript + " ";
         }
       };
 
@@ -300,7 +402,7 @@ export default function VideoTeacher() {
           sendVoiceText(recognized);
         } else {
           setIsProcessing(false);
-          toast({ title: "No speech detected", description: "Nothing was heard. Try speaking louder or use the text box.", variant: "destructive" });
+          toast({ title: "No speech detected", description: "Hold the button while speaking. Try again or use the text box.", variant: "destructive" });
         }
       };
 
@@ -308,9 +410,11 @@ export default function VideoTeacher() {
         const code: string = e.error || "";
         setIsRecording(false);
         setIsProcessing(false);
-        if (code !== "aborted") {
-          toast({ title: "Voice error", description: `Could not recognize speech (${code}). Use the text box.`, variant: "destructive" });
-        }
+        const msg = code === "not-allowed" ? "Microphone blocked — allow access in browser settings."
+          : code === "network" ? "Speech recognition needs an internet connection."
+          : code === "no-speech" ? "No speech detected. Try speaking louder."
+          : code !== "aborted" ? `Speech recognition error: ${code}` : "";
+        if (msg) toast({ title: "Voice error", description: msg, variant: "destructive" });
       };
 
       try {
@@ -318,7 +422,7 @@ export default function VideoTeacher() {
         recognitionRef.current = recognition;
         setIsRecording(true);
       } catch {
-        toast({ title: "Microphone Error", description: "Could not start voice recognition.", variant: "destructive" });
+        toast({ title: "Microphone Error", description: "Could not start voice recognition. Use the text box.", variant: "destructive" });
       }
     } else {
       try {
@@ -330,8 +434,11 @@ export default function VideoTeacher() {
         recorder.start(100);
         mediaRecorderRef.current = recorder;
         setIsRecording(true);
-      } catch {
-        toast({ title: "Microphone Error", description: "Could not access microphone.", variant: "destructive" });
+      } catch (err: any) {
+        const msg = err?.name === "NotAllowedError" ? "Microphone access denied. Allow microphone in browser settings."
+          : err?.name === "NotFoundError" ? "No microphone found on this device."
+          : "Could not access microphone.";
+        toast({ title: "Microphone Error", description: msg, variant: "destructive" });
       }
     }
   };
@@ -370,11 +477,10 @@ export default function VideoTeacher() {
         credentials: "include",
         body: JSON.stringify({ audioBase64, audioMimeType: blob.type, history: messages.slice(-6) }),
       });
-      if (!r.ok) throw new Error();
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
       const reader2 = r.body!.getReader();
       const decoder = new TextDecoder();
       let buf = "";
-      let userText = "";
       let fullResponse = "";
       while (true) {
         const { done, value } = await reader2.read();
@@ -387,8 +493,7 @@ export default function VideoTeacher() {
           try {
             const d = JSON.parse(line.slice(6));
             if (d.transcribedText !== undefined && d.transcribedText) {
-              userText = d.transcribedText;
-              setMessages(m => [...m, { role: "user", content: userText }]);
+              setMessages(m => [...m, { role: "user", content: d.transcribedText }]);
             }
             if (d.done) break;
             if (d.content) {
@@ -408,7 +513,7 @@ export default function VideoTeacher() {
       }
       if (fullResponse) speak(fullResponse);
     } catch {
-      toast({ title: "Error", description: "Could not process audio. Try the text box.", variant: "destructive" });
+      toast({ title: "Error", description: "Could not process audio. Please try the text box.", variant: "destructive" });
     } finally {
       setIsProcessing(false);
     }
@@ -427,15 +532,19 @@ export default function VideoTeacher() {
   return (
     <AppLayout>
       <div className="max-w-6xl mx-auto space-y-4">
-        {/* Header */}
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
             <h1 className="text-2xl font-serif font-bold text-emerald-950 flex items-center gap-2">
               <Video className="h-6 w-6 text-emerald-600" />
               AI Video Teacher
               <Badge className="bg-emerald-600 text-white border-0">LIVE</Badge>
+              {ttsMode !== "unknown" && (
+                <Badge variant="outline" className="text-xs border-emerald-200 text-emerald-700">
+                  {ttsMode === "api" ? "🔊 Audio-sync" : "🔊 Browser TTS"}
+                </Badge>
+              )}
             </h1>
-            <p className="text-sm text-muted-foreground mt-1">Interactive AI teacher with animated avatar and real voice</p>
+            <p className="text-sm text-muted-foreground mt-1">AI teacher with real audio-driven lip sync</p>
           </div>
           <div className="flex items-center gap-2">
             <Select value={lang} onValueChange={v => setLang(v as Language)}>
@@ -449,16 +558,15 @@ export default function VideoTeacher() {
             <Button variant="outline" size="icon" onClick={() => setTtsEnabled(!ttsEnabled)} title={ttsEnabled ? "Mute" : "Unmute"}>
               {ttsEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
             </Button>
-            <Button variant="outline" size="icon" onClick={() => { stopSpeaking(); setMessages([]); }} title="New session">
+            <Button variant="outline" size="icon" onClick={() => { stopAudio(); setMessages([]); }} title="New session">
               <RefreshCw className="h-4 w-4" />
             </Button>
           </div>
         </div>
 
-        {/* Mode selector */}
         <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
           {TEACHER_MODES.map(m => (
-            <button key={m.value} onClick={() => { setMode(m.value); stopSpeaking(); setMessages([]); }}
+            <button key={m.value} onClick={() => { setMode(m.value); stopAudio(); setMessages([]); }}
               className={`flex flex-col items-center gap-1 px-2 py-3 rounded-xl border-2 transition-all text-center ${
                 mode === m.value ? `border-current bg-white shadow-sm` : "border-transparent hover:border-gray-200 hover:bg-gray-50"
               }`}
@@ -470,7 +578,6 @@ export default function VideoTeacher() {
         </div>
 
         <div className="grid lg:grid-cols-5 gap-4">
-          {/* Avatar panel */}
           <div className={`lg:col-span-2 rounded-2xl bg-gradient-to-b ${bgClass[currentMode.color]} border flex flex-col items-center justify-between p-6 gap-4 min-h-[420px]`}>
             <div className="text-center">
               <Badge className={`${colorClass[currentMode.color]} text-white border-0 mb-2`}>
@@ -479,7 +586,7 @@ export default function VideoTeacher() {
               <p className="text-xs text-muted-foreground">{currentMode.desc}</p>
             </div>
 
-            <AvatarFace isSpeaking={isSpeaking} isThinking={isStreaming} mode={mode} />
+            <AvatarFace isSpeaking={isSpeaking} isThinking={isStreaming} mode={mode} mouthAmount={mouthAmount} />
 
             <div className="w-full space-y-3">
               {isSpeaking && (
@@ -487,12 +594,12 @@ export default function VideoTeacher() {
                   <div className="flex gap-0.5">
                     {Array.from({ length: 12 }).map((_, i) => (
                       <motion.div key={i} className={`w-1 rounded-full ${colorClass[currentMode.color]}`}
-                        animate={{ height: [4, 4 + Math.random() * 16, 4] }}
-                        transition={{ duration: 0.3, repeat: Infinity, delay: i * 0.06 }}
+                        animate={{ height: [4, 4 + mouthAmount * 16, 4] }}
+                        transition={{ duration: 0.15, repeat: Infinity, delay: i * 0.04 }}
                       />
                     ))}
                   </div>
-                  <button onClick={stopSpeaking} className="text-xs underline text-muted-foreground">Stop</button>
+                  <button onClick={stopAudio} className="text-xs underline text-muted-foreground">Stop</button>
                 </div>
               )}
 
@@ -511,7 +618,7 @@ export default function VideoTeacher() {
                   }`}
                 >
                   {isProcessing ? <Loader2 className="h-6 w-6 animate-spin" /> :
-                   isRecording ? <MicOff className="h-6 w-6" /> : <Mic className="h-6 w-6" />}
+                   isRecording  ? <MicOff className="h-6 w-6" /> : <Mic className="h-6 w-6" />}
                 </motion.button>
               </div>
               <p className="text-xs text-center text-muted-foreground">
@@ -520,7 +627,6 @@ export default function VideoTeacher() {
             </div>
           </div>
 
-          {/* Chat panel */}
           <div className="lg:col-span-3 flex flex-col gap-3">
             <Card className="flex-1">
               <CardContent className="p-0 flex flex-col h-[380px]">
@@ -529,90 +635,64 @@ export default function VideoTeacher() {
                     <div className="flex flex-col items-center justify-center h-full text-center gap-4 py-8">
                       <span className="text-4xl">{currentMode.emoji}</span>
                       <div>
-                        <h3 className="font-semibold text-lg">{currentMode.label} is ready</h3>
-                        <p className="text-sm text-muted-foreground mt-1 max-w-xs">{currentMode.desc}. Ask me anything or hold the mic button to speak.</p>
+                        <h3 className="font-semibold text-lg text-emerald-950">{currentMode.label}</h3>
+                        <p className="text-sm text-muted-foreground mt-1 max-w-xs">{currentMode.desc}</p>
                       </div>
-                      <div className="grid grid-cols-1 gap-2 w-full max-w-sm">
-                        {getQuickQuestions(mode).map(q => (
-                          <button key={q} onClick={() => sendMessage(q)}
-                            className="text-left text-xs px-3 py-2 rounded-lg border hover:bg-gray-50 text-muted-foreground transition-colors">
-                            {q}
-                          </button>
-                        ))}
-                      </div>
+                      <p className="text-xs text-muted-foreground">Ask a question or hold the mic to speak</p>
                     </div>
                   ) : (
                     <div className="space-y-3">
                       <AnimatePresence>
                         {messages.map((m, i) => (
-                          <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+                          <motion.div key={i} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
                             className={`flex gap-2 ${m.role === "user" ? "flex-row-reverse" : "flex-row"}`}>
-                            <div className={`h-7 w-7 shrink-0 rounded-full flex items-center justify-center text-xs ${
-                              m.role === "user" ? "bg-emerald-600 text-white" : `${colorClass[currentMode.color]} text-white`
+                            <div className={`shrink-0 h-7 w-7 rounded-full flex items-center justify-center text-xs ${
+                              m.role === "user" ? `${colorClass[currentMode.color]} text-white` : "bg-gray-100 text-gray-600"
                             }`}>
-                              {m.role === "user" ? <User className="h-3.5 w-3.5" /> : currentMode.emoji}
+                              {m.role === "user" ? "U" : currentMode.emoji}
                             </div>
-                            <div className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm ${
+                            <div className={`max-w-[80%] rounded-xl px-3 py-2 text-sm ${
                               m.role === "user"
-                                ? "bg-emerald-600 text-white rounded-tr-sm"
-                                : "bg-white border rounded-tl-sm shadow-sm"
+                                ? `${colorClass[currentMode.color]} text-white`
+                                : "bg-white border border-gray-100 shadow-sm"
                             }`}>
-                              <p className="whitespace-pre-wrap leading-relaxed">{m.content}</p>
+                              <p className="whitespace-pre-wrap">{m.content}</p>
                             </div>
                           </motion.div>
                         ))}
                       </AnimatePresence>
-                      {isStreaming && messages[messages.length - 1]?.role !== "assistant" && (
+                      {isStreaming && (
                         <div className="flex gap-2">
-                          <div className={`h-7 w-7 rounded-full flex items-center justify-center text-xs ${colorClass[currentMode.color]} text-white`}>
-                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                          </div>
-                          <div className="bg-white border rounded-2xl rounded-tl-sm px-3 py-2">
-                            <div className="flex gap-1 items-center h-4">
-                              {[0, 1, 2].map(i => (
-                                <motion.div key={i} className="w-1.5 h-1.5 bg-gray-400 rounded-full"
-                                  animate={{ y: [0, -4, 0] }} transition={{ duration: 0.5, repeat: Infinity, delay: i * 0.15 }} />
-                              ))}
-                            </div>
+                          <div className="shrink-0 h-7 w-7 rounded-full bg-gray-100 flex items-center justify-center text-xs">{currentMode.emoji}</div>
+                          <div className="bg-white border border-gray-100 rounded-xl px-3 py-2 shadow-sm">
+                            <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
                           </div>
                         </div>
                       )}
                     </div>
                   )}
                 </ScrollArea>
-
-                <div className="border-t p-3">
-                  <div className="flex gap-2">
-                    <Textarea
-                      placeholder={`Ask ${currentMode.label}…`}
-                      className="min-h-[40px] max-h-28 resize-none text-sm"
-                      value={input}
-                      onChange={e => setInput(e.target.value)}
-                      onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(input); } }}
-                    />
-                    <Button onClick={() => sendMessage(input)} disabled={isStreaming || !input.trim()}
-                      className={`${colorClass[currentMode.color]} text-white shrink-0`}>
-                      {isStreaming ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                    </Button>
-                  </div>
-                </div>
               </CardContent>
             </Card>
+
+            <div className="flex gap-2">
+              <Textarea
+                value={input}
+                onChange={e => setInput(e.target.value)}
+                onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(input); } }}
+                placeholder={`Ask ${currentMode.label}…`}
+                rows={2}
+                className="resize-none flex-1 text-sm"
+                disabled={isStreaming}
+              />
+              <Button onClick={() => sendMessage(input)} disabled={!input.trim() || isStreaming}
+                className={`${colorClass[currentMode.color]} text-white self-end`}>
+                {isStreaming ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              </Button>
+            </div>
           </div>
         </div>
       </div>
     </AppLayout>
   );
-}
-
-function getQuickQuestions(mode: TeacherMode): string[] {
-  const map: Record<TeacherMode, string[]> = {
-    quran: ["Teach me Surah Al-Fatiha", "What is the importance of Bismillah?", "How do I improve my recitation?"],
-    tajweed: ["Explain Ikhfa with examples", "What are the Qalqalah letters?", "How long is Madd Muttasil?"],
-    hifdh: ["Give me a memorization plan for Juz Amma", "How do I avoid forgetting what I memorized?", "Best time of day to memorize?"],
-    arabic: ["Teach me basic Arabic grammar", "What are the Arabic noun cases (إعراب)?", "Explain verb conjugation in Arabic"],
-    fiqh: ["What are the 5 pillars of Islam?", "Explain the conditions of prayer", "What breaks the fast in Ramadan?"],
-    tafsir: ["Explain the Tafsir of Surah Al-Ikhlas", "What is the context of Surah Al-Kafirun?", "Explain Ayat Al-Kursi in depth"],
-  };
-  return map[mode];
 }

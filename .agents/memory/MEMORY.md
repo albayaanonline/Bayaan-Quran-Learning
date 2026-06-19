@@ -4,4 +4,6 @@
 - [Al Bayaan Phase 3 features](al-bayaan-phase3.md) — Phase 3-6 all built: Exam Builder, Auto-cert, Notifications, Security, i18n (EN/AR/SO)
 - [Al Bayaan Phases A-L](al-bayaan-phases-a-l.md) — Video Teacher, Tajweed Engine, Payments, Live Classroom (Jitsi), PWA, Content Generator, Marketing, Messages, Analytics Reports, Audit Log
 - [Al Bayaan audit + fixes](al-bayaan-audit-fixes.md) — Full audit June 2026: payment_records+live_classroom_sessions missing from DB index (fixed+pushed), PDF certs now real jsPDF+QR, parent auto-notifs added to recordings route
+- [Al Bayaan TTS proxy](al-bayaan-tts-proxy.md) — Google TTS confirmed working server-side (HTTP 200 MPEG); proxy at /api/tts; rate-limited 30/min; trust proxy must be set on Express for rate limiter to not error
+- [Al Bayaan production hardening](al-bayaan-prod-hardening.md) — Vite must not throw on missing PORT/BASE_PATH (use defaults); tajweed must include confidence field per rule; 21 DB indexes added via direct psql
 - [Al Bayaan root cause: blank screen](al-bayaan-blank-screen.md) — All 500 errors + blank page caused by missing Clerk keys; fix = run setupClerkWhitelabelAuth() in code_execution

@@ -5,27 +5,57 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
-import { Mic, MicOff, Volume2, VolumeX, Loader2, RefreshCw, BotMessageSquare, User, Send, Globe } from "lucide-react";
+import { Mic, MicOff, Volume2, VolumeX, Loader2, RefreshCw, BotMessageSquare, User, Send, Globe, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 
 interface VoiceMessage {
   role: "user" | "assistant";
   content: string;
+  isError?: boolean;
 }
 
 type VoiceLang = "en-US" | "ar-SA" | "so-SO";
 
-const LANG_OPTIONS: { value: VoiceLang; label: string }[] = [
-  { value: "en-US", label: "EN" },
-  { value: "ar-SA", label: "AR" },
-  { value: "so-SO", label: "SO" },
+const LANG_OPTIONS: { value: VoiceLang; label: string; ttsLang: string }[] = [
+  { value: "en-US", label: "EN", ttsLang: "en" },
+  { value: "ar-SA", label: "AR", ttsLang: "ar" },
+  { value: "so-SO", label: "SO", ttsLang: "so" },
 ];
 
 const SR_CLASS: (new () => any) | null =
   typeof window !== "undefined"
     ? ((window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition ?? null)
     : null;
+
+const BASE_PATH = (import.meta.env.BASE_URL || "").replace(/\/$/, "");
+
+// Human-readable error messages for every known failure mode
+function describeTranscriptionError(errorDetail: string | undefined): string {
+  if (!errorDetail) return "Speech recognition is temporarily unavailable. Please type your question below.";
+  const d = errorDetail.toLowerCase();
+  if (d.includes("too short") || d.includes("1 second")) return "Recording too short — hold the button and speak for at least 2 seconds.";
+  if (d.includes("model loading") || d.includes("503")) return "Speech model is warming up (cold start). Please wait 30 seconds and try again, or type below.";
+  if (d.includes("timed out") || d.includes("abort")) return "Transcription timed out — the audio server is busy. Please type your question below.";
+  if (d.includes("fetch failed") || d.includes("network") || d.includes("econnrefused")) return "Network error — cannot reach the speech recognition service. Please type your question below.";
+  if (d.includes("401") || d.includes("403")) return "Speech recognition requires authentication. Please sign in and try again.";
+  if (d.includes("429")) return "Rate limit reached — too many requests. Please wait a moment and try again.";
+  if (d.includes("no audio") || d.includes("no data")) return "No audio recorded — please allow microphone access and try again.";
+  return `Speech recognition failed: ${errorDetail.slice(0, 80)}. Please type below.`;
+}
+
+function describeSRError(code: string): string {
+  switch (code) {
+    case "not-allowed":
+    case "permission-denied": return "Microphone blocked — click the lock icon in your browser address bar and allow microphone access.";
+    case "no-speech":         return "No speech detected — hold the button while speaking, or move closer to your microphone.";
+    case "network":           return "Speech recognition needs an internet connection. Please check your network and try again.";
+    case "audio-capture":     return "Microphone not found or in use by another app. Close other apps using the mic and try again.";
+    case "service-not-allowed": return "Speech recognition is not allowed in this browser. Please use Chrome or Edge.";
+    case "bad-grammar":       return "Speech recognition failed to load language model. Try switching to English.";
+    default:                  return code ? `Speech recognition error (${code}). Please type your question below.` : "";
+  }
+}
 
 export default function VoiceTeacher() {
   const { toast } = useToast();
@@ -37,6 +67,7 @@ export default function VoiceTeacher() {
   const [voiceLang, setVoiceLang] = useState<VoiceLang>("en-US");
   const [textInput, setTextInput] = useState("");
   const [statusMsg, setStatusMsg] = useState("");
+  const [micStatus, setMicStatus] = useState<"idle" | "recording" | "denied" | "error">("idle");
 
   const recognitionRef = useRef<any | null>(null);
   const recognizedTextRef = useRef("");
@@ -64,22 +95,19 @@ export default function VoiceTeacher() {
     const utter = new SpeechSynthesisUtterance(text);
     utter.rate = 0.92;
     utter.pitch = 1;
-    utter.lang = voiceLang.startsWith("ar") ? "ar-SA" : "en-US";
+    utter.lang = voiceLang.startsWith("ar") ? "ar-SA" : voiceLang.startsWith("so") ? "so-SO" : "en-US";
     const voices = window.speechSynthesis.getVoices();
     const preferred = voices.find(v => v.lang === utter.lang && v.name.toLowerCase().includes("google"))
       || voices.find(v => v.lang.startsWith(utter.lang.split("-")[0]))
       || voices[0];
     if (preferred) utter.voice = preferred;
     utter.onstart = () => setIsSpeaking(true);
-    utter.onend = () => { setIsSpeaking(false); };
+    utter.onend   = () => setIsSpeaking(false);
     utter.onerror = () => setIsSpeaking(false);
     window.speechSynthesis.speak(utter);
   }, [ttsEnabled, voiceLang]);
 
-  const stopSpeaking = () => {
-    window.speechSynthesis?.cancel();
-    setIsSpeaking(false);
-  };
+  const stopSpeaking = () => { window.speechSynthesis?.cancel(); setIsSpeaking(false); };
 
   const sendTextToAI = useCallback(async (userText: string) => {
     if (!userText.trim()) return;
@@ -87,25 +115,34 @@ export default function VoiceTeacher() {
     setMessages(m => [...m, { role: "user", content: trimmed }]);
     setIsProcessing(true);
     setStatusMsg("Thinking…");
-
     const history = messages.slice(-8).map(m => ({ role: m.role, content: m.content }));
 
     try {
-      const basePath = (import.meta.env.BASE_URL || "").replace(/\/$/, "");
-      const r = await fetch(`${basePath}/api/voice-teacher/message`, {
+      const r = await fetch(`${BASE_PATH}/api/voice-teacher/message`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({ text: trimmed, history }),
       });
 
-      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      if (r.status === 401) {
+        setMessages(m => [...m, { role: "assistant", content: "You need to be signed in to use the Voice Teacher.", isError: true }]);
+        setIsProcessing(false);
+        setStatusMsg("");
+        return;
+      }
+      if (r.status === 429) {
+        setMessages(m => [...m, { role: "assistant", content: "Rate limit reached. Please wait a moment and try again.", isError: true }]);
+        setIsProcessing(false);
+        setStatusMsg("");
+        return;
+      }
+      if (!r.ok) throw new Error(`Server returned HTTP ${r.status}`);
 
       let fullResponse = "";
       const reader = r.body!.getReader();
       const decoder = new TextDecoder();
       let buf = "";
-
       setStatusMsg("Receiving response…");
 
       while (true) {
@@ -134,20 +171,20 @@ export default function VoiceTeacher() {
           } catch {}
         }
       }
-
-      if (fullResponse) {
-        setStatusMsg("");
-        speak(fullResponse);
-      }
-    } catch (err) {
-      console.error("Voice AI error:", err);
-      toast({ title: "Connection Error", description: "Could not reach AI. Check your internet and try again.", variant: "destructive" });
+      if (fullResponse) { setStatusMsg(""); speak(fullResponse); }
+    } catch (err: any) {
+      const detail = err?.message ?? String(err);
+      const isNetwork = detail.toLowerCase().includes("fetch") || detail.toLowerCase().includes("network");
+      const userMsg = isNetwork
+        ? "Cannot connect to AI server — check your internet connection."
+        : `AI response failed: ${detail.slice(0, 60)}`;
+      setMessages(m => [...m, { role: "assistant", content: userMsg, isError: true }]);
       setStatusMsg("");
     } finally {
       setIsProcessing(false);
       setStatusMsg("");
     }
-  }, [messages, speak, toast]);
+  }, [messages, speak]);
 
   const startRecording = async () => {
     if (isRecording || isProcessing) return;
@@ -163,25 +200,20 @@ export default function VoiceTeacher() {
 
       recognition.onresult = (e: any) => {
         for (let i = e.resultIndex; i < e.results.length; i++) {
-          if (e.results[i].isFinal) {
-            recognizedTextRef.current += e.results[i][0].transcript + " ";
-          }
+          if (e.results[i].isFinal) recognizedTextRef.current += e.results[i][0].transcript + " ";
         }
       };
 
       recognition.onend = () => {
         setIsRecording(false);
+        setMicStatus("idle");
         const recognized = recognizedTextRef.current.trim();
         if (recognized) {
           sendTextToAI(recognized);
         } else {
           setIsProcessing(false);
           setStatusMsg("");
-          toast({
-            title: "No speech detected",
-            description: "Nothing was heard. Try speaking louder, or use the text box below.",
-            variant: "destructive",
-          });
+          toast({ title: "No speech detected", description: "Nothing was heard. Speak while holding the button, then release.", variant: "destructive" });
         }
       };
 
@@ -190,26 +222,25 @@ export default function VoiceTeacher() {
         setIsRecording(false);
         setIsProcessing(false);
         setStatusMsg("");
-        if (code === "not-allowed" || code === "permission-denied") {
-          toast({ title: "Microphone blocked", description: "Allow microphone access in your browser to use voice.", variant: "destructive" });
-        } else if (code === "network") {
-          toast({ title: "Network error", description: "Speech recognition needs internet. Use the text box below.", variant: "destructive" });
-        } else if (code !== "aborted") {
-          toast({ title: "Voice error", description: `Recognition failed (${code}). Use the text box below.`, variant: "destructive" });
-        }
+        setMicStatus(code === "not-allowed" ? "denied" : "error");
+        const msg = describeSRError(code);
+        if (msg) toast({ title: "Voice Error", description: msg, variant: "destructive" });
       };
 
       try {
         recognition.start();
         recognitionRef.current = recognition;
         setIsRecording(true);
+        setMicStatus("recording");
         setStatusMsg("Listening…");
-      } catch {
-        toast({ title: "Microphone error", description: "Could not start voice recognition. Use the text box.", variant: "destructive" });
+      } catch (err: any) {
+        setMicStatus("error");
+        toast({ title: "Microphone Error", description: "Could not start voice recognition. Please use the text box.", variant: "destructive" });
       }
     } else {
+      // No Web Speech API — use MediaRecorder → Whisper
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
         const mimeType = ["audio/webm;codecs=opus", "audio/webm", "audio/ogg", "audio/mp4"].find(t => MediaRecorder.isTypeSupported(t)) || "";
         const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
         chunksRef.current = [];
@@ -217,9 +248,16 @@ export default function VoiceTeacher() {
         recorder.start(100);
         mediaRecorderRef.current = recorder;
         setIsRecording(true);
+        setMicStatus("recording");
         setStatusMsg("Recording…");
-      } catch {
-        toast({ title: "Microphone Error", description: "Could not access microphone. Please allow access in browser settings.", variant: "destructive" });
+      } catch (err: any) {
+        setMicStatus("denied");
+        const name = err?.name ?? "";
+        const msg = name === "NotAllowedError"  ? "Microphone blocked — click the lock icon in the address bar and allow microphone access."
+          : name === "NotFoundError"    ? "No microphone found on this device."
+          : name === "NotReadableError" ? "Microphone is in use by another app. Close other apps using the mic."
+          : `Microphone error: ${name || err?.message}`;
+        toast({ title: "Microphone Error", description: msg, variant: "destructive" });
       }
     }
   };
@@ -237,24 +275,30 @@ export default function VoiceTeacher() {
 
     if (!mediaRecorderRef.current) return;
     setIsRecording(false);
+    setMicStatus("idle");
     setIsProcessing(true);
-    setStatusMsg("Uploading audio for transcription…");
+    setStatusMsg("Uploading audio…");
 
     const recorder = mediaRecorderRef.current;
-    await new Promise<void>(resolve => {
-      recorder.onstop = () => resolve();
-      recorder.stop();
-      recorder.stream.getTracks().forEach(t => t.stop());
-    });
+    await new Promise<void>(resolve => { recorder.onstop = () => resolve(); recorder.stop(); recorder.stream.getTracks().forEach(t => t.stop()); });
     mediaRecorderRef.current = null;
 
     if (chunksRef.current.length === 0) {
       setIsProcessing(false);
       setStatusMsg("");
+      toast({ title: "No audio captured", description: "The recording was empty. Please try again.", variant: "destructive" });
       return;
     }
 
     const blob = new Blob(chunksRef.current, { type: chunksRef.current[0]?.type || "audio/webm" });
+
+    if (blob.size < 1000) {
+      setIsProcessing(false);
+      setStatusMsg("");
+      toast({ title: "Recording too short", description: "Hold the button while speaking for at least 2 seconds.", variant: "destructive" });
+      return;
+    }
+
     const toBase64 = (b: Blob): Promise<string> => new Promise((res, rej) => {
       const reader = new FileReader();
       reader.onload = () => res((reader.result as string).split(",")[1]);
@@ -266,14 +310,20 @@ export default function VoiceTeacher() {
       const audioBase64 = await toBase64(blob);
       setStatusMsg("Transcribing audio…");
       const history = messages.slice(-8).map(m => ({ role: m.role, content: m.content }));
-      const basePath = (import.meta.env.BASE_URL || "").replace(/\/$/, "");
-      const r = await fetch(`${basePath}/api/voice-teacher/message`, {
+      const r = await fetch(`${BASE_PATH}/api/voice-teacher/message`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({ audioBase64, audioMimeType: blob.type, history }),
       });
-      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+
+      if (r.status === 401) {
+        toast({ title: "Sign in required", description: "Please sign in to use voice transcription.", variant: "destructive" });
+        setIsProcessing(false);
+        setStatusMsg("");
+        return;
+      }
+      if (!r.ok) throw new Error(`Server HTTP ${r.status}`);
 
       let transcribed = "";
       let fullResponse = "";
@@ -298,12 +348,16 @@ export default function VoiceTeacher() {
                 setStatusMsg("Getting AI response…");
               }
             }
+            if (d.transcriptionError) {
+              const userMsg = describeTranscriptionError(d.errorDetail);
+              setMessages(m => [...m, { role: "assistant", content: userMsg, isError: true }]);
+            }
             if (d.done) break;
             if (d.content) {
               fullResponse += d.content;
               setMessages(m => {
                 const last = m[m.length - 1];
-                if (last?.role === "assistant") {
+                if (last?.role === "assistant" && !last.isError) {
                   const copy = [...m];
                   copy[copy.length - 1] = { ...last, content: last.content + d.content };
                   return copy;
@@ -314,10 +368,11 @@ export default function VoiceTeacher() {
           } catch {}
         }
       }
-
       if (fullResponse) speak(fullResponse);
-    } catch {
-      toast({ title: "Error", description: "Failed to process audio. Try the text box below.", variant: "destructive" });
+    } catch (err: any) {
+      const detail = err?.message ?? String(err);
+      const userMsg = describeTranscriptionError(detail);
+      toast({ title: "Transcription Failed", description: userMsg, variant: "destructive" });
     } finally {
       setIsProcessing(false);
       setStatusMsg("");
@@ -337,6 +392,7 @@ export default function VoiceTeacher() {
     recognitionRef.current?.abort();
     setMessages([]);
     setStatusMsg("");
+    setMicStatus("idle");
   };
 
   return (
@@ -355,30 +411,20 @@ export default function VoiceTeacher() {
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
               {hasSpeechAPI
-                ? "Hold mic button and speak — instant browser recognition, no API key needed"
-                : "Hold to record — audio sent to Whisper for transcription"
-              }
+                ? "Hold mic and speak — instant browser recognition, no API key needed"
+                : "Hold to record — audio sent to Whisper for transcription"}
             </p>
           </div>
           <div className="flex gap-2 items-center">
             <div className="flex rounded-lg border border-emerald-200 overflow-hidden text-xs">
               {LANG_OPTIONS.map(l => (
-                <button
-                  key={l.value}
-                  onClick={() => setVoiceLang(l.value)}
-                  className={`px-2 py-1 font-medium transition-colors ${
-                    voiceLang === l.value
-                      ? "bg-emerald-600 text-white"
-                      : "bg-white text-emerald-700 hover:bg-emerald-50"
-                  }`}
-                  title={l.value}
-                >
+                <button key={l.value} onClick={() => setVoiceLang(l.value)}
+                  className={`px-2 py-1 font-medium transition-colors ${voiceLang === l.value ? "bg-emerald-600 text-white" : "bg-white text-emerald-700 hover:bg-emerald-50"}`}>
                   {l.label}
                 </button>
               ))}
             </div>
-            <Button variant="outline" size="icon" onClick={() => setTtsEnabled(!ttsEnabled)}
-              title={ttsEnabled ? "Mute AI voice" : "Enable AI voice"}>
+            <Button variant="outline" size="icon" onClick={() => setTtsEnabled(!ttsEnabled)} title={ttsEnabled ? "Mute AI voice" : "Enable AI voice"}>
               {ttsEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
             </Button>
             <Button variant="outline" size="icon" onClick={reset} title="Clear conversation">
@@ -386,6 +432,14 @@ export default function VoiceTeacher() {
             </Button>
           </div>
         </div>
+
+        {/* Mic permission warning */}
+        {micStatus === "denied" && (
+          <div className="flex items-start gap-2 bg-red-50 border border-red-200 rounded-xl p-3 text-sm text-red-800">
+            <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+            <span>Microphone access was denied. Click the lock/camera icon in your browser's address bar and allow microphone access, then reload.</span>
+          </div>
+        )}
 
         <Card className="border-emerald-100">
           <CardContent className="p-0">
@@ -398,7 +452,9 @@ export default function VoiceTeacher() {
                   <div>
                     <h3 className="font-semibold text-lg text-emerald-950">Voice Teacher Ready</h3>
                     <p className="text-sm text-muted-foreground mt-1 max-w-xs">
-                      Hold the mic button and speak, or type below. Ask about Tajweed, recite a verse, or ask any Islamic question.
+                      {hasSpeechAPI
+                        ? "Hold the mic button and speak, or type below."
+                        : "Hold to record audio (sent to Whisper), or type below."}
                     </p>
                   </div>
                   <div className="grid grid-cols-1 gap-2 text-xs text-muted-foreground max-w-xs">
@@ -414,13 +470,15 @@ export default function VoiceTeacher() {
                       <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
                         className={`flex gap-3 ${m.role === "user" ? "flex-row-reverse" : "flex-row"}`}>
                         <div className={`h-8 w-8 shrink-0 rounded-full flex items-center justify-center ${
-                          m.role === "user" ? "bg-emerald-600 text-white" : "bg-emerald-100 text-emerald-700"}`}>
-                          {m.role === "user" ? <User className="h-4 w-4" /> : <BotMessageSquare className="h-4 w-4" />}
+                          m.role === "user" ? "bg-emerald-600 text-white" : m.isError ? "bg-red-100 text-red-600" : "bg-emerald-100 text-emerald-700"}`}>
+                          {m.role === "user" ? <User className="h-4 w-4" /> : m.isError ? <AlertCircle className="h-4 w-4" /> : <BotMessageSquare className="h-4 w-4" />}
                         </div>
                         <div className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm ${
                           m.role === "user"
                             ? "bg-emerald-600 text-white rounded-tr-sm"
-                            : "bg-white dark:bg-emerald-950 border border-emerald-100 rounded-tl-sm shadow-sm"
+                            : m.isError
+                              ? "bg-red-50 border border-red-200 text-red-800 rounded-tl-sm"
+                              : "bg-white dark:bg-emerald-950 border border-emerald-100 rounded-tl-sm shadow-sm"
                         }`}>
                           <p className="whitespace-pre-wrap">{m.content}</p>
                         </div>
@@ -456,11 +514,8 @@ export default function VoiceTeacher() {
           {isRecording && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
               className="flex items-center gap-2 text-sm text-red-600 font-medium">
-              <motion.div
-                animate={{ scale: [1, 1.3, 1] }}
-                transition={{ repeat: Infinity, duration: 0.8 }}
-                className="h-3 w-3 rounded-full bg-red-500"
-              />
+              <motion.div animate={{ scale: [1, 1.3, 1] }} transition={{ repeat: Infinity, duration: 0.8 }}
+                className="h-3 w-3 rounded-full bg-red-500" />
               Listening… ({LANG_OPTIONS.find(l => l.value === voiceLang)?.label})
             </motion.div>
           )}
@@ -473,21 +528,25 @@ export default function VoiceTeacher() {
               onMouseUp={stopRecording}
               onTouchEnd={e => { e.preventDefault(); stopRecording(); }}
               disabled={isProcessing}
-              className={`h-20 w-20 rounded-full flex items-center justify-center shadow-lg transition-all select-none
-                ${isProcessing
-                  ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                  : isRecording
-                    ? "bg-red-500 text-white"
-                    : "bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer"
-                }`}
+              className={`h-20 w-20 rounded-full flex items-center justify-center shadow-lg transition-all select-none ${
+                isProcessing   ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                : isRecording  ? "bg-red-500 text-white"
+                : micStatus === "denied" ? "bg-red-100 text-red-400 cursor-not-allowed"
+                : "bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer"
+              }`}
             >
               {isProcessing ? <Loader2 className="h-8 w-8 animate-spin" />
                 : isRecording ? <MicOff className="h-8 w-8" />
+                : micStatus === "denied" ? <AlertCircle className="h-8 w-8" />
                 : <Mic className="h-8 w-8" />}
             </motion.button>
           </div>
+
           <p className="text-xs text-muted-foreground">
-            {isRecording ? "Release to send" : isProcessing ? statusMsg || "Processing…" : "Hold to speak"}
+            {isRecording   ? "Release to send"
+            : isProcessing ? statusMsg || "Processing…"
+            : micStatus === "denied" ? "Microphone blocked — check browser permissions"
+            : "Hold to speak"}
           </p>
 
           <form onSubmit={handleTextSend} className="flex gap-2 w-full max-w-lg">
@@ -503,12 +562,12 @@ export default function VoiceTeacher() {
               <Send className="h-4 w-4" />
             </Button>
           </form>
+
           <p className="text-xs text-muted-foreground flex items-center gap-1">
             <Globe className="h-3 w-3" />
             {hasSpeechAPI
-              ? "Using browser speech recognition — works instantly, no API key needed"
-              : "Voice recognition not available in this browser — type below or use Chrome/Edge"
-            }
+              ? "Browser speech recognition — Chrome/Edge recommended for best results"
+              : "Voice recognition unavailable in this browser — type below or switch to Chrome/Edge"}
           </p>
         </div>
       </div>

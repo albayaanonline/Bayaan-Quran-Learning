@@ -30,6 +30,7 @@ import liveClassroomRouter from "./live-classroom";
 import analyticsReportsRouter from "./analytics-reports";
 import auditRouter from "./audit";
 import marketingRouter from "./marketing";
+import ttsRouter from "./tts";
 
 const router = Router();
 
@@ -64,5 +65,6 @@ router.use(liveClassroomRouter);
 router.use(analyticsReportsRouter);
 router.use(auditRouter);
 router.use(marketingRouter);
+router.use(ttsRouter);
 
 export default router;

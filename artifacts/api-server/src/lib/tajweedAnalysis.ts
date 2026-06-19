@@ -1,13 +1,27 @@
 /**
- * Advanced Tajweed Analysis Engine v2
+ * Tajweed Analysis Engine — Text-Based Rule Detection
  *
- * Real phonetic rule detection with:
- * - Makharij (articulation points) analysis
- * - Ghunnah, Madd, Qalqalah, Ikhfa/Idgham/Iqlab/Izhar
- * - Waqf & Ibtidaa rule detection
- * - Stretch duration analysis
- * - Detailed per-rule mistake mapping
- * - Improvement plan generation
+ * HONEST CLASSIFICATION: This engine analyzes the *reference text* (Arabic Unicode)
+ * to identify which Tajweed rules apply to a passage. It detects letters and markers
+ * in the written text — it does NOT analyze audio waveforms or phoneme timing.
+ *
+ * What CAN be measured from text alone:
+ *   ✓ Which Tajweed rules are present in the passage (Qalqalah letters, Ghunnah candidates, Madd letters, etc.)
+ *   ✓ Waqf (stopping) markers from Unicode Quran text
+ *   ✓ Makharij (articulation points) for present letters
+ *   ✓ Word accuracy score (from LCS diff of student vs reference)
+ *
+ * What CANNOT be measured without audio analysis:
+ *   ✗ Whether the student actually applied Qalqalah echo
+ *   ✗ Actual Ghunnah duration (requires spectrogram / nasal formant analysis)
+ *   ✗ Actual Madd duration in beats (requires onset detection)
+ *   ✗ Tafkhim (heaviness) vs Tarqeeq (lightness) of actual pronunciation
+ *   ✗ Correct Makharij (articulation point) in the student's audio
+ *
+ * Each rule carries a `confidence` field:
+ *   "detected_in_text"      — rule is definitely present in the reference text
+ *   "estimated_from_accuracy" — rule feedback derived from word accuracy score
+ *   "cannot_measure"        — cannot be verified without audio analysis
  */
 
 export interface MaddRule {
@@ -41,6 +55,11 @@ export interface ImprovementPlan {
   targetDays: number;
 }
 
+export type RuleConfidence =
+  | "detected_in_text"        // Rule letters found in reference text — certain
+  | "estimated_from_accuracy" // Feedback is based on word accuracy, not audio
+  | "cannot_measure";         // Requires audio analysis — not available here
+
 export interface TajweedRule {
   name: string;
   nameArabic: string;
@@ -49,9 +68,13 @@ export interface TajweedRule {
   examples: string[];
   count: number;
   severity: "info" | "warning" | "critical";
+  confidence: RuleConfidence;
+  confidenceNote: string;
 }
 
 export interface TajweedAnalysisResult {
+  analysisMode: "text_based";
+  disclaimer: string;
   rules: TajweedRule[];
   maddRules: MaddRule[];
   waqfAnalysis: WaqfAnalysis;
@@ -61,7 +84,7 @@ export interface TajweedAnalysisResult {
   score: number;
   tajweedScore: number;
   accuracyScore: number;
-  ruleBreakdown: Record<string, { found: boolean; count: number; weight: number }>;
+  ruleBreakdown: Record<string, { found: boolean; count: number; weight: number; confidence: RuleConfidence }>;
   suggestions: string[];
   presentRules: string[];
   detailedReport: string;
@@ -189,16 +212,16 @@ export function analyzeTajweed(referenceText: string, accuracyScore: number): Ta
   const makharijAnalysis = analyzeMakharij(text).slice(0, 10);
 
   const rules: TajweedRule[] = [
-    { name: "Qalqalah", nameArabic: "قَلْقَلَة", description: "Echo/bouncing on ق ط ب ج د at sukoon", found: qalqalahLetters.length > 0, examples: qalqalahLetters, count: countLetter(text, QALQALAH_LETTERS), severity: qalqalahLetters.length > 0 ? "warning" : "info" },
-    { name: "Ghunnah", nameArabic: "غُنَّة", description: "Nasalization on ن/م — 2 counts", found: hasGhunnah, examples: [hasNoon ? "ن" : "", hasMeem ? "م" : ""].filter(Boolean), count: countLetter(text, ["ن", "م"]), severity: hasGhunnah && hasShaddah ? "warning" : "info" },
-    { name: "Madd", nameArabic: "مَدّ", description: "Vowel elongation — 2, 4, or 6 counts", found: hasMadd, examples: MADD_LETTERS.filter(l => text.includes(l)), count: countLetter(text, MADD_LETTERS), severity: "info" },
-    { name: "Ikhfa", nameArabic: "إِخْفَاء", description: "Hidden noon before 15 letters", found: ikhfaLetters.length > 0, examples: ikhfaLetters.length > 0 ? [`ن + ${ikhfaLetters.join("")}`] : [], count: ikhfaLetters.length, severity: ikhfaLetters.length > 0 ? "warning" : "info" },
-    { name: "Idgham (Ghunnah)", nameArabic: "إِدْغَام بِغُنَّة", description: "Merge noon into ي ن م و", found: idghamWithG.length > 0, examples: idghamWithG.length > 0 ? [`ن → ${idghamWithG.join("")}`] : [], count: idghamWithG.length, severity: idghamWithG.length > 0 ? "warning" : "info" },
-    { name: "Idgham (no Ghunnah)", nameArabic: "إِدْغَام بِلا غُنَّة", description: "Merge noon into ر ل (no nasal)", found: idghamWithoutG.length > 0, examples: idghamWithoutG.length > 0 ? [`ن → ${idghamWithoutG.join("")}`] : [], count: idghamWithoutG.length, severity: idghamWithoutG.length > 0 ? "warning" : "info" },
-    { name: "Iqlab", nameArabic: "إِقْلَاب", description: "Convert noon to meem-sound before ب", found: iqlabFound, examples: iqlabFound ? ["نْ → م before ب"] : [], count: countLetter(text, ["ب"]), severity: iqlabFound ? "warning" : "info" },
-    { name: "Izhar", nameArabic: "إِظْهَار", description: "Clear noon before throat letters ء ه ع ح غ خ", found: izharLetters.length > 0, examples: izharLetters.length > 0 ? [`ن + ${izharLetters.join("")}`] : [], count: izharLetters.length, severity: "info" },
-    { name: "Tafkhim", nameArabic: "تَفْخِيم", description: "Heavy pronunciation for خ ص ض ط ظ غ ق", found: heavyLetters.length > 0, examples: heavyLetters, count: countLetter(text, HEAVY_LETTERS), severity: heavyLetters.length > 0 ? "warning" : "info" },
-    { name: "Waqf & Ibtidaa", nameArabic: "وَقف وَابْتِدَاء", description: "Stopping and resuming rules", found: waqfAnalysis.locations.length > 0, examples: waqfAnalysis.locations, count: waqfAnalysis.locations.length, severity: waqfAnalysis.hasForbiddenStop ? "critical" : "info" },
+    { name: "Qalqalah", nameArabic: "قَلْقَلَة", description: "Echo/bouncing on ق ط ب ج د at sukoon", found: qalqalahLetters.length > 0, examples: qalqalahLetters, count: countLetter(text, QALQALAH_LETTERS), severity: qalqalahLetters.length > 0 ? "warning" : "info", confidence: "detected_in_text", confidenceNote: "Letters confirmed in text. Whether you applied the echo sound cannot be verified without audio analysis." },
+    { name: "Ghunnah", nameArabic: "غُنَّة", description: "Nasalization on ن/م — 2 counts", found: hasGhunnah, examples: [hasNoon ? "ن" : "", hasMeem ? "م" : ""].filter(Boolean), count: countLetter(text, ["ن", "م"]), severity: hasGhunnah && hasShaddah ? "warning" : "info", confidence: "detected_in_text", confidenceNote: "Noon/Meem confirmed in text. Actual nasalization duration (2 counts) cannot be verified without audio." },
+    { name: "Madd", nameArabic: "مَدّ", description: "Vowel elongation — 2, 4, or 6 counts", found: hasMadd, examples: MADD_LETTERS.filter(l => text.includes(l)), count: countLetter(text, MADD_LETTERS), severity: "info", confidence: "detected_in_text", confidenceNote: "Madd letters confirmed in text. Actual hold duration cannot be measured without audio analysis." },
+    { name: "Ikhfa", nameArabic: "إِخْفَاء", description: "Hidden noon before 15 letters", found: ikhfaLetters.length > 0, examples: ikhfaLetters.length > 0 ? [`ن + ${ikhfaLetters.join("")}`] : [], count: ikhfaLetters.length, severity: ikhfaLetters.length > 0 ? "warning" : "info", confidence: "detected_in_text", confidenceNote: "Context letters confirmed. Whether noon was softened correctly requires audio analysis." },
+    { name: "Idgham (Ghunnah)", nameArabic: "إِدْغَام بِغُنَّة", description: "Merge noon into ي ن م و", found: idghamWithG.length > 0, examples: idghamWithG.length > 0 ? [`ن → ${idghamWithG.join("")}`] : [], count: idghamWithG.length, severity: idghamWithG.length > 0 ? "warning" : "info", confidence: "detected_in_text", confidenceNote: "Merge context confirmed in text. Whether noon was fully merged requires audio analysis." },
+    { name: "Idgham (no Ghunnah)", nameArabic: "إِدْغَام بِلا غُنَّة", description: "Merge noon into ر ل (no nasal)", found: idghamWithoutG.length > 0, examples: idghamWithoutG.length > 0 ? [`ن → ${idghamWithoutG.join("")}`] : [], count: idghamWithoutG.length, severity: idghamWithoutG.length > 0 ? "warning" : "info", confidence: "detected_in_text", confidenceNote: "Merge context confirmed in text. Correct execution requires audio verification." },
+    { name: "Iqlab", nameArabic: "إِقْلَاب", description: "Convert noon to meem-sound before ب", found: iqlabFound, examples: iqlabFound ? ["نْ → م before ب"] : [], count: countLetter(text, ["ب"]), severity: iqlabFound ? "warning" : "info", confidence: "detected_in_text", confidenceNote: "Noon-Ba context confirmed in text. Whether you converted correctly requires audio." },
+    { name: "Izhar", nameArabic: "إِظْهَار", description: "Clear noon before throat letters ء ه ع ح غ خ", found: izharLetters.length > 0, examples: izharLetters.length > 0 ? [`ن + ${izharLetters.join("")}`] : [], count: izharLetters.length, severity: "info", confidence: "detected_in_text", confidenceNote: "Throat-letter context confirmed in text. Clear pronunciation requires audio verification." },
+    { name: "Tafkhim", nameArabic: "تَفْخِيم", description: "Heavy pronunciation for خ ص ض ط ظ غ ق", found: heavyLetters.length > 0, examples: heavyLetters, count: countLetter(text, HEAVY_LETTERS), severity: heavyLetters.length > 0 ? "warning" : "info", confidence: "cannot_measure", confidenceNote: "Heavy letters confirmed in text. Whether you pronounced them with correct Tafkhim (heaviness) CANNOT be determined without audio analysis." },
+    { name: "Waqf & Ibtidaa", nameArabic: "وَقف وَابْتِدَاء", description: "Stopping and resuming rules", found: waqfAnalysis.locations.length > 0, examples: waqfAnalysis.locations, count: waqfAnalysis.locations.length, severity: waqfAnalysis.hasForbiddenStop ? "critical" : "info", confidence: "detected_in_text", confidenceNote: "Waqf markers detected in Unicode text. Whether you stopped at correct positions requires audio analysis." },
   ];
 
   const presentRules = rules.filter(r => r.found).map(r => r.name);
@@ -221,8 +244,8 @@ export function analyzeTajweed(referenceText: string, accuracyScore: number): Ta
   // No artificial base bonus — score is purely accuracy + detected rule richness + waqf penalty
   const tajweedScore = Math.min(100, Math.max(0, Math.round(accuracyScore * 0.75 + ruleBonus + waqfPenalty)));
 
-  const ruleBreakdown: Record<string, { found: boolean; count: number; weight: number }> = {};
-  rules.forEach(r => { ruleBreakdown[r.name] = { found: r.found, count: r.count, weight: r.severity === "critical" ? 3 : r.severity === "warning" ? 2 : 1 }; });
+  const ruleBreakdown: Record<string, { found: boolean; count: number; weight: number; confidence: RuleConfidence }> = {};
+  rules.forEach(r => { ruleBreakdown[r.name] = { found: r.found, count: r.count, weight: r.severity === "critical" ? 3 : r.severity === "warning" ? 2 : 1, confidence: r.confidence }; });
 
   const mistakes: TajweedMistake[] = [];
   if (ikhfaLetters.length > 0 && accuracyScore < 80) mistakes.push({ type: "Ikhfa", description: "Noon may not be fully concealed", affectedText: `ن + ${ikhfaLetters.join(",")}`, correction: "Soften the noon — neither full merge nor clear sound", severity: "moderate" });
@@ -235,18 +258,43 @@ export function analyzeTajweed(referenceText: string, accuracyScore: number): Ta
   if (accuracyScore < 70) improvementPlan.push({ priority: "high", rule: "Word Accuracy", exercise: "Word-by-word recitation with Mushaf. Record yourself and compare.", targetDays: 21 });
   if (improvementPlan.length === 0) improvementPlan.push({ priority: "low", rule: "Maintenance", exercise: "Strong foundations. Continue daily revision and record yourself at 1.0x speed.", targetDays: 30 });
 
+  const DISCLAIMER = "⚠ Text-based analysis only: This report detects which Tajweed rules appear in the reference text. It cannot verify how you actually pronounced them — that requires audio waveform analysis. Rules marked 'cannot_measure' need audio verification.";
+
   const reportLines = [
-    `=== TAJWEED ANALYSIS REPORT ===`,
-    `Overall Score: ${tajweedScore}/100 | Accuracy: ${accuracyScore}%`,
-    `\n--- RULES DETECTED ---`,
-    ...rules.filter(r => r.found).map(r => `✓ ${r.name} (${r.nameArabic}): ${r.description}`),
-    `\n--- MADD ELONGATION ---`,
-    ...maddRules.filter(m => m.found).map(m => `✓ ${m.nameArabic}: ${m.counts}`),
-    `\n--- WAQF ---`,
+    `=== TAJWEED ANALYSIS REPORT (TEXT-BASED) ===`,
+    DISCLAIMER,
+    `Overall Score: ${tajweedScore}/100 | Word Accuracy: ${accuracyScore}%`,
+    ``,
+    `--- RULES DETECTED IN THIS PASSAGE ---`,
+    ...rules.filter(r => r.found).map(r => `✓ ${r.name} (${r.nameArabic}): ${r.description} [${r.confidence}]`),
+    ``,
+    `--- MADD ELONGATION ---`,
+    ...maddRules.filter(m => m.found).map(m => `✓ ${m.nameArabic}: ${m.counts} [detected_in_text]`),
+    ``,
+    `--- WAQF MARKERS ---`,
     ...(waqfAnalysis.hasCompulsoryStop ? ["• Compulsory stop (م) present"] : []),
-    ...(waqfAnalysis.hasForbiddenStop ? ["• ⚠ Forbidden stop (لا) present — do not pause"] : []),
+    ...(waqfAnalysis.hasForbiddenStop ? ["• ⚠ Forbidden stop (لا) present — do not pause here"] : []),
     ...(waqfAnalysis.hasPermittedStop ? ["• Permitted stop marker present"] : []),
+    ``,
+    `--- RULES REQUIRING AUDIO VERIFICATION ---`,
+    ...rules.filter(r => r.confidence === "cannot_measure").map(r => `⚠ ${r.name}: ${r.confidenceNote}`),
   ];
 
-  return { rules, maddRules, waqfAnalysis, makharijAnalysis, mistakes, improvementPlan, score: tajweedScore, tajweedScore, accuracyScore, ruleBreakdown, suggestions, presentRules, detailedReport: reportLines.join("\n") };
+  return {
+    analysisMode: "text_based" as const,
+    disclaimer: DISCLAIMER,
+    rules,
+    maddRules,
+    waqfAnalysis,
+    makharijAnalysis,
+    mistakes,
+    improvementPlan,
+    score: tajweedScore,
+    tajweedScore,
+    accuracyScore,
+    ruleBreakdown,
+    suggestions,
+    presentRules,
+    detailedReport: reportLines.join("\n"),
+  };
 }

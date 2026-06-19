@@ -15,6 +15,9 @@ import { logger } from "./lib/logger";
 
 const app: Express = express();
 
+// Trust Replit's reverse proxy so rate-limit can identify clients via X-Forwarded-For
+app.set("trust proxy", 1);
+
 // ── Security headers ────────────────────────────────────────────────────────
 app.use(helmet({
   contentSecurityPolicy: false,
@@ -85,6 +88,7 @@ app.use("/api/hifdh/ai-coach", aiLimiter);
 app.use("/api/exams/:id/evaluate", aiLimiter);
 app.use("/api/video-teacher", aiLimiter);
 app.use("/api/content-generator", aiLimiter);
+app.use("/api/tts", rateLimit({ windowMs: 60 * 1000, max: 30, standardHeaders: true, legacyHeaders: false, message: { error: "TTS rate limit reached." } }));
 
 // ── Routes ──────────────────────────────────────────────────────────────────
 app.use("/api", router);
