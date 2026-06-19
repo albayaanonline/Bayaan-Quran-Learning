@@ -354,8 +354,174 @@ export const LIBRARY_BOOKS: Book[] = [
   },
 ];
 
+// ── Lesson curricula per book ──────────────────────────────────────────────────
+type LessonType = "video" | "reading" | "practice" | "quiz";
+interface Lesson {
+  number: number;
+  title: string;
+  titleArabic: string;
+  description: string;
+  duration: string;
+  type: LessonType;
+}
+
+const LESSON_TYPES: LessonType[] = ["reading", "video", "practice", "practice", "quiz"];
+
+const CURRICULA: Record<string, Array<{ title: string; titleArabic: string; description: string; type: LessonType; duration: string }>> = {
+  "arabic-bayna-yadayk-1": [
+    { title: "Greetings & Introductions", titleArabic: "التحيات والمقدمات", description: "Learn essential greetings: as-salamu alaykum, marhaba, kayfa haluka. Practice introducing yourself and asking others' names.", type: "video", duration: "20 min" },
+    { title: "The Arabic Alphabet Review", titleArabic: "مراجعة الحروف العربية", description: "Review all 28 letters with their isolated, initial, medial, and final forms. Practice writing and recognizing each letter.", type: "practice", duration: "25 min" },
+    { title: "Numbers 1–10", titleArabic: "الأرقام ١–١٠", description: "Learn to count from one to ten in Arabic, understand masculine and feminine forms of numbers, and use them in simple sentences.", type: "reading", duration: "15 min" },
+    { title: "Definite & Indefinite Articles", titleArabic: "التعريف والتنكير", description: "Master the use of ال (al-) for definite nouns and tanwin (ـً ـٍ ـٌ) for indefinite nouns. Practice with common vocabulary.", type: "practice", duration: "20 min" },
+    { title: "Basic Sentence Structure", titleArabic: "بنية الجملة الأساسية", description: "Introduction to the nominal sentence (الجملة الاسمية): Subject (مبتدأ) + Predicate (خبر). Build simple sentences like 'I am a student.'", type: "video", duration: "25 min" },
+    { title: "The Family", titleArabic: "الأسرة", description: "Vocabulary for family members: father, mother, brother, sister, son, daughter. Practice possessive pronouns with family terms.", type: "reading", duration: "20 min" },
+    { title: "Colors & Descriptions", titleArabic: "الألوان والأوصاف", description: "Learn color words and basic adjectives. Understand adjective-noun agreement in gender and number in Arabic.", type: "practice", duration: "20 min" },
+    { title: "Numbers 11–100", titleArabic: "الأرقام ١١–١٠٠", description: "Extend your number knowledge from 11 to 100. Learn compound numbers and use them for age, quantities, and prices.", type: "reading", duration: "20 min" },
+    { title: "Days of the Week & Months", titleArabic: "أيام الأسبوع والأشهر", description: "Learn all seven days and the 12 months in Arabic. Practice scheduling and talking about dates.", type: "practice", duration: "15 min" },
+    { title: "The Classroom", titleArabic: "الفصل الدراسي", description: "Classroom vocabulary: book, pen, desk, board, teacher, student. Practice classroom commands and instructions.", type: "video", duration: "20 min" },
+    { title: "Telling Time", titleArabic: "قول الوقت", description: "Learn to express time using hours, half-hours, and quarter-hours. Practice asking 'What time is it?' (كم الساعة؟)", type: "practice", duration: "20 min" },
+    { title: "Food & Drink", titleArabic: "الطعام والشراب", description: "Essential food vocabulary. Learn to order at a restaurant, express preferences, and ask about prices.", type: "reading", duration: "20 min" },
+    { title: "The Human Body", titleArabic: "جسم الإنسان", description: "Body part vocabulary with pronunciation. Practice describing physical appearance and using body terms in sentences.", type: "practice", duration: "20 min" },
+    { title: "Professions & Occupations", titleArabic: "المهن والحرف", description: "Learn common job titles and professions. Practice saying what you do and asking others about their work.", type: "reading", duration: "20 min" },
+    { title: "Present Tense Verbs (I)", titleArabic: "أفعال المضارع (١)", description: "Introduction to the present tense (المضارع). Learn the six main verb forms and conjugate common verbs like 'to write', 'to read', 'to go'.", type: "video", duration: "30 min" },
+    { title: "Present Tense Verbs (II)", titleArabic: "أفعال المضارع (٢)", description: "Expand present tense conjugation to all 14 forms including dual and plural. Practice with common daily activity verbs.", type: "practice", duration: "30 min" },
+    { title: "Negation in Arabic", titleArabic: "النفي في العربية", description: "Learn how to negate sentences using لا، لم، لن، ليس. Practice making positive sentences negative.", type: "reading", duration: "20 min" },
+    { title: "The City & Directions", titleArabic: "المدينة والاتجاهات", description: "Vocabulary for places in a city: market, mosque, school, hospital. Learn directional words and asking for directions.", type: "video", duration: "25 min" },
+    { title: "Shopping & Prices", titleArabic: "التسوق والأسعار", description: "Practice shopping dialogues. Learn to ask prices, negotiate, and use numbers in a market context.", type: "practice", duration: "20 min" },
+    { title: "Weather & Seasons", titleArabic: "الطقس والفصول", description: "Weather vocabulary and the four seasons. Practice describing weather conditions and talking about climate.", type: "reading", duration: "15 min" },
+    { title: "Hobbies & Free Time", titleArabic: "الهوايات ووقت الفراغ", description: "Vocabulary for leisure activities: sports, reading, travel. Express likes and dislikes using أحب/لا أحب.", type: "practice", duration: "20 min" },
+    { title: "The Past Tense (I)", titleArabic: "الماضي (١)", description: "Introduction to the past tense (الماضي). Learn the basic conjugation pattern and use common verbs in past tense.", type: "video", duration: "30 min" },
+    { title: "The Past Tense (II)", titleArabic: "الماضي (٢)", description: "Expand past tense conjugation and practice narrating past events. Use time expressions like yesterday, last week.", type: "practice", duration: "30 min" },
+    { title: "Interrogative Sentences", titleArabic: "الجمل الاستفهامية", description: "Master question words: من، ما، أين، متى، لماذا، كيف، كم. Form and answer questions in Arabic.", type: "reading", duration: "20 min" },
+    { title: "Prepositions & Locations", titleArabic: "حروف الجر والأماكن", description: "Learn prepositions: في، على، تحت، فوق، بين، أمام، خلف. Practice describing where things are.", type: "practice", duration: "20 min" },
+    { title: "Transportation", titleArabic: "المواصلات", description: "Vocabulary for transport: car, bus, train, airplane. Learn to discuss travel plans and give directions.", type: "reading", duration: "20 min" },
+    { title: "At the Doctor", titleArabic: "عند الطبيب", description: "Medical vocabulary and health-related expressions. Practice describing symptoms and understanding a doctor's advice.", type: "video", duration: "20 min" },
+    { title: "Describing People", titleArabic: "وصف الناس", description: "Physical and personality adjectives. Practice describing people's appearance and character traits.", type: "practice", duration: "20 min" },
+    { title: "Possessive Structures (Idafa)", titleArabic: "الإضافة", description: "Master the Arabic genitive construct (الإضافة). Learn to express possession and relationships between nouns.", type: "video", duration: "30 min" },
+    { title: "Dual & Plural Forms", titleArabic: "المثنى والجمع", description: "Learn sound and broken plurals. Practice using dual forms and identify the most common plural patterns.", type: "practice", duration: "30 min" },
+    { title: "Conjunctions & Connectors", titleArabic: "الروابط وأدوات الوصل", description: "Use و، ف، لكن، ثم، أو to connect sentences. Practice building complex, flowing Arabic sentences.", type: "reading", duration: "20 min" },
+    { title: "The Home & Furniture", titleArabic: "البيت والأثاث", description: "Vocabulary for rooms and furniture. Describe your home and practice prepositions with furniture placement.", type: "practice", duration: "20 min" },
+    { title: "Future Tense", titleArabic: "المستقبل", description: "Express future actions using سـ and سوف. Practice planning and making promises in Arabic.", type: "video", duration: "25 min" },
+    { title: "Reading Comprehension I", titleArabic: "الفهم القرائي (١)", description: "Read a short Arabic passage about daily life. Practice extracting key information and answering comprehension questions.", type: "reading", duration: "25 min" },
+    { title: "Listening & Dialogue Practice", titleArabic: "الاستماع وتدريب الحوار", description: "Listen to authentic Arabic dialogues. Practice shadowing, repetition, and comprehension of natural spoken Arabic.", type: "practice", duration: "25 min" },
+    { title: "Expressing Opinions", titleArabic: "التعبير عن الآراء", description: "Learn phrases for expressing opinions: أعتقد أن، في رأيي، من وجهة نظري. Practice agreeing and disagreeing politely.", type: "reading", duration: "20 min" },
+    { title: "Writing Practice: Short Paragraphs", titleArabic: "التدريب الكتابي: فقرات قصيرة", description: "Write short Arabic paragraphs about yourself, your family, and your daily routine. Review and improve your written Arabic.", type: "practice", duration: "30 min" },
+    { title: "Verb Roots & Patterns", titleArabic: "جذور الأفعال وأوزانها", description: "Introduction to the trilateral root system. Understand how roots generate related words and recognize patterns.", type: "video", duration: "30 min" },
+    { title: "Reading Comprehension II", titleArabic: "الفهم القرائي (٢)", description: "A more challenging reading passage on a cultural topic. Practice identifying main ideas, details, and vocabulary in context.", type: "reading", duration: "30 min" },
+    { title: "Conversational Practice: Travel", titleArabic: "محادثة: السفر", description: "Role-play travel scenarios: at the airport, booking a hotel, asking for recommendations. Build real conversational fluency.", type: "practice", duration: "25 min" },
+    { title: "Islamic & Cultural Vocabulary", titleArabic: "المفردات الإسلامية والثقافية", description: "Essential Islamic terms and cultural expressions. Learn to navigate Friday prayers, Ramadan greetings, and religious occasions.", type: "reading", duration: "20 min" },
+    { title: "Review: Vocabulary Checkpoint", titleArabic: "مراجعة: نقطة تفتيش المفردات", description: "Comprehensive review of all vocabulary from this book. Use flashcards, gap-fill exercises, and spaced repetition techniques.", type: "practice", duration: "25 min" },
+    { title: "Review: Grammar Checkpoint", titleArabic: "مراجعة: نقطة تفتيش القواعد", description: "Grammar review covering sentence structure, verb conjugation, plurals, and prepositions introduced throughout the course.", type: "practice", duration: "30 min" },
+    { title: "Final Assessment", titleArabic: "التقييم النهائي", description: "Complete the end-of-book assessment covering all four skills: reading, writing, speaking prompts, and grammar exercises.", type: "quiz", duration: "45 min" },
+  ],
+
+  "quran-tajweed-rules": [
+    { title: "Introduction to Tajweed", titleArabic: "مقدمة في التجويد", description: "What is Tajweed? Its ruling (hukm) and the history of Tajweed scholarship. Why correct recitation matters.", type: "video", duration: "20 min" },
+    { title: "Makharij al-Huruf (I)", titleArabic: "مخارج الحروف (١)", description: "The five main articulation points: Al-Jawf, Al-Halq, Al-Lisan, Ash-Shafatan, Al-Khayshum. Learn the throat letters.", type: "video", duration: "25 min" },
+    { title: "Makharij al-Huruf (II)", titleArabic: "مخارج الحروف (٢)", description: "Tongue letters and their precise positions. Practice the 18 tongue articulation points with recorded examples.", type: "practice", duration: "25 min" },
+    { title: "Makharij al-Huruf (III)", titleArabic: "مخارج الحروف (٣)", description: "Lip letters (ف، م، ب، و) and nasal letters. Complete the articulation point study with practice drills.", type: "practice", duration: "20 min" },
+    { title: "Sifat al-Huruf — Part 1", titleArabic: "صفات الحروف — الجزء الأول", description: "Letter characteristics with opposite pairs: Jahr vs. Hams, Shiddah vs. Rakhawah, Isti'la vs. Istifal.", type: "reading", duration: "25 min" },
+    { title: "Sifat al-Huruf — Part 2", titleArabic: "صفات الحروف — الجزء الثاني", description: "Remaining letter characteristics: Itbaq, Infitah, Idhlaq, Ismat, and characteristics without opposites.", type: "reading", duration: "25 min" },
+    { title: "Heavy & Light Letters (Tafkhim & Tarqiq)", titleArabic: "التفخيم والترقيق", description: "Understanding heaviness (Tafkhim) and lightness (Tarqiq). Special rules for ر and ل in different contexts.", type: "practice", duration: "25 min" },
+    { title: "Noon Sakinah & Tanwin — Idgham", titleArabic: "النون الساكنة والتنوين — الإدغام", description: "Rules of Idgham (assimilation) with and without Ghunnah. Identify the six Idgham letters and apply the rule.", type: "video", duration: "30 min" },
+    { title: "Noon Sakinah & Tanwin — Ikhfa", titleArabic: "النون الساكنة والتنوين — الإخفاء", description: "Ikhfa (concealment): the 15 Ikhfa letters and how to produce the correct nasal sound with each.", type: "practice", duration: "25 min" },
+    { title: "Noon Sakinah & Tanwin — Iqlab & Idhar", titleArabic: "الإقلاب والإظهار", description: "Iqlab (conversion) with ب and Idhar (clear pronunciation) with the six throat letters. Complete the Noon rules.", type: "practice", duration: "25 min" },
+    { title: "Meem Sakinah Rules", titleArabic: "أحكام الميم الساكنة", description: "Three rules for Meem Sakinah: Idgham Shafawi, Ikhfa Shafawi, and Idhar Shafawi. Practice with Quranic examples.", type: "reading", duration: "20 min" },
+    { title: "Ghunnah (Nasalization)", titleArabic: "الغنة", description: "The nasal sound: when it occurs, its levels (mushadd, mutaharik, mushba'), and duration of 2 counts.", type: "practice", duration: "20 min" },
+    { title: "Qalqalah", titleArabic: "القلقلة", description: "The echo/bouncing rule for ق، ط، ب، ج، د. Practice distinguishing minor and major Qalqalah at pause.", type: "practice", duration: "20 min" },
+    { title: "Madd — Foundations", titleArabic: "المد — الأساسيات", description: "Introduction to elongation (Madd). The three letters of Madd, the original Madd (المد الطبيعي), and its 2-count duration.", type: "video", duration: "25 min" },
+    { title: "Madd Wajib Muttasil", titleArabic: "المد الواجب المتصل", description: "The obligatory connected Madd: when a Madd letter is followed by Hamzah in the same word. 4–5 count rule.", type: "practice", duration: "20 min" },
+    { title: "Madd Jaiz Munfasil", titleArabic: "المد الجائز المنفصل", description: "The permissible separated Madd: Madd letter at end of word followed by Hamzah at start of next word. 2–5 counts.", type: "practice", duration: "20 min" },
+    { title: "Madd al-Arid lil Sukun", titleArabic: "مد العارض للسكون", description: "Madd that occurs when stopping at a word ending in a voweled letter. Duration of 2, 4, or 6 counts when pausing.", type: "practice", duration: "25 min" },
+    { title: "Madd al-Lazim & al-Lin", titleArabic: "المد اللازم والمد اللين", description: "The compulsory Madd (always 6 counts) and the soft Madd letters (و، ي with Fathah before them at a pause).", type: "reading", duration: "25 min" },
+    { title: "Rules of Stopping (Waqf)", titleArabic: "أحكام الوقف", description: "Types of stopping: mandatory (لازم), preferable (أولى), permissible (جائز), and forbidden (ممنوع). Reading the Waqf signs.", type: "reading", duration: "25 min" },
+    { title: "Starting After Stopping (Ibtida)", titleArabic: "الابتداء", description: "Rules for where to begin recitation after stopping. Understanding complete, sufficient, and good stopping points.", type: "reading", duration: "20 min" },
+    { title: "Hamzatul Wasl & Qat'", titleArabic: "همزة الوصل والقطع", description: "Connecting Hamzah (dropped in flow) vs. Cutting Hamzah (always pronounced). Apply in Quranic recitation.", type: "practice", duration: "25 min" },
+    { title: "Lam Rules", titleArabic: "أحكام اللام", description: "Rules for Lam in Al (لام التعريف) — when it's clear (Idhar Shamsiyyah) and when it assimilates (Idgham Shamsiyyah).", type: "practice", duration: "20 min" },
+    { title: "Applied Tajweed: Al-Fatiha & Al-Baqarah (Opening)", titleArabic: "التجويد التطبيقي: الفاتحة والبقرة", description: "Apply all learned rules to Surah Al-Fatiha and the opening verses of Al-Baqarah. Identify every Tajweed rule present.", type: "practice", duration: "30 min" },
+    { title: "Final Review & Recitation Assessment", titleArabic: "المراجعة النهائية وتقييم التلاوة", description: "Comprehensive review of all rules. Record yourself reciting a passage and evaluate your Tajweed application.", type: "quiz", duration: "40 min" },
+  ],
+
+  "hadith-arbaeen-nawawi": [
+    { title: "The Foundation: Hadith 1 — Actions by Intentions", titleArabic: "الحديث الأول: الأعمال بالنيات", description: "The famous hadith of Umar ibn Al-Khattab. Understand why niyyah (intention) is the foundation of all deeds in Islam.", type: "video", duration: "25 min" },
+    { title: "Hadith 2: Islam, Iman & Ihsan", titleArabic: "الحديث الثاني: الإسلام والإيمان والإحسان", description: "The Hadith of Jibreel. The three levels of religion and what each level requires from a Muslim.", type: "reading", duration: "30 min" },
+    { title: "Hadith 3: The Five Pillars of Islam", titleArabic: "الحديث الثالث: أركان الإسلام الخمسة", description: "Islam is built on five pillars. Understand the role of each pillar and how they structure a Muslim's life.", type: "video", duration: "25 min" },
+    { title: "Hadith 4: Creation in the Womb", titleArabic: "الحديث الرابع: الخلق في الرحم", description: "The stages of human creation and the writing of destiny. A profound reflection on the divine decree.", type: "reading", duration: "20 min" },
+    { title: "Hadith 5: Innovation in Religion", titleArabic: "الحديث الخامس: البدعة في الدين", description: "Whoever introduces something new in this matter of ours… Understanding Bid'ah and protecting the purity of Islam.", type: "practice", duration: "25 min" },
+    { title: "Hadith 6: Halal, Haram & Doubtful Matters", titleArabic: "الحديث السادس: الحلال والحرام والمشتبهات", description: "The halal is clear, the haram is clear — learn the concept of doubtful matters and how a Muslim navigates them.", type: "reading", duration: "25 min" },
+    { title: "Hadith 7: Religion is Sincere Counsel (Nasihah)", titleArabic: "الحديث السابع: الدين النصيحة", description: "Religion is nasihah — to Allah, His Book, His Messenger, leaders, and the Muslim community. What does sincerity look like?", type: "video", duration: "20 min" },
+    { title: "Hadith 8: Fighting Muslims is Disbelief", titleArabic: "الحديث الثامن", description: "The severe prohibition of fighting fellow Muslims. Understanding the sanctity of Muslim life and property.", type: "reading", duration: "20 min" },
+    { title: "Hadith 9: What You Have Been Forbidden, Avoid", titleArabic: "الحديث التاسع: اجتناب المنهيات", description: "If I command you to do something, do of it what you are able. The principle of ease and capability in Islamic law.", type: "practice", duration: "20 min" },
+    { title: "Hadith 10: Eat What is Pure", titleArabic: "الحديث العاشر: أكل الطيبات", description: "Allah is pure and accepts only what is pure. The connection between lawful earnings and accepted supplications.", type: "reading", duration: "20 min" },
+  ],
+
+  "fiqh-essentials": [
+    { title: "Introduction to Fiqh & Usul", titleArabic: "مقدمة في الفقه والأصول", description: "What is Fiqh? The four major schools (Madhabs), their founders, and the importance of following a Madhab.", type: "video", duration: "25 min" },
+    { title: "Taharah — The Concept of Purity", titleArabic: "الطهارة — مفهوم النظافة", description: "The two types of purity: physical (hadath/najasah) and spiritual. Why Taharah is the key to worship.", type: "reading", duration: "20 min" },
+    { title: "Water & Its Rulings", titleArabic: "الماء وأحكامه", description: "Categories of water: mutlaq, musta'mal, and najis. Which water can be used for purification.", type: "reading", duration: "20 min" },
+    { title: "Wudu — Step by Step", titleArabic: "الوضوء — خطوة بخطوة", description: "The fard and sunnah acts of wudu. Learn the correct method with practical demonstrations and common mistakes.", type: "video", duration: "30 min" },
+    { title: "What Breaks Wudu", titleArabic: "نواقض الوضوء", description: "Comprehensive list of nullifiers of wudu with evidence. Understand major and minor hadath.", type: "reading", duration: "20 min" },
+    { title: "Ghusl — Full Ritual Bath", titleArabic: "الغسل الكامل", description: "When is ghusl obligatory? The fard elements and the complete recommended method with sunnah acts.", type: "practice", duration: "25 min" },
+    { title: "Tayammum — Dry Ablution", titleArabic: "التيمم", description: "When water is unavailable or harmful. The conditions, method, and limitations of Tayammum.", type: "reading", duration: "20 min" },
+    { title: "Najasah — Ritual Impurity", titleArabic: "النجاسة", description: "Types of impurities and how to remove them from clothing, body, and prayer space. Excuse for traces.", type: "practice", duration: "20 min" },
+    { title: "Salah — Conditions & Times", titleArabic: "الصلاة — شروطها وأوقاتها", description: "The five daily prayers, their time windows, and the conditions that must be met before praying.", type: "video", duration: "25 min" },
+    { title: "The Pillars of Salah", titleArabic: "أركان الصلاة", description: "The 14 obligatory pillars without which prayer is invalid. Understand each pillar and why it cannot be omitted.", type: "reading", duration: "25 min" },
+  ],
+};
+
+function generateLessons(book: Book): Lesson[] {
+  const predefined = CURRICULA[book.id];
+
+  if (predefined) {
+    const lessons: Lesson[] = predefined.slice(0, book.lessonCount).map((l, i) => ({
+      number: i + 1,
+      ...l,
+    }));
+    // Fill remaining with generated if predefined has fewer than lessonCount
+    for (let i = lessons.length; i < book.lessonCount; i++) {
+      lessons.push({
+        number: i + 1,
+        title: `Lesson ${i + 1}`,
+        titleArabic: `الدرس ${i + 1}`,
+        description: `Continue your study of ${book.title}. This lesson builds on previous concepts and introduces new material from the curriculum.`,
+        duration: "20 min",
+        type: LESSON_TYPES[i % LESSON_TYPES.length],
+      });
+    }
+    return lessons;
+  }
+
+  // Generate lessons from book metadata
+  const base: Lesson[] = [];
+  for (let i = 0; i < book.lessonCount; i++) {
+    const n = i + 1;
+    base.push({
+      number: n,
+      title: `Lesson ${n}: ${book.tags[i % book.tags.length]} Studies`,
+      titleArabic: `الدرس ${n}`,
+      description: `This lesson covers important material from "${book.title}". Study the relevant passages, complete the exercises, and review with the AI Teacher for personalised guidance.`,
+      duration: `${15 + (i % 4) * 5} min`,
+      type: LESSON_TYPES[i % LESSON_TYPES.length],
+    });
+  }
+  return base;
+}
+
 router.get("/library/books", requireAuth, async (_req, res) => {
   res.json({ books: LIBRARY_BOOKS });
+});
+
+router.get("/library/books/:bookId", requireAuth, async (req: any, res) => {
+  try {
+    const { bookId } = req.params;
+    const book = LIBRARY_BOOKS.find((b) => b.id === bookId);
+    if (!book) { res.status(404).json({ error: "Book not found" }); return; }
+    const lessons = generateLessons(book);
+    res.json({ book: { ...book, lessons } });
+  } catch (err) {
+    logger.error({ err }, "Failed to get book detail");
+    res.status(500).json({ error: "Internal server error" });
+  }
 });
 
 router.get("/library/progress", requireAuth, async (req: any, res) => {

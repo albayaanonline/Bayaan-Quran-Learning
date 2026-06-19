@@ -168,14 +168,7 @@ export default function Library() {
   const completedCount = books.filter(b => (progressMap[b.id] ?? 0) >= b.lessonCount && b.lessonCount > 0).length;
 
   const handleOpenBook = (bookId: string) => {
-    // Mark book as started if not already (lesson 1)
-    if (!progressMap[bookId]) {
-      fetch(`/api/library/progress/${bookId}`, {
-        method: "POST", credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ completedLessons: 1 }),
-      }).then(() => setProgressMap(prev => ({ ...prev, [bookId]: 1 })));
-    }
+    navigate(`/library/${bookId}`);
   };
 
   return (
