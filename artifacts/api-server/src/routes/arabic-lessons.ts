@@ -1739,7 +1739,18 @@ const LESSONS: Record<string, LessonContent[]> = {
       title: "The Noorania Method — Introduction", titleArabic: "الطَّرِيقَةُ النُّورَانِيَّة — مُقَدِّمَة",
       description: "The systematic method for perfect Quranic pronunciation from scratch.",
       pages: [
-        { id: 1, arabic: "الطَّرِيقَةُ النُّورَانِيَّة:\nأَسَّسَهَا العَلَّامَةُ النُّورِي مُحَمَّد (رَحِمَهُ اللهُ) مِنَ الهِنْ
+        { id: 1, arabic: "الطَّرِيقَةُ النُّورَانِيَّة", translation: "The Noorania Method", transliteration: "At-Tariqah an-Nooraniyyah", notes: "A systematic method for learning Quranic recitation, founded by Noor Muhammad Haqqani." },
+        { id: 2, arabic: "بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيمِ", translation: "In the name of Allah, the Most Gracious, the Most Merciful", transliteration: "Bismillahi ar-rahmani ar-raheem", notes: "The Basmala — recited before beginning any Quranic recitation." },
+        { id: 3, arabic: "أَعُوذُ بِاللهِ مِنَ الشَّيْطَانِ الرَّجِيمِ", translation: "I seek refuge in Allah from the rejected devil", transliteration: "A'oothu billahi min ash-shaytani ar-rajeem", notes: "The Ta'awwudh — seeking protection before recitation." }
+      ],
+      vocabulary: [{ arabic: "الطَّرِيقَة", translation: "the method/way", transliteration: "at-tariqah" }],
+      grammar: "The Noorania method teaches letters in groups based on articulation points (makhaarij).",
+      exercises: ["Identify the three main articulation zones", "Practice isolated letters aloud", "Record yourself and compare to a teacher"],
+      culturalNote: "The Noorania Method is widely used across East Africa and South Asia for Quran memorization.",
+      nextLesson: 2
+    }
+  ]
+};
 
 function getLessonContent(bookId: string, lessonNum: number): LessonContent | null {
   const book = LESSONS[bookId];
