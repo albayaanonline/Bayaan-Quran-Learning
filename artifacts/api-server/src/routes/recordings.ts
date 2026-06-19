@@ -58,7 +58,11 @@ router.post("/recordings", requireAuth, async (req: any, res) => {
       }
     }
 
-    const correction = analyzeRecitation(ayahText ?? "", transcribedText);
+    // Unique key per attempt: timestamp + audio size + ayah number
+    const audioBytes = audioBase64 ? Math.round(audioBase64.length * 0.75) : 0;
+    const attemptKey = `${Date.now()}_${audioBytes}_a${ayahNumber ?? 0}`;
+
+    const correction = analyzeRecitation(ayahText ?? "", transcribedText, attemptKey);
     const tajweed = analyzeTajweed(ayahText ?? "", correction.accuracyScore);
 
     const accuracyScore = correction.accuracyScore;
@@ -74,7 +78,7 @@ router.post("/recordings", requireAuth, async (req: any, res) => {
     const allSuggestions = [
       ...correction.suggestions,
       ...tajweed.suggestions,
-    ].filter(Boolean).slice(0, 5);
+    ].filter(Boolean).slice(0, 6);
 
     const feedback = {
       pronunciationScore,
@@ -90,9 +94,20 @@ router.post("/recordings", requireAuth, async (req: any, res) => {
       transcribedText,
       transcriptionSuccess,
       transcriptionModel,
+      transcriptionError: transcriptionSuccess ? null : "STT providers could not process audio",
       presentTajweedRules: tajweed.presentRules,
       tajweedRules: tajweed.rules.filter((r) => r.found),
       wordStats: correction.wordStats,
+      diagnostics: {
+        audioDurationSeconds: durationSeconds ?? 0,
+        audioBytes,
+        transcriptionProvider: transcriptionModel,
+        transcriptionAttempted: !!(audioBase64 && audioBase64.length > 100),
+        analysisLog: correction.analysisLog,
+        scoreFormula: transcribedText
+          ? `Overall = (accuracy:${accuracyScore} + tajweed:${tajweedScore} + pronunciation:${pronunciationScore} + fluency:${fluencyScore} + confidence:${confidenceScore}) / 5`
+          : "Overall = 0 (transcription failed — no speech detected)",
+      },
     };
 
     const [inserted] = await db

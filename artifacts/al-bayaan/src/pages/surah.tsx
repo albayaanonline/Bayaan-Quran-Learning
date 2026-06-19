@@ -549,6 +549,25 @@ export default function SurahDetail() {
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}>
               <Card className="border-emerald-200 shadow-lg overflow-hidden bg-gradient-to-br from-white to-emerald-50 dark:from-emerald-950 dark:to-emerald-900">
                 <CardContent className="p-6 md:p-8 space-y-6">
+
+                  {/* ── Transcription failed banner ── */}
+                  {feedback.transcriptionSuccess === false && (
+                    <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl p-4">
+                      <AlertCircle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-semibold text-amber-800">Audio transcription unavailable</p>
+                        <p className="text-xs text-amber-700 mt-0.5">
+                          The AI speech-to-text service did not process your audio this time
+                          {feedback.diagnostics?.transcriptionProvider ? ` (tried: ${feedback.diagnostics.transcriptionProvider})` : ""}.
+                          Scores below are based on Tajweed rules detected in the text only.
+                          {" "}
+                          <span className="font-medium">For live audio analysis, a GROQ_API_KEY is needed.</span>
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ── Score ring + sub-score bars ── */}
                   <div className="flex flex-col md:flex-row gap-6 items-center md:items-start">
                     <div className="shrink-0 flex flex-col items-center">
                       <div className={`relative h-28 w-28 rounded-full flex items-center justify-center border-8 ${scoreColor}`}>
@@ -558,6 +577,11 @@ export default function SurahDetail() {
                       {feedback.transcriptionSuccess === false && (
                         <Badge variant="outline" className="mt-2 text-xs text-amber-600 border-amber-300">Text analysis only</Badge>
                       )}
+                      {feedback.diagnostics?.audioDurationSeconds > 0 && (
+                        <span className="mt-1 text-xs text-muted-foreground">
+                          ⏱ {feedback.diagnostics.audioDurationSeconds}s recorded
+                        </span>
+                      )}
                     </div>
                     <div className="flex-1 w-full space-y-3">
                       {[
@@ -565,7 +589,7 @@ export default function SurahDetail() {
                         { label: "Tajweed", score: feedback.tajweedScore, desc: "Pronunciation rules" },
                         { label: "Pronunciation", score: feedback.pronunciationScore, desc: "Letter clarity" },
                         { label: "Fluency", score: feedback.fluencyScore, desc: "Smoothness" },
-                      ].map(({ label, score: s }) => {
+                      ].map(({ label, score: s, desc }) => {
                         const pct = Math.max(0, Math.min(100, s));
                         const color = pct >= 90 ? "bg-emerald-500" : pct >= 70 ? "bg-amber-500" : "bg-red-500";
                         return (
@@ -574,45 +598,72 @@ export default function SurahDetail() {
                               <span className="font-medium text-emerald-900">{label}</span>
                               <span className="text-muted-foreground">{pct}%</span>
                             </div>
-                            <div className="h-2 w-full bg-emerald-100 rounded-full overflow-hidden">
+                            <div className="h-2 w-full bg-emerald-100 rounded-full overflow-hidden" title={desc}>
                               <motion.div initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8, ease: "easeOut" }}
                                 className={`h-full rounded-full ${color}`} />
                             </div>
                           </div>
                         );
                       })}
+                      {feedback.wordStats && (
+                        <p className="text-xs text-muted-foreground pt-1">
+                          Words: <span className="text-emerald-700 font-medium">{feedback.wordStats.correct} correct</span>
+                          {" · "}<span className="text-red-600 font-medium">{feedback.wordStats.missing} missing</span>
+                          {feedback.wordStats.extra > 0 && <> · <span className="text-amber-600 font-medium">{feedback.wordStats.extra} extra</span></>}
+                          {" · "}<span className="text-muted-foreground">{feedback.wordStats.total} total</span>
+                        </p>
+                      )}
                     </div>
                   </div>
 
-                  {feedback.transcribedText && (
+                  {/* ── What AI heard ── */}
+                  {feedback.transcribedText ? (
                     <div className="bg-white dark:bg-emerald-950 rounded-xl p-4 border border-emerald-100">
                       <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wider mb-2">🎤 What the AI Heard</p>
                       <p className="text-base text-emerald-900 leading-relaxed" dir="rtl" style={{ fontFamily: "var(--font-arabic)" }}>
                         {feedback.transcribedText}
                       </p>
+                      {feedback.transcriptionModel && feedback.transcriptionModel !== "none" && (
+                        <p className="text-[10px] text-muted-foreground mt-1.5">Model: {feedback.transcriptionModel}</p>
+                      )}
                     </div>
-                  )}
+                  ) : feedback.transcriptionSuccess === false ? (
+                    <div className="bg-gray-50 dark:bg-emerald-950 rounded-xl p-4 border border-dashed border-gray-200">
+                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">🎤 AI Heard</p>
+                      <p className="text-sm text-gray-400 italic">No speech detected — transcription unavailable.</p>
+                      <p className="text-xs text-gray-400 mt-1">Make sure you're in a quiet room and speak clearly into the microphone.</p>
+                    </div>
+                  ) : null}
 
+                  {/* ── Word-by-word diff ── */}
                   {(feedback.correctWords?.length > 0 || feedback.missingWords?.length > 0 || feedback.incorrectWords?.length > 0) && (
                     <div className="bg-white dark:bg-emerald-950 rounded-xl p-4 border border-emerald-100 space-y-3">
-                      <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wider">📝 Word Analysis</p>
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wider">📝 Word Analysis</p>
+                        <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+                          <span><span className="inline-block w-2 h-2 rounded-sm bg-emerald-500 mr-1" />correct</span>
+                          <span><span className="inline-block w-2 h-2 rounded-sm bg-red-400 mr-1" />missing</span>
+                          {feedback.incorrectWords?.length > 0 && <span><span className="inline-block w-2 h-2 rounded-sm bg-amber-400 mr-1" />extra</span>}
+                        </div>
+                      </div>
                       <div className="flex flex-wrap gap-2" dir="rtl">
                         {feedback.correctWords?.map((w: string, i: number) => (
                           <span key={`c-${i}`} className="px-2 py-1 bg-emerald-100 text-emerald-800 rounded-md text-sm font-arabic">✓ {w}</span>
                         ))}
                         {feedback.incorrectWords?.map((w: string, i: number) => (
-                          <span key={`x-${i}`} className="px-2 py-1 bg-red-100 text-red-800 rounded-md text-sm font-arabic">✗ {w}</span>
+                          <span key={`x-${i}`} className="px-2 py-1 bg-amber-100 text-amber-800 rounded-md text-sm font-arabic">+ {w}</span>
                         ))}
                         {feedback.missingWords?.map((w: string, i: number) => (
-                          <span key={`m-${i}`} className="px-2 py-1 bg-gray-100 text-gray-600 rounded-md text-sm font-arabic line-through">⊘ {w}</span>
+                          <span key={`m-${i}`} className="px-2 py-1 bg-red-100 text-red-700 rounded-md text-sm font-arabic line-through opacity-70">⊘ {w}</span>
                         ))}
                       </div>
                     </div>
                   )}
 
+                  {/* ── Tajweed rules ── */}
                   {feedback.tajweedRules?.length > 0 && (
                     <div className="bg-white dark:bg-emerald-950 rounded-xl p-4 border border-emerald-100">
-                      <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wider mb-2">🌙 Tajweed Rules</p>
+                      <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wider mb-2">🌙 Tajweed Rules in This Verse</p>
                       <div className="flex flex-wrap gap-2">
                         {feedback.tajweedRules.map((rule: any) => (
                           <div key={rule.name} className="bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2">
@@ -621,25 +672,52 @@ export default function SurahDetail() {
                               <span className="text-emerald-600 font-arabic text-base">{rule.nameArabic}</span>
                             </div>
                             <p className="text-xs text-muted-foreground mt-0.5">{rule.description}</p>
+                            {rule.confidenceNote && (
+                              <p className="text-[10px] text-amber-600 mt-0.5 italic">{rule.confidenceNote}</p>
+                            )}
                           </div>
                         ))}
                       </div>
                     </div>
                   )}
 
+                  {/* ── AI suggestions ── */}
                   {feedback.suggestions?.length > 0 && (
                     <div className="bg-amber-50 dark:bg-amber-950/20 rounded-xl p-4 border border-amber-100">
-                      <p className="text-xs font-semibold text-amber-700 uppercase tracking-wider mb-2">💡 Tips</p>
-                      <ul className="space-y-1.5">
+                      <p className="text-xs font-semibold text-amber-700 uppercase tracking-wider mb-2">💡 Your AI Teacher Says</p>
+                      <ul className="space-y-2">
                         {feedback.suggestions.map((s: string, i: number) => (
                           <li key={i} className="flex items-start gap-2 text-sm text-amber-800">
-                            <span className="mt-0.5 shrink-0">•</span>{s}
+                            <span className="mt-0.5 shrink-0 text-amber-500">•</span>{s}
                           </li>
                         ))}
                       </ul>
                     </div>
                   )}
 
+                  {/* ── Score formula (collapsed by default) ── */}
+                  {feedback.diagnostics?.scoreFormula && (
+                    <details className="group">
+                      <summary className="cursor-pointer text-xs text-muted-foreground hover:text-emerald-700 flex items-center gap-1 select-none">
+                        <span className="group-open:rotate-90 transition-transform inline-block">▶</span>
+                        How was this score calculated?
+                      </summary>
+                      <div className="mt-2 bg-gray-50 rounded-lg p-3 text-xs text-gray-600 font-mono">
+                        {feedback.diagnostics.scoreFormula}
+                        {feedback.diagnostics.analysisLog && (
+                          <div className="mt-2 border-t border-gray-200 pt-2 space-y-0.5 font-sans">
+                            <p>Reference words: {feedback.diagnostics.analysisLog.referenceWordCount}</p>
+                            <p>Transcribed words: {feedback.diagnostics.analysisLog.transcribedWordCount}</p>
+                            <p>LCS matches: {feedback.diagnostics.analysisLog.lcsLength}</p>
+                            <p>Error pattern: {feedback.diagnostics.analysisLog.errorPattern}</p>
+                            {feedback.diagnostics.audioBytes > 0 && <p>Audio size: ~{Math.round(feedback.diagnostics.audioBytes / 1024)} KB</p>}
+                          </div>
+                        )}
+                      </div>
+                    </details>
+                  )}
+
+                  {/* ── Action buttons ── */}
                   <div className="flex gap-3 pt-2 border-t border-emerald-100">
                     <Button variant="outline" className="flex-1 border-emerald-200 text-emerald-700 hover:bg-emerald-50" onClick={() => setFeedback(null)}>
                       <RotateCcw className="mr-2 h-4 w-4" /> Try Again
