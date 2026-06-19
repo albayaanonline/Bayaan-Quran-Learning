@@ -33,6 +33,7 @@ import marketingRouter from "./marketing";
 import ttsRouter from "./tts";
 import mushafRecitationRouter from "./mushaf-recitation";
 import arabicLessonsRouter from "./arabic-lessons";
+import lessonsRouter from "./lessons";
 
 const router = Router();
 
@@ -70,5 +71,6 @@ router.use(marketingRouter);
 router.use(ttsRouter);
 router.use(mushafRecitationRouter);
 router.use(arabicLessonsRouter);
+router.use(lessonsRouter);
 
 export default router;
