@@ -12,6 +12,7 @@ import {
   ArrowLeft, Mic, BarChart3, AlertTriangle, RefreshCw, Star,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useI18n } from "@/lib/i18n";
 
 interface Student {
   id: number; clerkId: string; displayName: string; avatarUrl: string | null;
@@ -48,6 +49,7 @@ function ScoreDot({ score }: { score: number }) {
 }
 
 export default function TeacherDashboard() {
+  const { t } = useI18n();
   const [students, setStudents] = useState<Student[]>([]);
   const [classReport, setClassReport] = useState<ClassReport | null>(null);
   const [selectedStudent, setSelectedStudent] = useState<StudentDetail | null>(null);
@@ -99,7 +101,7 @@ export default function TeacherDashboard() {
         <div className="max-w-5xl mx-auto space-y-6">
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="sm" onClick={() => setSelectedStudent(null)} className="gap-1">
-              <ArrowLeft className="h-4 w-4" /> Back
+              <ArrowLeft className="h-4 w-4" /> {t("teacher.back")}
             </Button>
             <h1 className="text-xl font-semibold text-emerald-950">{selectedStudentName}</h1>
           </div>
@@ -112,10 +114,10 @@ export default function TeacherDashboard() {
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {[
-                  { label: "Avg Score", value: `${selectedStudent.stats.avgScore}%`, icon: Star },
-                  { label: "Recordings", value: selectedStudent.stats.totalRecordings, icon: Mic },
-                  { label: "Surahs Done", value: selectedStudent.stats.surahsCompleted, icon: BookOpen },
-                  { label: "Week Change", value: `${selectedStudent.stats.improvement >= 0 ? "+" : ""}${selectedStudent.stats.improvement}%`, icon: TrendingUp },
+                  { label: t("teacher.avgScore"), value: `${selectedStudent.stats.avgScore}%`, icon: Star },
+                  { label: t("teacher.recordings"), value: selectedStudent.stats.totalRecordings, icon: Mic },
+                  { label: t("teacher.surahsDone"), value: selectedStudent.stats.surahsCompleted, icon: BookOpen },
+                  { label: t("teacher.weekChange"), value: `${selectedStudent.stats.improvement >= 0 ? "+" : ""}${selectedStudent.stats.improvement}%`, icon: TrendingUp },
                 ].map(({ label, value, icon: Icon }) => (
                   <Card key={label} className="border-emerald-100">
                     <CardContent className="p-4">
@@ -133,7 +135,7 @@ export default function TeacherDashboard() {
                 <Card className="border-amber-100">
                   <CardHeader className="pb-2 pt-4">
                     <CardTitle className="text-sm font-medium flex items-center gap-2 text-amber-800">
-                      <AlertTriangle className="h-4 w-4" /> Tajweed Weak Areas
+                      <AlertTriangle className="h-4 w-4" /> {t("teacher.weakAreas")}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -155,7 +157,7 @@ export default function TeacherDashboard() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Card className="border-emerald-100">
                   <CardHeader className="pb-2 pt-4">
-                    <CardTitle className="text-sm font-medium">Recent Recordings</CardTitle>
+                    <CardTitle className="text-sm font-medium">{t("teacher.recentRecordings")}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     {selectedStudent.recentRecordings.length === 0 ? (
@@ -180,7 +182,7 @@ export default function TeacherDashboard() {
 
                 <Card className="border-emerald-100">
                   <CardHeader className="pb-2 pt-4">
-                    <CardTitle className="text-sm font-medium">Surah Progress</CardTitle>
+                    <CardTitle className="text-sm font-medium">{t("teacher.surahProgress")}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     {selectedStudent.surahProgress.length === 0 ? (
@@ -220,12 +222,12 @@ export default function TeacherDashboard() {
           <div>
             <h1 className="text-2xl font-serif font-bold text-emerald-950 flex items-center gap-2">
               <BarChart3 className="h-6 w-6 text-emerald-600" />
-              Teacher Dashboard
+              {t("teacher.title")}
             </h1>
-            <p className="text-sm text-muted-foreground mt-1">Monitor student progress and learning analytics</p>
+            <p className="text-sm text-muted-foreground mt-1">{t("teacher.subtitle")}</p>
           </div>
           <Button variant="outline" size="sm" onClick={loadData} disabled={loading} className="gap-2">
-            <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} /> Refresh
+            <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} /> {t("gen.refresh")}
           </Button>
         </div>
 
@@ -234,12 +236,12 @@ export default function TeacherDashboard() {
         {classReport && (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {[
-              { label: "Total Students", value: classReport.totalStudents, icon: Users },
-              { label: "Active Today", value: classReport.activeToday, icon: Activity },
-              { label: "Active This Week", value: classReport.activeThisWeek, icon: TrendingUp },
-              { label: "Avg Class Score", value: `${classReport.avgClassScore}%`, icon: Star },
-              { label: "Weekly Recordings", value: classReport.totalRecordingsThisWeek, icon: Mic },
-              { label: "Common Weak Area", value: classReport.classWeakAreas[0]?.rule ?? "None", icon: AlertTriangle },
+              { label: t("teacher.totalStudents"), value: classReport.totalStudents, icon: Users },
+              { label: t("teacher.activeToday"), value: classReport.activeToday, icon: Activity },
+              { label: t("teacher.activeWeek"), value: classReport.activeThisWeek, icon: TrendingUp },
+              { label: t("teacher.avgClassScore"), value: `${classReport.avgClassScore}%`, icon: Star },
+              { label: t("teacher.weeklyRecordings"), value: classReport.totalRecordingsThisWeek, icon: Mic },
+              { label: t("teacher.commonWeak"), value: classReport.classWeakAreas[0]?.rule ?? t("gen.none"), icon: AlertTriangle },
             ].map(({ label, value, icon: Icon }) => (
               <Card key={label} className="border-emerald-100">
                 <CardContent className="p-4">
@@ -256,7 +258,7 @@ export default function TeacherDashboard() {
           <CardHeader className="pb-3 flex-row items-center justify-between gap-4">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <Users className="h-4 w-4 text-emerald-600" />
-              Students ({filtered.length})
+              {t("teacher.students")} ({filtered.length})
             </CardTitle>
             <div className="relative w-60">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
@@ -273,7 +275,7 @@ export default function TeacherDashboard() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-emerald-100 bg-emerald-50/50">
-                      {["Student", "Level", "Score", "Tajweed", "Surahs", "Hifdh", "Activity", ""].map(h => (
+                      {[t("teacher.colStudent"), t("teacher.colLevel"), t("teacher.colScore"), t("teacher.colTajweed"), t("teacher.colSurahs"), t("teacher.colHifdh"), t("teacher.colActivity"), ""].map(h => (
                         <th key={h} className={`py-2.5 px-4 text-xs text-muted-foreground font-medium ${h === "" || h === "Student" ? "text-left" : "text-center"}`}>{h}</th>
                       ))}
                     </tr>
@@ -295,7 +297,7 @@ export default function TeacherDashboard() {
                               )}
                               <div>
                                 <p className="font-medium text-emerald-950 text-xs">{s.displayName}</p>
-                                {s.isActiveToday && <p className="text-[10px] text-emerald-600">Active today</p>}
+                                {s.isActiveToday && <p className="text-[10px] text-emerald-600">{t("teacher.activeToday")}</p>}
                               </div>
                             </div>
                           </td>
@@ -311,8 +313,8 @@ export default function TeacherDashboard() {
                           <td className="py-3 px-4 text-center text-xs text-muted-foreground">{s.hifdhMemorized}/{s.hifdhSurahs}</td>
                           <td className="py-3 px-4 text-center">
                             <div className="text-[10px] text-muted-foreground">
-                              <p>{s.weeklyRecordings} this week</p>
-                              <p>{s.streakDays}d streak</p>
+                              <p>{s.weeklyRecordings} {t("teacher.thisWeek")}</p>
+                              <p>{s.streakDays}{t("teacher.dStreak")}</p>
                             </div>
                           </td>
                           <td className="py-3 px-4 text-right">
@@ -325,7 +327,7 @@ export default function TeacherDashboard() {
                 </table>
                 {filtered.length === 0 && (
                   <p className="text-center text-muted-foreground text-sm py-8">
-                    {search ? "No students match your search" : "No students yet"}
+                    {search ? t("teacher.noMatch") : t("teacher.noStudents")}
                   </p>
                 )}
               </div>

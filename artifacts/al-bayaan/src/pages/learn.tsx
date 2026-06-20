@@ -9,8 +9,10 @@ import { Badge } from "@/components/ui/badge";
 import { Search, CheckCircle2 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
+import { useI18n } from "@/lib/i18n";
 
 export default function Learn() {
+  const { t } = useI18n();
   const { data: surahs, isLoading: surahsLoading } = useListSurahs();
   const { data: progress } = useGetProgress();
   const [search, setSearch] = useState("");
@@ -40,15 +42,15 @@ export default function Learn() {
       <div className="max-w-6xl mx-auto space-y-8">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-serif font-bold text-emerald-950 dark:text-emerald-50">Surahs</h1>
+            <h1 className="text-3xl font-serif font-bold text-emerald-950 dark:text-emerald-50">{t("learn.title")}</h1>
             <p className="text-muted-foreground mt-2">
-              {progress ? `${progress.totalSurahsStarted} started · ${progress.totalSurahsCompleted} completed` : "Continue your learning journey"}
+              {progress ? `${progress.totalSurahsStarted} ${t("learn.started")} · ${progress.totalSurahsCompleted} ${t("learn.completed")}` : t("learn.subtitle")}
             </p>
           </div>
           <div className="relative w-full md:w-72">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-600/50" />
             <Input
-              placeholder="Search by name or number..."
+              placeholder={t("learn.searchPlaceholder")}
               className="pl-10 border-emerald-200 focus-visible:ring-emerald-600"
               value={search}
               onChange={e => setSearch(e.target.value)}

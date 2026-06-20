@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Users, Mic, MessageSquare, TrendingUp, Star, Activity, Shield, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import { useI18n } from "@/lib/i18n";
 
 interface AdminStats {
   totalUsers: number;
@@ -52,6 +53,7 @@ function StatCard({ label, value, icon: Icon, sub, color = "emerald" }: {
 }
 
 export default function Admin() {
+  const { t } = useI18n();
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
@@ -87,9 +89,9 @@ export default function Admin() {
           <div className="h-16 w-16 rounded-2xl bg-red-100 flex items-center justify-center mx-auto mb-4">
             <Shield className="h-8 w-8 text-red-600" />
           </div>
-          <h2 className="text-xl font-semibold text-red-800 mb-2">Access Denied</h2>
+          <h2 className="text-xl font-semibold text-red-800 mb-2">{t("admin.accessDenied")}</h2>
           <p className="text-muted-foreground">{error}</p>
-          <p className="text-sm text-muted-foreground mt-2">Set ADMIN_USER_IDS in environment variables with your Clerk user ID.</p>
+          <p className="text-sm text-muted-foreground mt-2">{t("admin.setAdminIds")}</p>
         </div>
       </AppLayout>
     );
@@ -102,12 +104,12 @@ export default function Admin() {
           <div>
             <h1 className="text-2xl font-serif font-bold text-emerald-950 flex items-center gap-2">
               <Shield className="h-6 w-6 text-emerald-600" />
-              Admin Dashboard
+              {t("admin.title")}
             </h1>
-            <p className="text-sm text-muted-foreground mt-1">Platform overview and user management</p>
+            <p className="text-sm text-muted-foreground mt-1">{t("admin.subtitle")}</p>
           </div>
           <Button variant="outline" size="sm" onClick={load} disabled={loading} className="gap-2">
-            <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} /> Refresh
+            <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} /> {t("gen.refresh")}
           </Button>
         </div>
 
@@ -118,20 +120,20 @@ export default function Admin() {
         ) : stats && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <StatCard label="Total Users" value={stats.totalUsers} icon={Users} sub={`+${stats.newUsersToday} today`} />
-              <StatCard label="Active Today" value={stats.activeToday} icon={Activity} sub="unique students" />
-              <StatCard label="Total Recordings" value={stats.totalRecordings.toLocaleString()} icon={Mic} sub="all time" />
-              <StatCard label="Conversations" value={stats.totalConversations.toLocaleString()} icon={MessageSquare} sub="with AI teacher" />
-              <StatCard label="Avg XP / User" value={stats.avgXp.toLocaleString()} icon={Star} sub="across all users" />
-              <StatCard label="Avg Score" value={`${stats.avgScore}%`} icon={TrendingUp} sub="recitation accuracy" />
-              <StatCard label="New Today" value={stats.newUsersToday} icon={Users} sub="new registrations" color="blue" />
-              <StatCard label="Active Rate" value={`${stats.totalUsers > 0 ? Math.round((stats.activeToday / stats.totalUsers) * 100) : 0}%`} icon={Activity} sub="daily active users" color="purple" />
+              <StatCard label={t("admin.totalUsers")} value={stats.totalUsers} icon={Users} sub={`+${stats.newUsersToday} ${t("admin.today")}`} />
+              <StatCard label={t("admin.activeToday")} value={stats.activeToday} icon={Activity} sub={t("admin.uniqueStudents")} />
+              <StatCard label={t("admin.totalRecordings")} value={stats.totalRecordings.toLocaleString()} icon={Mic} sub={t("admin.allTime")} />
+              <StatCard label={t("admin.conversations")} value={stats.totalConversations.toLocaleString()} icon={MessageSquare} sub={t("admin.withAI")} />
+              <StatCard label={t("admin.avgXp")} value={stats.avgXp.toLocaleString()} icon={Star} sub={t("admin.allUsers")} />
+              <StatCard label={t("admin.avgScore")} value={`${stats.avgScore}%`} icon={TrendingUp} sub={t("admin.recitationAcc")} />
+              <StatCard label={t("admin.newToday")} value={stats.newUsersToday} icon={Users} sub={t("admin.newReg")} color="blue" />
+              <StatCard label={t("admin.activeRate")} value={`${stats.totalUsers > 0 ? Math.round((stats.activeToday / stats.totalUsers) * 100) : 0}%`} icon={Activity} sub={t("admin.dailyActive")} color="purple" />
             </div>
 
             {Object.keys(stats.levelDistribution).length > 0 && (
               <Card className="border-emerald-100">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Level Distribution</CardTitle>
+                  <CardTitle className="text-sm font-medium">{t("admin.levelDist")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-wrap gap-3">
@@ -151,7 +153,7 @@ export default function Admin() {
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium flex items-center gap-2">
                   <Users className="h-4 w-4 text-emerald-600" />
-                  Top Users by XP
+                  {t("admin.topUsers")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-0">
@@ -159,12 +161,12 @@ export default function Admin() {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-emerald-100">
-                        <th className="text-left py-2.5 px-4 text-xs text-muted-foreground font-medium">User</th>
-                        <th className="text-left py-2.5 px-4 text-xs text-muted-foreground font-medium">Level</th>
-                        <th className="text-right py-2.5 px-4 text-xs text-muted-foreground font-medium">XP</th>
-                        <th className="text-right py-2.5 px-4 text-xs text-muted-foreground font-medium">Streak</th>
-                        <th className="text-right py-2.5 px-4 text-xs text-muted-foreground font-medium">Recordings</th>
-                        <th className="text-right py-2.5 px-4 text-xs text-muted-foreground font-medium">Last Active</th>
+                        <th className="text-left py-2.5 px-4 text-xs text-muted-foreground font-medium">{t("admin.colUser")}</th>
+                        <th className="text-left py-2.5 px-4 text-xs text-muted-foreground font-medium">{t("teacher.colLevel")}</th>
+                        <th className="text-right py-2.5 px-4 text-xs text-muted-foreground font-medium">{t("ldr.xp")}</th>
+                        <th className="text-right py-2.5 px-4 text-xs text-muted-foreground font-medium">{t("admin.colStreak")}</th>
+                        <th className="text-right py-2.5 px-4 text-xs text-muted-foreground font-medium">{t("teacher.recordings")}</th>
+                        <th className="text-right py-2.5 px-4 text-xs text-muted-foreground font-medium">{t("admin.colLastActive")}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -181,7 +183,7 @@ export default function Admin() {
                               )}
                               <div>
                                 <p className="font-medium text-emerald-950">{u.displayName || "Student"}</p>
-                                {!u.onboardingComplete && <p className="text-xs text-amber-600">Onboarding incomplete</p>}
+                                {!u.onboardingComplete && <p className="text-xs text-amber-600">{t("admin.onboardingIncomplete")}</p>}
                               </div>
                             </div>
                           </td>
@@ -192,14 +194,14 @@ export default function Admin() {
                           <td className="py-3 px-4 text-right text-muted-foreground">{u.streakDays}d</td>
                           <td className="py-3 px-4 text-right text-muted-foreground">{u.totalRecordings}</td>
                           <td className="py-3 px-4 text-right text-xs text-muted-foreground">
-                            {u.lastStudyDate ? new Date(u.lastStudyDate).toLocaleDateString() : "Never"}
+                            {u.lastStudyDate ? new Date(u.lastStudyDate).toLocaleDateString() : t("admin.never")}
                           </td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                   {users.length === 0 && (
-                    <p className="text-center text-muted-foreground text-sm py-8">No users yet</p>
+                    <p className="text-center text-muted-foreground text-sm py-8">{t("admin.noUsers")}</p>
                   )}
                 </div>
               </CardContent>

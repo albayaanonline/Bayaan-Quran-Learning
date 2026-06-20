@@ -5,8 +5,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Star, Flame, Book, Mic, Trophy, Medal, Crown, Heart, Moon, Sun, Award } from "lucide-react";
 import { motion } from "framer-motion";
+import { useI18n } from "@/lib/i18n";
 
 export default function Achievements() {
+  const { t } = useI18n();
   const { data: achievements, isLoading } = useListAchievements();
 
   const getIcon = (type: string, unlocked: boolean) => {
@@ -33,8 +35,8 @@ export default function Achievements() {
     <AppLayout>
       <div className="max-w-6xl mx-auto space-y-8">
         <div>
-          <h1 className="text-3xl font-serif font-bold text-emerald-950 dark:text-emerald-50">Achievements</h1>
-          <p className="text-muted-foreground mt-2">Earn rewards for your dedication</p>
+          <h1 className="text-3xl font-serif font-bold text-emerald-950 dark:text-emerald-50">{t("ach.title")}</h1>
+          <p className="text-muted-foreground mt-2">{t("ach.subtitle")}</p>
         </div>
 
         {isLoading ? (

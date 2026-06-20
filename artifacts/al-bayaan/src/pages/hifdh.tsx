@@ -12,6 +12,7 @@ import { Plus, Brain, CheckCircle2, RotateCcw, BookOpen, Calendar, Trash2, Star,
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { useListSurahs } from "@workspace/api-client-react";
+import { useI18n } from "@/lib/i18n";
 
 interface HifdhEntry {
   id: number;
@@ -84,6 +85,7 @@ function MarkdownRenderer({ content }: { content: string }) {
 }
 
 export default function Hifdh() {
+  const { t } = useI18n();
   const { toast } = useToast();
   const { data: surahs } = useListSurahs();
   const [entries, setEntries] = useState<HifdhEntry[]>([]);
@@ -117,7 +119,7 @@ export default function Hifdh() {
       if (entriesRes.ok) setEntries(await entriesRes.json());
       if (planRes.ok) setPlan(await planRes.json());
     } catch {
-      toast({ title: "Error", description: "Could not load Hifdh data.", variant: "destructive" });
+      toast({ title: t("gen.error"), description: t("hifdh.errorLoad"), variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -173,14 +175,14 @@ export default function Hifdh() {
         credentials: "include",
         body: JSON.stringify({ surahId, ayahStart: 1, ayahEnd: surah?.ayahCount ?? 1 }),
       });
-      if (res.status === 409) { toast({ title: "Already added", description: "This surah is already in your Hifdh plan." }); return; }
+      if (res.status === 409) { toast({ title: t("hifdh.alreadyAdded"), description: t("hifdh.alreadyAddedSub") }); return; }
       if (!res.ok) throw new Error();
-      toast({ title: "Added!", description: `${surah?.name ?? "Surah"} added to your Hifdh plan.` });
+      toast({ title: t("hifdh.added"), description: `${surah?.name ?? "Surah"} added to your Hifdh plan.` });
       setAddOpen(false);
       setSelectedSurahId("");
       loadData();
     } catch {
-      toast({ title: "Error", description: "Could not add surah.", variant: "destructive" });
+      toast({ title: t("gen.error"), description: t("hifdh.errorAdd"), variant: "destructive" });
     }
   };
 
@@ -194,11 +196,11 @@ export default function Hifdh() {
         body: JSON.stringify({ quality }),
       });
       if (res.ok) {
-        toast({ title: "Revision recorded!", description: "Great work! Your strength score has been updated." });
+        toast({ title: t("hifdh.revisionRecorded"), description: t("hifdh.strengthUpdated") });
         loadData();
       }
     } catch {
-      toast({ title: "Error", description: "Could not record revision.", variant: "destructive" });
+      toast({ title: t("gen.error"), description: t("hifdh.errorRevise"), variant: "destructive" });
     } finally {
       setRevising(null);
     }
@@ -208,7 +210,7 @@ export default function Hifdh() {
     try {
       await fetch(`/api/hifdh/${id}`, { method: "DELETE", credentials: "include" });
       setEntries((prev) => prev.filter((e) => e.id !== id));
-      toast({ title: "Removed" });
+      toast({ title: t("gen.removed") });
     } catch {}
   };
 
@@ -218,23 +220,23 @@ export default function Hifdh() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-serif font-bold text-emerald-950 dark:text-emerald-50">Hifdh Tracker</h1>
-            <p className="text-muted-foreground mt-1">Track your Quran memorization with spaced repetition</p>
+            <h1 className="text-3xl font-serif font-bold text-emerald-950 dark:text-emerald-50">{t("nav.hifdh")}</h1>
+            <p className="text-muted-foreground mt-1">{t("hifdh.subtitle")}</p>
           </div>
           <Dialog open={addOpen} onOpenChange={setAddOpen}>
             <DialogTrigger asChild>
               <Button className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2">
-                <Plus className="h-4 w-4" /> Add Surah
+                <Plus className="h-4 w-4" /> {t("hifdh.addSurah")}
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Add Surah to Hifdh</DialogTitle>
+                <DialogTitle>{t("hifdh.addDialog")}</DialogTitle>
               </DialogHeader>
               <div className="space-y-4 py-4">
                 <Select value={selectedSurahId} onValueChange={setSelectedSurahId}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a Surah…" />
+                    <SelectValue placeholder={t("hifdh.selectSurah")} />
                   </SelectTrigger>
                   <SelectContent>
                     {surahs?.map((s) => (
@@ -245,7 +247,7 @@ export default function Hifdh() {
                   </SelectContent>
                 </Select>
                 <Button onClick={addSurah} disabled={!selectedSurahId} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white">
-                  Add to Hifdh Plan
+                  {t("hifdh.addToPlan")}
                 </Button>
               </div>
             </DialogContent>
@@ -260,10 +262,10 @@ export default function Hifdh() {
         ) : plan && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { label: "Total Surahs", value: plan.stats.totalSurahs, icon: BookOpen, color: "text-emerald-600", bg: "bg-emerald-50 dark:bg-emerald-950" },
-              { label: "Memorized", value: plan.stats.memorized, icon: CheckCircle2, color: "text-emerald-600", bg: "bg-emerald-50 dark:bg-emerald-950" },
-              { label: "Reviewing", value: plan.stats.reviewing, icon: RotateCcw, color: "text-amber-600", bg: "bg-amber-50 dark:bg-amber-950" },
-              { label: "Due Today", value: plan.stats.dueToday, icon: Flame, color: "text-red-600", bg: "bg-red-50 dark:bg-red-950" },
+              { label: t("hifdh.totalSurahs"), value: plan.stats.totalSurahs, icon: BookOpen, color: "text-emerald-600", bg: "bg-emerald-50 dark:bg-emerald-950" },
+              { label: t("hifdh.memorized"), value: plan.stats.memorized, icon: CheckCircle2, color: "text-emerald-600", bg: "bg-emerald-50 dark:bg-emerald-950" },
+              { label: t("hifdh.reviewing"), value: plan.stats.reviewing, icon: RotateCcw, color: "text-amber-600", bg: "bg-amber-50 dark:bg-amber-950" },
+              { label: t("hifdh.dueToday"), value: plan.stats.dueToday, icon: Flame, color: "text-red-600", bg: "bg-red-50 dark:bg-red-950" },
             ].map((stat, i) => (
               <motion.div key={stat.label} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}>
                 <Card>
@@ -285,8 +287,8 @@ export default function Hifdh() {
         {/* Tabs */}
         <Tabs defaultValue="surahs">
           <TabsList className="border border-emerald-100">
-            <TabsTrigger value="surahs" className="gap-2"><Brain className="h-3.5 w-3.5" />My Surahs</TabsTrigger>
-            <TabsTrigger value="ai-coach" className="gap-2"><Sparkles className="h-3.5 w-3.5" />AI Coach</TabsTrigger>
+            <TabsTrigger value="surahs" className="gap-2"><Brain className="h-3.5 w-3.5" />{t("hifdh.mySurahs")}</TabsTrigger>
+            <TabsTrigger value="ai-coach" className="gap-2"><Sparkles className="h-3.5 w-3.5" />{t("hifdh.aiCoach")}</TabsTrigger>
           </TabsList>
 
           {/* ── My Surahs Tab ── */}
@@ -296,7 +298,7 @@ export default function Hifdh() {
               <Card className="border-red-200 bg-red-50/50 dark:bg-red-950/10">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base text-red-800 dark:text-red-300 flex items-center gap-2">
-                    <Flame className="h-4 w-4" /> Due for Revision Today ({plan.due.length})
+                    <Flame className="h-4 w-4" /> {t("hifdh.dueRevision")} ({plan.due.length})
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
@@ -304,7 +306,7 @@ export default function Hifdh() {
                     <div key={entry.id} className="flex items-center justify-between gap-4 bg-white dark:bg-background rounded-xl p-4 border border-red-100">
                       <div className="flex-1 min-w-0">
                         <p className="font-semibold text-emerald-950 dark:text-emerald-50">{entry.surahName}</p>
-                        <p className="text-xs text-muted-foreground">Ayahs {entry.ayahStart}–{entry.ayahEnd} · {entry.revisionCount} revisions</p>
+                        <p className="text-xs text-muted-foreground">Ayahs {entry.ayahStart}–{entry.ayahEnd} · {entry.revisionCount} {t("hifdh.revisions")}</p>
                         <div className="mt-2 flex items-center gap-2">
                           <Progress value={entry.strengthScore} className="h-1.5 flex-1 bg-emerald-100" />
                           <span className="text-xs font-medium text-emerald-700">{entry.strengthScore}%</span>
@@ -313,11 +315,11 @@ export default function Hifdh() {
                       <div className="flex gap-2 shrink-0">
                         <Button size="sm" variant="outline" className="border-amber-300 text-amber-700 hover:bg-amber-50"
                           onClick={() => revise(entry.id, "good")} disabled={revising === entry.id}>
-                          <RotateCcw className="h-3.5 w-3.5 mr-1" /> Good
+                          <RotateCcw className="h-3.5 w-3.5 mr-1" /> {t("hifdh.good")}
                         </Button>
                         <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white"
                           onClick={() => revise(entry.id, "excellent")} disabled={revising === entry.id}>
-                          <Star className="h-3.5 w-3.5 mr-1" /> Excellent
+                          <Star className="h-3.5 w-3.5 mr-1" /> {t("hifdh.excellent")}
                         </Button>
                       </div>
                     </div>
@@ -329,16 +331,16 @@ export default function Hifdh() {
             {/* All Surahs */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">All Memorization Progress</CardTitle>
-                <CardDescription>Surah-by-surah breakdown with spaced repetition scheduling</CardDescription>
+                <CardTitle className="text-base">{t("hifdh.allProgress")}</CardTitle>
+                <CardDescription>{t("hifdh.allProgressSub")}</CardDescription>
               </CardHeader>
               <CardContent>
                 {loading && <div className="space-y-3">{Array(3).fill(0).map((_, i) => <Skeleton key={i} className="h-20" />)}</div>}
                 {!loading && entries.length === 0 && (
                   <div className="text-center py-12">
                     <Brain className="h-12 w-12 mx-auto text-emerald-300 mb-3" />
-                    <p className="text-muted-foreground text-sm">No surahs in your Hifdh plan yet.</p>
-                    <p className="text-muted-foreground text-sm">Click "Add Surah" to start your memorization journey.</p>
+                    <p className="text-muted-foreground text-sm">{t("hifdh.noSurahs")}</p>
+                    <p className="text-muted-foreground text-sm">{t("hifdh.clickAdd")}</p>
                   </div>
                 )}
                 <div className="space-y-3">
@@ -387,7 +389,7 @@ export default function Hifdh() {
               <Card>
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-emerald-600" /> Upcoming Revisions
+                    <Calendar className="h-4 w-4 text-emerald-600" /> {t("hifdh.upcoming")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -411,16 +413,16 @@ export default function Hifdh() {
                 <div className="flex items-center justify-between">
                   <div>
                     <CardTitle className="flex items-center gap-2 text-emerald-950">
-                      <Sparkles className="h-5 w-5 text-emerald-600" /> AI Hifdh Coach
+                      <Sparkles className="h-5 w-5 text-emerald-600" /> {t("hifdh.aiCoachTitle")}
                     </CardTitle>
                     <CardDescription className="mt-1">
-                      Get a personalized memorization plan powered by AI — based on your current progress
+                      {t("hifdh.aiCoachSub")}
                     </CardDescription>
                   </div>
                   <div className="flex gap-2">
                     {aiPlan && (
                       <Button variant="outline" size="sm" onClick={() => setAiPlan("")} className="gap-1.5 border-emerald-200 text-emerald-700">
-                        <Trash2 className="h-3.5 w-3.5" /> Clear
+                        <Trash2 className="h-3.5 w-3.5" /> {t("hifdh.clear")}
                       </Button>
                     )}
                     <Button
@@ -429,8 +431,8 @@ export default function Hifdh() {
                       className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2"
                     >
                       {isGeneratingPlan
-                        ? <><Loader2 className="h-4 w-4 animate-spin" /> Generating…</>
-                        : <><RefreshCw className="h-4 w-4" />{aiPlan ? "Regenerate Plan" : "Generate My Plan"}</>
+                        ? <><Loader2 className="h-4 w-4 animate-spin" /> {t("hifdh.generating")}</>
+                        : <><RefreshCw className="h-4 w-4" />{aiPlan ? t("hifdh.regenerate") : t("hifdh.generateBtn")}</>
                       }
                     </Button>
                   </div>
@@ -442,17 +444,17 @@ export default function Hifdh() {
                     <div className="h-16 w-16 rounded-2xl bg-emerald-100 mx-auto flex items-center justify-center mb-4">
                       <Brain className="h-8 w-8 text-emerald-600" />
                     </div>
-                    <h3 className="font-semibold text-lg text-emerald-950 mb-2">Get Your Personal Hifdh Plan</h3>
+                    <h3 className="font-semibold text-lg text-emerald-950 mb-2">{t("hifdh.getYourPlan")}</h3>
                     <p className="text-sm text-muted-foreground max-w-sm mx-auto mb-6">
-                      The AI will analyze your memorization progress, strength scores, and revision schedule to create a tailored coaching plan.
+                      {t("hifdh.analyzeDesc")}
                     </p>
                     <div className="flex flex-wrap justify-center gap-2 text-xs text-muted-foreground mb-8">
-                      {["Today's revision priority", "Weekly new ayah targets", "Strength analysis", "Memorization techniques"].map(f => (
+                      {[t("hifdh.feat1"), t("hifdh.feat2"), t("hifdh.feat3"), t("hifdh.feat4")].map(f => (
                         <span key={f} className="bg-emerald-50 border border-emerald-100 rounded-full px-3 py-1">{f}</span>
                       ))}
                     </div>
                     <Button onClick={generateAiPlan} className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2 h-11 px-8">
-                      <Sparkles className="h-4 w-4" /> Generate My AI Coaching Plan
+                      <Sparkles className="h-4 w-4" /> {t("hifdh.genCoach")}
                     </Button>
                   </div>
                 )}
@@ -463,8 +465,8 @@ export default function Hifdh() {
                       <Loader2 className="h-6 w-6 text-emerald-600 animate-spin" />
                     </div>
                     <div className="text-center">
-                      <p className="font-medium text-emerald-900">Analyzing your memorization data…</p>
-                      <p className="text-sm text-muted-foreground mt-1">The AI is crafting your personalized plan</p>
+                      <p className="font-medium text-emerald-900">{t("hifdh.analyzing")}</p>
+                      <p className="text-sm text-muted-foreground mt-1">{t("hifdh.crafting")}</p>
                     </div>
                   </div>
                 )}

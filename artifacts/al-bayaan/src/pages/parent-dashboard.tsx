@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Users, TrendingUp, Star, Flame, BookOpen, Brain, Plus, UserCheck, AlertCircle, CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
+import { useI18n } from "@/lib/i18n";
 
 interface ChildProfile {
   id: number;
@@ -50,6 +51,7 @@ interface ChildProgress {
 }
 
 export default function ParentDashboard() {
+  const { t } = useI18n();
   const { toast } = useToast();
   const [parentProfile, setParentProfile] = useState<ParentProfile | null>(null);
   const [children, setChildren] = useState<ChildProfile[]>([]);
@@ -94,9 +96,9 @@ export default function ParentDashboard() {
       if (r.ok) {
         const data = await r.json();
         setParentProfile(data);
-        toast({ title: "Profile saved!" });
+        toast({ title: t("parent.profileSaved") });
       }
-    } catch { toast({ title: "Failed to save", variant: "destructive" }); }
+    } catch { toast({ title: t("parent.failedSave"), variant: "destructive" }); }
     finally { setSaving(false); }
   };
 
@@ -119,9 +121,9 @@ export default function ParentDashboard() {
         setAddingChild(false);
         const kidsR = await fetch("/api/parent/children", { credentials: "include" });
         if (kidsR.ok) { const kids = await kidsR.json(); setChildren(kids); }
-        toast({ title: "Child added!" });
+        toast({ title: t("parent.childAdded") });
       }
-    } catch { toast({ title: "Failed to add child", variant: "destructive" }); }
+    } catch { toast({ title: t("parent.failedAdd"), variant: "destructive" }); }
     finally { setSaving(false); }
   };
 
@@ -142,11 +144,11 @@ export default function ParentDashboard() {
       <div className="max-w-5xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-serif font-bold text-emerald-950">Parent Dashboard</h1>
-            <p className="text-sm text-muted-foreground mt-1">Monitor your children's Quran learning progress</p>
+            <h1 className="text-2xl font-serif font-bold text-emerald-950">{t("parent.title")}</h1>
+            <p className="text-sm text-muted-foreground mt-1">{t("parent.subtitle")}</p>
           </div>
           <Button variant="outline" size="sm" onClick={() => setAddingChild(true)} className="gap-2">
-            <Plus className="h-4 w-4" /> Add Child
+            <Plus className="h-4 w-4" /> {t("parent.addChild")}
           </Button>
         </div>
 
@@ -155,10 +157,10 @@ export default function ParentDashboard() {
             <CardContent className="p-4 flex gap-3 items-start">
               <AlertCircle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-amber-900">Set up your parent profile</p>
+                <p className="font-medium text-amber-900">{t("parent.setupProfile")}</p>
                 <div className="flex gap-2 mt-2">
-                  <Input value={parentName} onChange={e => setParentName(e.target.value)} placeholder="Your name" className="h-8 text-sm" />
-                  <Button size="sm" onClick={saveProfile} disabled={saving}>Save</Button>
+                  <Input value={parentName} onChange={e => setParentName(e.target.value)} placeholder={t("parent.yourName")} className="h-8 text-sm" />
+                  <Button size="sm" onClick={saveProfile} disabled={saving}>{t("gen.save")}</Button>
                 </div>
               </div>
             </CardContent>
@@ -168,11 +170,11 @@ export default function ParentDashboard() {
         {addingChild && (
           <Card className="border-emerald-200 bg-emerald-50">
             <CardContent className="p-4">
-              <p className="text-sm font-medium text-emerald-900 mb-2">Enter your child's Clerk User ID (from their profile settings)</p>
+              <p className="text-sm font-medium text-emerald-900 mb-2">{t("parent.enterChildId")}</p>
               <div className="flex gap-2">
                 <Input value={newChildId} onChange={e => setNewChildId(e.target.value)} placeholder="user_xxxxxxxxxxxx" className="h-8 text-sm" />
-                <Button size="sm" onClick={addChild} disabled={saving}>Add</Button>
-                <Button size="sm" variant="ghost" onClick={() => setAddingChild(false)}>Cancel</Button>
+                <Button size="sm" onClick={addChild} disabled={saving}>{t("gen.add")}</Button>
+                <Button size="sm" variant="ghost" onClick={() => setAddingChild(false)}>{t("gen.cancel")}</Button>
               </div>
             </CardContent>
           </Card>
@@ -182,17 +184,17 @@ export default function ParentDashboard() {
           <Card className="border-dashed">
             <CardContent className="p-12 text-center">
               <Users className="h-12 w-12 text-emerald-300 mx-auto mb-4" />
-              <h3 className="font-semibold text-lg">No children linked yet</h3>
-              <p className="text-sm text-muted-foreground mt-1 mb-4">Add your child's account to start monitoring their progress</p>
+              <h3 className="font-semibold text-lg">{t("parent.noChildren")}</h3>
+              <p className="text-sm text-muted-foreground mt-1 mb-4">{t("parent.noChildrenSub")}</p>
               <Button onClick={() => setAddingChild(true)} className="bg-emerald-600 hover:bg-emerald-700">
-                <Plus className="h-4 w-4 mr-2" /> Add Child Account
+                <Plus className="h-4 w-4 mr-2" /> {t("parent.addChildAccount")}
               </Button>
             </CardContent>
           </Card>
         ) : (
           <div className="grid gap-6 md:grid-cols-[200px_1fr]">
             <div className="space-y-2">
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground px-1">Children</p>
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground px-1">{t("parent.children")}</p>
               {children.map(child => (
                 <button
                   key={child.clerkId}
@@ -223,10 +225,10 @@ export default function ParentDashboard() {
               <div className="space-y-4">
                 <div className="grid gap-3 sm:grid-cols-4">
                   {[
-                    { label: "Avg Score", value: `${selectedChild.stats.avgScore}%`, icon: Star, color: "text-amber-600" },
-                    { label: "Streak", value: `${selectedChild.stats.streakDays} days`, icon: Flame, color: "text-orange-600" },
-                    { label: "Surahs", value: selectedChild.stats.surahsStudied, icon: BookOpen, color: "text-emerald-600" },
-                    { label: "Hifdh", value: selectedChild.stats.hifdhSurahs, icon: Brain, color: "text-purple-600" },
+                    { label: t("parent.avgScore"), value: `${selectedChild.stats.avgScore}%`, icon: Star, color: "text-amber-600" },
+                    { label: t("parent.streak"), value: `${selectedChild.stats.streakDays} ${t("parent.days")}`, icon: Flame, color: "text-orange-600" },
+                    { label: t("parent.surahs"), value: selectedChild.stats.surahsStudied, icon: BookOpen, color: "text-emerald-600" },
+                    { label: t("nav.hifdh"), value: selectedChild.stats.hifdhSurahs, icon: Brain, color: "text-purple-600" },
                   ].map(stat => (
                     <motion.div key={stat.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
                       <Card className="border-emerald-100">
@@ -244,9 +246,9 @@ export default function ParentDashboard() {
 
                 <Tabs defaultValue="progress">
                   <TabsList>
-                    <TabsTrigger value="progress">Progress</TabsTrigger>
-                    <TabsTrigger value="weaknesses">Weak Areas</TabsTrigger>
-                    <TabsTrigger value="hifdh">Hifdh</TabsTrigger>
+                    <TabsTrigger value="progress">{t("parent.tabProgress")}</TabsTrigger>
+                    <TabsTrigger value="weaknesses">{t("parent.tabWeak")}</TabsTrigger>
+                    <TabsTrigger value="hifdh">{t("nav.hifdh")}</TabsTrigger>
                   </TabsList>
 
                   <TabsContent value="progress" className="mt-3 space-y-3">
@@ -265,7 +267,7 @@ export default function ParentDashboard() {
                           </div>
                         ))}
                         {childProgress.surahProgress.length === 0 && (
-                          <p className="text-sm text-muted-foreground text-center py-6">No surahs studied yet</p>
+                          <p className="text-sm text-muted-foreground text-center py-6">{t("parent.noSurahsStudied")}</p>
                         )}
                       </div>
                     )}
@@ -277,7 +279,7 @@ export default function ParentDashboard() {
                         {childProgress.summary.weakAreas.length === 0 ? (
                           <div className="flex items-center gap-2 text-emerald-700 bg-emerald-50 rounded-lg p-4">
                             <CheckCircle2 className="h-5 w-5" />
-                            <span className="text-sm">No consistent Tajweed issues detected! Great work.</span>
+                            <span className="text-sm">{t("parent.noWeakAreas")}</span>
                           </div>
                         ) : childProgress.summary.weakAreas.map((area, i) => (
                           <div key={area.rule} className="bg-white border border-red-100 rounded-lg p-3">
@@ -296,7 +298,7 @@ export default function ParentDashboard() {
                     {!childProgress ? <Skeleton className="h-32" /> : (
                       <div className="space-y-2">
                         {childProgress.hifdh.length === 0 ? (
-                          <p className="text-sm text-muted-foreground text-center py-6">No hifdh surahs yet</p>
+                          <p className="text-sm text-muted-foreground text-center py-6">{t("parent.noHifdhYet")}</p>
                         ) : childProgress.hifdh.map((h, i) => (
                           <div key={i} className="bg-white border border-purple-100 rounded-lg p-3">
                             <div className="flex items-center justify-between mb-1.5">

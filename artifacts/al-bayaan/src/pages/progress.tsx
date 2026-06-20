@@ -1,4 +1,5 @@
 import { useGetProgress, useGetWeeklyReport } from "@workspace/api-client-react";
+import { useI18n } from "@/lib/i18n";
 import AppLayout from "@/components/layout/AppLayout";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,6 +8,7 @@ import { motion } from "framer-motion";
 import { Target, BookOpen, Clock, Activity } from "lucide-react";
 
 export default function Progress() {
+  const { t } = useI18n();
   const { data: progress, isLoading: progressLoading } = useGetProgress();
   const { data: weekly, isLoading: weeklyLoading } = useGetWeeklyReport();
 
@@ -24,23 +26,23 @@ export default function Progress() {
     );
   }
 
-  if (!progress || !weekly) return <AppLayout><div>Failed to load data</div></AppLayout>;
+  if (!progress || !weekly) return <AppLayout><div>{t("prog.failedLoad")}</div></AppLayout>;
 
   return (
     <AppLayout>
       <div className="space-y-8 max-w-6xl mx-auto">
         <div>
-          <h1 className="text-3xl font-serif font-bold text-emerald-950 dark:text-emerald-50">Your Progress</h1>
-          <p className="text-muted-foreground mt-2">Track your journey with the Quran</p>
+          <h1 className="text-3xl font-serif font-bold text-emerald-950 dark:text-emerald-50">{t("prog.title")}</h1>
+          <p className="text-muted-foreground mt-2">{t("prog.subtitle")}</p>
         </div>
 
         {/* Top Stats */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {[
-            { title: "Tajweed Score", value: `${progress.tajweedScore}%`, icon: Target, color: "text-emerald-600", bg: "bg-emerald-100" },
-            { title: "Accuracy", value: `${progress.accuracyScore}%`, icon: Activity, color: "text-blue-600", bg: "bg-blue-100" },
-            { title: "Ayahs Recited", value: progress.totalAyahsRecited, icon: BookOpen, color: "text-purple-600", bg: "bg-purple-100" },
-            { title: "Time Spent", value: `${Math.round(progress.totalRecordingMinutes)}m`, icon: Clock, color: "text-rose-600", bg: "bg-rose-100" },
+            { title: t("prog.tajweed"), value: `${progress.tajweedScore}%`, icon: Target, color: "text-emerald-600", bg: "bg-emerald-100" },
+            { title: t("prog.accuracy"), value: `${progress.accuracyScore}%`, icon: Activity, color: "text-blue-600", bg: "bg-blue-100" },
+            { title: t("prog.ayahsRecited"), value: progress.totalAyahsRecited, icon: BookOpen, color: "text-purple-600", bg: "bg-purple-100" },
+            { title: t("prog.timeSpent"), value: `${Math.round(progress.totalRecordingMinutes)}m`, icon: Clock, color: "text-rose-600", bg: "bg-rose-100" },
           ].map((stat, i) => (
             <motion.div
               key={stat.title}
@@ -73,7 +75,7 @@ export default function Progress() {
           >
             <Card className="h-full">
               <CardHeader>
-                <CardTitle className="text-emerald-950 dark:text-emerald-50 text-lg">Weekly Study Time (mins)</CardTitle>
+                <CardTitle className="text-emerald-950 dark:text-emerald-50 text-lg">{t("prog.weeklyChart")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="h-[300px] w-full">
@@ -102,7 +104,7 @@ export default function Progress() {
           >
             <Card className="h-full">
               <CardHeader>
-                <CardTitle className="text-emerald-950 dark:text-emerald-50 text-lg">Surah Completion (%)</CardTitle>
+                <CardTitle className="text-emerald-950 dark:text-emerald-50 text-lg">{t("prog.surahChart")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="h-[300px] w-full">

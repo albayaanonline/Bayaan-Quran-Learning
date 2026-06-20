@@ -6,8 +6,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Trophy, Flame, Star, Medal } from "lucide-react";
 import { motion } from "framer-motion";
+import { useI18n } from "@/lib/i18n";
 
 export default function Leaderboard() {
+  const { t } = useI18n();
   const [period, setPeriod] = useState<GetLeaderboardPeriod>("weekly");
   const { data: leaderboard, isLoading } = useGetLeaderboard({ period });
 
@@ -30,16 +32,16 @@ export default function Leaderboard() {
         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="text-center md:text-left">
             <h1 className="text-3xl font-serif font-bold text-emerald-950 dark:text-emerald-50 flex items-center gap-3 justify-center md:justify-start">
-              <Trophy className="h-8 w-8 text-amber-500" /> Community Rankings
+              <Trophy className="h-8 w-8 text-amber-500" /> {t("ldr.title")}
             </h1>
-            <p className="text-muted-foreground mt-2">"Compete with one another in good deeds."</p>
+            <p className="text-muted-foreground mt-2">"{t("ldr.hadith")}"</p>
           </div>
 
           <Tabs value={period} onValueChange={(v) => setPeriod(v as GetLeaderboardPeriod)} className="w-full md:w-auto">
             <TabsList className="grid w-full grid-cols-3 bg-emerald-100/50 p-1">
-              <TabsTrigger value="weekly" className="data-[state=active]:bg-white data-[state=active]:text-emerald-900 rounded-md">Weekly</TabsTrigger>
-              <TabsTrigger value="monthly" className="data-[state=active]:bg-white data-[state=active]:text-emerald-900 rounded-md">Monthly</TabsTrigger>
-              <TabsTrigger value="alltime" className="data-[state=active]:bg-white data-[state=active]:text-emerald-900 rounded-md">All Time</TabsTrigger>
+              <TabsTrigger value="weekly" className="data-[state=active]:bg-white data-[state=active]:text-emerald-900 rounded-md">{t("ldr.weekly")}</TabsTrigger>
+              <TabsTrigger value="monthly" className="data-[state=active]:bg-white data-[state=active]:text-emerald-900 rounded-md">{t("ldr.monthly")}</TabsTrigger>
+              <TabsTrigger value="alltime" className="data-[state=active]:bg-white data-[state=active]:text-emerald-900 rounded-md">{t("ldr.alltime")}</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
@@ -61,9 +63,9 @@ export default function Leaderboard() {
               <div className="divide-y divide-emerald-50">
                 {/* Headers */}
                 <div className="grid grid-cols-[auto_1fr_auto] gap-4 p-4 bg-emerald-950 text-emerald-50 text-sm font-medium">
-                  <div className="w-12 text-center">Rank</div>
-                  <div>Student</div>
-                  <div className="w-32 text-right">XP</div>
+                  <div className="w-12 text-center">{t("ldr.rank")}</div>
+                  <div>{t("ldr.student")}</div>
+                  <div className="w-32 text-right">{t("ldr.xp")}</div>
                 </div>
 
                 {leaderboard?.map((entry, index) => (
@@ -94,18 +96,18 @@ export default function Leaderboard() {
                       <div>
                         <div className="font-bold text-emerald-950 flex items-center gap-2">
                           {entry.displayName}
-                          {entry.isCurrentUser && <span className="text-[10px] uppercase tracking-wider bg-emerald-200 text-emerald-800 px-2 py-0.5 rounded-full font-bold">You</span>}
+                          {entry.isCurrentUser && <span className="text-[10px] uppercase tracking-wider bg-emerald-200 text-emerald-800 px-2 py-0.5 rounded-full font-bold">{t("ldr.you")}</span>}
                         </div>
                         <div className="flex gap-4 mt-1 text-xs text-muted-foreground font-medium">
-                          <span className="flex items-center gap-1"><Flame className="h-3 w-3 text-orange-500" /> {entry.streakDays} Day Streak</span>
-                          <span className="flex items-center gap-1"><Star className="h-3 w-3 text-amber-500" /> {entry.surahsCompleted} Surahs</span>
+                          <span className="flex items-center gap-1"><Flame className="h-3 w-3 text-orange-500" /> {entry.streakDays} {t("ldr.dayStreak")}</span>
+                          <span className="flex items-center gap-1"><Star className="h-3 w-3 text-amber-500" /> {entry.surahsCompleted} {t("ldr.surahs")}</span>
                         </div>
                       </div>
                     </div>
 
                     <div className="w-32 text-right">
                       <div className="text-xl font-bold text-emerald-700">{entry.xp.toLocaleString()}</div>
-                      <div className="text-xs text-muted-foreground uppercase tracking-widest">XP</div>
+                      <div className="text-xs text-muted-foreground uppercase tracking-widest">{t("ldr.xp")}</div>
                     </div>
                   </motion.div>
                 ))}

@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { motion } from "framer-motion";
 import { Search, BookOpen, Star, Clock } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 
 interface Book {
   id: string; title: string; titleArabic: string;
@@ -124,6 +125,7 @@ function BookCard({ book, completedLessons, onOpen }: { book: Book; completedLes
 }
 
 export default function Library() {
+  const { t } = useI18n();
   const [, navigate] = useLocation();
   const [books, setBooks] = useState<Book[]>([]);
   const [progressMap, setProgressMap] = useState<Record<string, number>>({});
@@ -180,20 +182,20 @@ export default function Library() {
           <div>
             <h1 className="text-2xl font-serif font-bold text-emerald-950 flex items-center gap-2">
               <BookOpen className="h-6 w-6 text-emerald-600" />
-              Islamic Digital Library
+              {t("lib.title")}
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
-              {books.length} books across {CATEGORIES.length - 1} Islamic sciences
+              {books.length} {t("lib.subtitle")} {CATEGORIES.length - 1}
             </p>
           </div>
           <div className="flex items-center gap-3 text-sm">
             <div className="bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2 text-center">
               <p className="text-lg font-bold text-emerald-700">{startedCount}</p>
-              <p className="text-[10px] text-muted-foreground">In Progress</p>
+              <p className="text-[10px] text-muted-foreground">{t("lib.inProgress")}</p>
             </div>
             <div className="bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2 text-center">
               <p className="text-lg font-bold text-emerald-700">{completedCount}</p>
-              <p className="text-[10px] text-muted-foreground">Completed</p>
+              <p className="text-[10px] text-muted-foreground">{t("lib.completed")}</p>
             </div>
           </div>
         </div>
@@ -220,7 +222,7 @@ export default function Library() {
         <div className="relative max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search books, authors, topics…"
+            placeholder={t("lib.search")}
             className="pl-10 border-emerald-200"
             value={search}
             onChange={e => setSearch(e.target.value)}
@@ -247,8 +249,8 @@ export default function Library() {
         ) : filtered.length === 0 ? (
           <div className="text-center py-16 text-muted-foreground">
             <BookOpen className="h-10 w-10 mx-auto mb-3 opacity-30" />
-            <p className="font-medium">No books found</p>
-            <p className="text-sm mt-1">Try a different category or search term</p>
+            <p className="font-medium">{t("lib.noBooks")}</p>
+            <p className="text-sm mt-1">{t("lib.noBooksSub")}</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
