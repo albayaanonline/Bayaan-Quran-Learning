@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { ClerkProvider, SignIn, SignUp, Show, useClerk } from "@clerk/react";
+import { ClerkProvider, SignIn, SignUp, Show, useClerk, ClerkLoading } from "@clerk/react";
 import { publishableKeyFromHost } from "@clerk/react/internal";
 import { shadcn } from "@clerk/themes";
 import { Switch, Route, useLocation, Router as WouterRouter, Redirect } from "wouter";
@@ -115,6 +115,14 @@ const clerkAppearance = {
 function HomeRedirect() {
   return (
     <>
+      <ClerkLoading>
+        <div className="flex min-h-[100dvh] items-center justify-center bg-[#080f24]">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-14 h-14 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+            <p className="text-blue-300 text-sm font-medium tracking-wide">Loading Al Bayaan…</p>
+          </div>
+        </div>
+      </ClerkLoading>
       <Show when="signed-in"><Redirect to="/dashboard" /></Show>
       <Show when="signed-out"><Landing /></Show>
     </>
@@ -138,6 +146,11 @@ function AuthPage({ type }: { type: "sign-in" | "sign-up" }) {
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
   return (
     <>
+      <ClerkLoading>
+        <div className="flex min-h-[100dvh] items-center justify-center bg-slate-50">
+          <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+        </div>
+      </ClerkLoading>
       <Show when="signed-in"><Component /></Show>
       <Show when="signed-out"><Redirect to="/sign-in" /></Show>
     </>
