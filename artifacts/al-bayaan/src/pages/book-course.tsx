@@ -12,6 +12,7 @@ import {
   ChevronDown, ChevronUp,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useI18n } from "@/lib/i18n";
 
 interface Lesson {
   number: number;
@@ -38,12 +39,6 @@ interface BookDetail {
   featured?: boolean;
   lessons: Lesson[];
 }
-
-const DIFFICULTY_LABELS: Record<string, string> = {
-  beginner: "Beginner",
-  intermediate: "Intermediate",
-  advanced: "Advanced",
-};
 
 const DIFFICULTY_COLORS: Record<string, string> = {
   beginner: "bg-emerald-100 text-emerald-700 border-emerald-200",
@@ -73,6 +68,7 @@ export default function BookCourse() {
   const { bookId } = useParams<{ bookId: string }>();
   const [, navigate] = useLocation();
   const { toast } = useToast();
+  const { t } = useI18n();
 
   const [book, setBook] = useState<BookDetail | null>(null);
   const [completedLessons, setCompletedLessons] = useState(0);
@@ -94,7 +90,6 @@ export default function BookCourse() {
         setBook(bd.book);
         const entry = (pd.progress ?? []).find((p: any) => p.bookId === bookId);
         setCompletedLessons(entry?.completedLessons ?? 0);
-        // Auto-expand the current lesson
         if (entry?.completedLessons > 0) {
           setExpandedLesson(entry.completedLessons + 1);
         } else {
@@ -118,20 +113,19 @@ export default function BookCourse() {
       });
       if (!res.ok) throw new Error("Failed to save progress");
       setCompletedLessons(newCompleted);
-      // Move to next lesson
       const next = lessonNum + 1;
       if (next <= book.lessonCount) {
         setExpandedLesson(next);
-        toast({ title: "Lesson complete!", description: `Moving to lesson ${next}`, duration: 2000 });
+        toast({ title: t("course.lessonComplete"), description: `${t("course.movingTo")} ${next}`, duration: 2000 });
       } else {
-        toast({ title: "🎉 Course complete!", description: "You've finished all lessons!", duration: 4000 });
+        toast({ title: t("course.courseComplete"), description: t("course.courseCompleteMsg"), duration: 4000 });
       }
     } catch {
-      toast({ title: "Error", description: "Could not save progress. Try again.", variant: "destructive" });
+      toast({ title: t("general.error"), description: t("course.errorSaveProg"), variant: "destructive" });
     } finally {
       setSavingLesson(null);
     }
-  }, [book, bookId, completedLessons, savingLesson, toast]);
+  }, [book, bookId, completedLessons, savingLesson, toast, t]);
 
   const openAITeacher = () => {
     const route = book ? CATEGORY_ROUTES[book.category] : null;
@@ -157,10 +151,10 @@ export default function BookCourse() {
       <AppLayout>
         <div className="max-w-4xl mx-auto text-center py-20">
           <BookOpen className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-30" />
-          <h2 className="text-xl font-bold text-emerald-950 mb-2">Course Not Found</h2>
-          <p className="text-muted-foreground mb-6">{error ?? "This course could not be loaded."}</p>
+          <h2 className="text-xl font-bold text-emerald-950 mb-2">{t("course.notFound")}</h2>
+          <p className="text-muted-foreground mb-6">{error ?? t("course.notFoundSub")}</p>
           <Button onClick={() => navigate("/library")} variant="outline">
-            <ChevronLeft className="h-4 w-4 mr-1" /> Back to Library
+            <ChevronLeft className="h-4 w-4 mr-1" /> {t("course.backToLibrary")}
           </Button>
         </div>
       </AppLayout>
@@ -181,7 +175,7 @@ export default function BookCourse() {
           className="flex items-center gap-1.5 text-sm text-emerald-700 hover:text-emerald-900 transition-colors font-medium"
         >
           <ChevronLeft className="h-4 w-4" />
-          Back to Library
+          {t("course.backToLibrary")}
         </button>
 
         {/* Course Header */}
@@ -199,14 +193,14 @@ export default function BookCourse() {
               <div className="flex-1">
                 <div className="flex flex-wrap items-center gap-2 mb-3">
                   <Badge className={`text-xs border ${DIFFICULTY_COLORS[book.difficulty]} bg-white/90`}>
-                    {DIFFICULTY_LABELS[book.difficulty]}
+                    {t(`diff.${book.difficulty}`)}
                   </Badge>
                   <Badge className="text-xs bg-white/20 text-white border-white/30">
-                    {book.category.charAt(0).toUpperCase() + book.category.slice(1)}
+                    {t(`lib.cat.${book.category}`, book.category.charAt(0).toUpperCase() + book.category.slice(1))}
                   </Badge>
                   {book.featured && (
                     <Badge className="text-xs bg-yellow-400/20 text-yellow-200 border-yellow-300/30">
-                      <Star className="h-2.5 w-2.5 mr-1" /> Featured
+                      <Star className="h-2.5 w-2.5 mr-1" /> {t("course.featured")}
                     </Badge>
                   )}
                 </div>
@@ -219,7 +213,7 @@ export default function BookCourse() {
                 >
                   {book.titleArabic}
                 </p>
-                <p className="text-white/60 text-sm mb-4">by {book.author}</p>
+                <p className="text-white/60 text-sm mb-4">{t("course.by")} {book.author}</p>
                 <p className="text-white/80 text-sm leading-relaxed max-w-xl">{book.description}</p>
               </div>
 
@@ -227,31 +221,33 @@ export default function BookCourse() {
               <div className="shrink-0 bg-white/10 backdrop-blur-sm rounded-xl p-5 border border-white/20 min-w-[200px]">
                 <div className="flex items-center gap-2 text-white/70 text-xs mb-1">
                   <Clock className="h-3.5 w-3.5" />
-                  {book.lessonCount} lessons
+                  {book.lessonCount} {t("course.lessonsCount")}
                 </div>
                 {!isComplete ? (
                   <>
                     <p className="text-white text-sm font-semibold mb-2">
-                      {completedLessons === 0 ? "Not started" : `Lesson ${completedLessons} of ${book.lessonCount}`}
+                      {completedLessons === 0
+                        ? t("course.notStarted")
+                        : `${t("course.lesson")} ${completedLessons} ${t("course.of")} ${book.lessonCount}`}
                     </p>
                     <Progress value={pct} className="h-2 bg-white/20 mb-4" />
                     <Button
                       className="w-full bg-white text-emerald-900 hover:bg-white/90 font-semibold shadow-sm"
                       onClick={() => navigate(`/library/${bookId}/lesson/${currentLesson}`)}
                     >
-                      {completedLessons === 0 ? "Start Learning" : "Continue"}
+                      {completedLessons === 0 ? t("course.startLearning") : t("general.continue")}
                       <ArrowRight className="h-4 w-4 ml-1" />
                     </Button>
                   </>
                 ) : (
                   <>
-                    <p className="text-white text-sm font-semibold mb-2">Course Complete! 🎉</p>
+                    <p className="text-white text-sm font-semibold mb-2">{t("course.courseComplete")}</p>
                     <Progress value={100} className="h-2 bg-white/20 mb-4" />
                     <Button
                       className="w-full bg-white text-emerald-900 hover:bg-white/90 font-semibold"
                       onClick={() => navigate("/certificates")}
                     >
-                      <Star className="h-4 w-4 mr-1" /> View Certificate
+                      <Star className="h-4 w-4 mr-1" /> {t("course.viewCert")}
                     </Button>
                   </>
                 )}
@@ -263,7 +259,7 @@ export default function BookCourse() {
                     onClick={openAITeacher}
                   >
                     <Video className="h-3.5 w-3.5 mr-1.5" />
-                    Open AI Teacher
+                    {t("course.openAITeacher")}
                   </Button>
                 )}
               </div>
@@ -283,9 +279,13 @@ export default function BookCourse() {
         {/* Progress Summary */}
         <div className="grid grid-cols-3 gap-4">
           {[
-            { label: "Completed", value: `${completedLessons}`, sub: `of ${book.lessonCount}` },
-            { label: "Progress", value: `${pct}%`, sub: "done" },
-            { label: isComplete ? "Status" : "Up Next", value: isComplete ? "Done ✓" : `Lesson ${currentLesson}`, sub: isComplete ? "All complete" : "current" },
+            { label: t("course.completedLabel"), value: `${completedLessons}`, sub: `${t("course.of")} ${book.lessonCount}` },
+            { label: t("course.progressLabel"), value: `${pct}%`, sub: t("course.donePct") },
+            {
+              label: isComplete ? t("course.status") : t("course.upNext"),
+              value: isComplete ? t("course.done") : `${t("course.lesson")} ${currentLesson}`,
+              sub: isComplete ? t("course.allComplete") : t("course.current"),
+            },
           ].map(s => (
             <div key={s.label} className="bg-white border border-emerald-100 rounded-xl p-4 text-center shadow-sm">
               <p className="text-2xl font-bold text-emerald-800">{s.value}</p>
@@ -299,8 +299,8 @@ export default function BookCourse() {
         <div>
           <div className="flex items-center gap-2 mb-4">
             <BookMarked className="h-5 w-5 text-emerald-600" />
-            <h2 className="text-lg font-serif font-bold text-emerald-950">Curriculum</h2>
-            <span className="text-sm text-muted-foreground">({book.lessonCount} lessons)</span>
+            <h2 className="text-lg font-serif font-bold text-emerald-950">{t("course.curriculum")}</h2>
+            <span className="text-sm text-muted-foreground">({book.lessonCount} {t("course.lessonsCount")})</span>
           </div>
 
           <div className="space-y-2">
@@ -331,7 +331,6 @@ export default function BookCourse() {
                       if (!isLocked) setExpandedLesson(isExpanded ? null : lesson.number);
                     }}
                   >
-                    {/* Status Icon */}
                     <div className="shrink-0">
                       {isCompleted ? (
                         <CheckCircle2 className="h-5 w-5 text-emerald-500" />
@@ -344,7 +343,6 @@ export default function BookCourse() {
                       )}
                     </div>
 
-                    {/* Number */}
                     <span
                       className={`text-xs font-bold w-7 shrink-0 ${
                         isCompleted ? "text-emerald-600" : isCurrent ? "text-emerald-700" : "text-gray-400"
@@ -353,7 +351,6 @@ export default function BookCourse() {
                       {lesson.number}
                     </span>
 
-                    {/* Title */}
                     <div className="flex-1 min-w-0">
                       <p
                         className={`text-sm font-medium truncate ${
@@ -363,7 +360,7 @@ export default function BookCourse() {
                         {lesson.title}
                         {isCurrent && (
                           <span className="ml-2 text-[10px] bg-emerald-600 text-white rounded-full px-2 py-0.5 font-normal">
-                            Current
+                            {t("course.current")}
                           </span>
                         )}
                       </p>
@@ -375,7 +372,6 @@ export default function BookCourse() {
                       </p>
                     </div>
 
-                    {/* Meta */}
                     <div className="flex items-center gap-2 shrink-0">
                       <span className={`flex items-center gap-1 text-[10px] ${isLocked ? "text-gray-300" : "text-muted-foreground"}`}>
                         {LESSON_TYPE_ICON[lesson.type]}
@@ -404,23 +400,22 @@ export default function BookCourse() {
                             {lesson.description}
                           </p>
                           <div className="flex items-center gap-3 flex-wrap">
-                            {/* Primary action: open the lesson page */}
                             <Button
                               size="sm"
                               className="bg-emerald-600 hover:bg-emerald-700 text-white"
                               onClick={() => navigate(`/library/${bookId}/lesson/${lesson.number}`)}
                             >
                               {isCompleted ? (
-                                <><BookOpen className="h-3.5 w-3.5 mr-1.5" />Review Lesson</>
+                                <><BookOpen className="h-3.5 w-3.5 mr-1.5" />{t("course.reviewLesson")}</>
                               ) : isCurrent ? (
-                                <><PlayCircle className="h-3.5 w-3.5 mr-1.5" />Start Lesson</>
+                                <><PlayCircle className="h-3.5 w-3.5 mr-1.5" />{t("course.startLesson")}</>
                               ) : (
-                                <><BookOpen className="h-3.5 w-3.5 mr-1.5" />Open Lesson</>
+                                <><BookOpen className="h-3.5 w-3.5 mr-1.5" />{t("course.openLesson")}</>
                               )}
                             </Button>
                             {isCompleted && (
                               <span className="flex items-center gap-1.5 text-sm text-emerald-600 font-medium">
-                                <CheckCircle2 className="h-4 w-4" /> Completed
+                                <CheckCircle2 className="h-4 w-4" /> {t("course.completedLabel")}
                               </span>
                             )}
                             {aiRoute && (
@@ -431,7 +426,7 @@ export default function BookCourse() {
                                 onClick={openAITeacher}
                               >
                                 <Video className="h-3.5 w-3.5 mr-1.5" />
-                                Ask AI Teacher
+                                {t("course.askAITeacher")}
                               </Button>
                             )}
                           </div>

@@ -29,17 +29,11 @@ const CATEGORY_IMAGES: Record<string, string> = {
   hingaad:  "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=400&q=75",
 };
 
-const CATEGORIES = [
-  { id: "all", label: "All", icon: "📚" },
-  { id: "quran", label: "Quran", icon: "📖" },
-  { id: "hingaad", label: "Hingaad", icon: "ا" },
-  { id: "arabic", label: "Arabic", icon: "🗣️" },
-  { id: "fiqh", label: "Fiqh", icon: "⚖️" },
-  { id: "aqeedah", label: "Aqeedah", icon: "🌙" },
-  { id: "hadith", label: "Hadith", icon: "📜" },
-  { id: "tafsir", label: "Tafsir", icon: "✨" },
-  { id: "seerah", label: "Seerah", icon: "🕌" },
-];
+const CATEGORY_IDS = ["all", "quran", "hingaad", "arabic", "fiqh", "aqeedah", "hadith", "tafsir", "seerah"] as const;
+const CATEGORY_ICONS: Record<string, string> = {
+  all: "📚", quran: "📖", hingaad: "ا", arabic: "🗣️",
+  fiqh: "⚖️", aqeedah: "🌙", hadith: "📜", tafsir: "✨", seerah: "🕌",
+};
 
 const DIFFICULTY_COLORS = {
   beginner: "bg-emerald-100 text-emerald-700 border-emerald-200",
@@ -48,6 +42,7 @@ const DIFFICULTY_COLORS = {
 };
 
 function BookCard({ book, completedLessons, onOpen }: { book: Book; completedLessons: number; onOpen: () => void }) {
+  const { t } = useI18n();
   const pct = book.lessonCount > 0 ? Math.round((completedLessons / book.lessonCount) * 100) : 0;
   const started = completedLessons > 0;
   const imgUrl = book.thumbnailUrl ?? CATEGORY_IMAGES[book.category];
@@ -78,12 +73,12 @@ function BookCard({ book, completedLessons, onOpen }: { book: Book; completedLes
         <div className="absolute inset-0 bg-[url('/images/geometric-pattern.png')] opacity-5 bg-repeat bg-[length:120px]" />
         {book.featured && (
           <div className="absolute top-3 right-3 flex items-center gap-1 bg-white/20 backdrop-blur-sm rounded-full px-2 py-0.5 text-[10px] text-white font-semibold z-10">
-            <Star className="h-2.5 w-2.5 fill-current" /> Featured
+            <Star className="h-2.5 w-2.5 fill-current" /> {t("lib.featured")}
           </div>
         )}
         {started && (
           <div className="absolute top-3 left-3 bg-white/20 backdrop-blur-sm rounded-full px-2 py-0.5 text-[10px] text-white font-semibold z-10">
-            {pct}% done
+            {pct}% {t("lib.donePct")}
           </div>
         )}
         <p className="text-white text-2xl font-arabic text-center relative z-10 leading-relaxed"
@@ -109,14 +104,14 @@ function BookCard({ book, completedLessons, onOpen }: { book: Book; completedLes
         <div className="mt-3 flex items-center justify-between">
           <div className="flex items-center gap-1.5">
             <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${DIFFICULTY_COLORS[book.difficulty]}`}>
-              {book.difficulty}
+              {t(`diff.${book.difficulty}`)}
             </Badge>
             <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
-              <Clock className="h-2.5 w-2.5" />{book.lessonCount} lessons
+              <Clock className="h-2.5 w-2.5" />{book.lessonCount} {t("lib.lessons")}
             </span>
           </div>
           <span className="text-[10px] text-emerald-600 font-medium group-hover:underline">
-            {started ? "Continue →" : "Start →"}
+            {started ? t("lib.continue") : t("lib.start")}
           </span>
         </div>
       </div>
@@ -134,7 +129,6 @@ export default function Library() {
   const [search, setSearch] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  // Read URL param for initial category
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const cat = params.get("category");
@@ -163,7 +157,7 @@ export default function Library() {
     const matchesCat = category === "all" || b.category === category;
     const matchesSearch = !search || b.title.toLowerCase().includes(search.toLowerCase()) ||
       b.author.toLowerCase().includes(search.toLowerCase()) ||
-      b.tags.some(t => t.toLowerCase().includes(search.toLowerCase()));
+      b.tags.some(tag => tag.toLowerCase().includes(search.toLowerCase()));
     return matchesCat && matchesSearch;
   });
 
@@ -185,7 +179,7 @@ export default function Library() {
               {t("lib.title")}
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
-              {books.length} {t("lib.subtitle")} {CATEGORIES.length - 1}
+              {books.length} {t("lib.subtitle")} {CATEGORY_IDS.length - 1}
             </p>
           </div>
           <div className="flex items-center gap-3 text-sm">
@@ -202,18 +196,18 @@ export default function Library() {
 
         {/* Category tabs */}
         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-          {CATEGORIES.map(cat => (
+          {CATEGORY_IDS.map(id => (
             <button
-              key={cat.id}
-              onClick={() => setCategory(cat.id)}
+              key={id}
+              onClick={() => setCategory(id)}
               className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all border ${
-                category === cat.id
+                category === id
                   ? "bg-emerald-600 text-white border-emerald-600 shadow-sm"
                   : "bg-white text-emerald-800 border-emerald-200 hover:bg-emerald-50"
               }`}
             >
-              <span className={cat.id === "hingaad" ? "font-arabic text-base leading-tight" : ""}>{cat.icon}</span>
-              {cat.label}
+              <span className={id === "hingaad" ? "font-arabic text-base leading-tight" : ""}>{CATEGORY_ICONS[id]}</span>
+              {t(`lib.cat.${id}`)}
             </button>
           ))}
         </div>
@@ -230,7 +224,7 @@ export default function Library() {
         </div>
 
         {/* Error */}
-        {error && <p className="text-red-600 text-sm bg-red-50 px-4 py-3 rounded-lg">Error: {error}</p>}
+        {error && <p className="text-red-600 text-sm bg-red-50 px-4 py-3 rounded-lg">{t("general.error")}: {error}</p>}
 
         {/* Books grid */}
         {loading ? (

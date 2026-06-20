@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Send, Plus, Trash2, BotMessageSquare, User, Loader2, BookMarked, ChevronRight, AlertCircle, TrendingUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
+import { useI18n } from "@/lib/i18n";
 
 interface Message {
   role: string;
@@ -44,14 +45,7 @@ const TAJWEED_RULES = [
   { name: "Waqf", ar: "وَقف", desc: "Rules for stopping/pausing at end of verse", examples: ["pause marks: م ج ﻻ ط"] },
 ];
 
-const SUGGESTED_QUESTIONS = [
-  "Explain Ikhfa with examples from Surah Al-Fatiha",
-  "What is the difference between Idgham and Ikhfa?",
-  "How do I identify Qalqalah letters?",
-  "Explain all types of Madd with duration",
-  "What are the throat letters (huruf halqiyyah)?",
-  "How do I practice Ghunnah correctly?",
-];
+const WEAKNESS_COLORS = ["bg-red-100 text-red-700 border-red-200", "bg-amber-100 text-amber-700 border-amber-200", "bg-orange-100 text-orange-700 border-orange-200"];
 
 function MessageBubble({ msg }: { msg: Message }) {
   const isUser = msg.role === "user";
@@ -73,9 +67,8 @@ function MessageBubble({ msg }: { msg: Message }) {
   );
 }
 
-const WEAKNESS_COLORS = ["bg-red-100 text-red-700 border-red-200", "bg-amber-100 text-amber-700 border-amber-200", "bg-orange-100 text-orange-700 border-orange-200"];
-
 function WeaknessPanel({ onPracticeRule }: { onPracticeRule: (rule: string) => void }) {
+  const { t } = useI18n();
   const [data, setData] = useState<WeakAreasData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -99,7 +92,7 @@ function WeaknessPanel({ onPracticeRule }: { onPracticeRule: (rule: string) => v
     <div className="px-3 pb-3">
       <div className="flex items-start gap-2 text-xs text-muted-foreground bg-amber-50 rounded-lg p-3">
         <AlertCircle className="h-3.5 w-3.5 shrink-0 mt-0.5 text-amber-500" />
-        <span>Record some Quran recitations to see your Tajweed weak areas here.</span>
+        <span>{t("tajweed.noRecs")}</span>
       </div>
     </div>
   );
@@ -107,12 +100,12 @@ function WeaknessPanel({ onPracticeRule }: { onPracticeRule: (rule: string) => v
   return (
     <div className="px-3 pb-3 space-y-2">
       <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-        <span>{data.totalRecordings} recordings analyzed</span>
-        <span className="font-semibold text-emerald-700">Avg: {data.avgScore}%</span>
+        <span>{data.totalRecordings} {t("tajweed.analyzed")}</span>
+        <span className="font-semibold text-emerald-700">{t("tajweed.avg")} {data.avgScore}%</span>
       </div>
       {data.weakAreas.length === 0 ? (
         <div className="text-xs text-emerald-700 bg-emerald-50 rounded-lg p-2.5 flex items-center gap-1.5">
-          <TrendingUp className="h-3.5 w-3.5" /> No consistent issues detected!
+          <TrendingUp className="h-3.5 w-3.5" /> {t("tajweed.noIssues")}
         </div>
       ) : (
         <div className="space-y-1.5">
@@ -129,13 +122,13 @@ function WeaknessPanel({ onPracticeRule }: { onPracticeRule: (rule: string) => v
                   <div className="mt-1 h-1 bg-gray-100 rounded-full overflow-hidden">
                     <div className="h-full bg-red-400 rounded-full" style={{ width: `${area.percentage}%` }} />
                   </div>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">Missed {area.percentage}% of the time</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">{t("tajweed.missed")} {area.percentage}{t("tajweed.missedPct")}</p>
                 </div>
                 <button
                   onClick={() => onPracticeRule(area.rule)}
                   className="shrink-0 text-[10px] bg-amber-100 hover:bg-amber-200 text-amber-800 px-2 py-1 rounded-md font-medium transition-colors whitespace-nowrap"
                 >
-                  Practice
+                  {t("tajweed.practice")}
                 </button>
               </div>
             </div>
@@ -144,7 +137,7 @@ function WeaknessPanel({ onPracticeRule }: { onPracticeRule: (rule: string) => v
       )}
       {data.frequentWordErrors.length > 0 && (
         <div className="mt-1">
-          <p className="text-[10px] font-semibold text-muted-foreground mb-1">Frequent word errors:</p>
+          <p className="text-[10px] font-semibold text-muted-foreground mb-1">{t("tajweed.wordErrors")}</p>
           <div className="flex flex-wrap gap-1">
             {data.frequentWordErrors.map(w => (
               <span key={w} className="text-[11px] bg-red-50 text-red-700 border border-red-100 rounded px-1.5 py-0.5 font-arabic">{w}</span>
@@ -158,6 +151,7 @@ function WeaknessPanel({ onPracticeRule }: { onPracticeRule: (rule: string) => v
 
 export default function TajweedTeacher() {
   const { toast } = useToast();
+  const { t } = useI18n();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
@@ -231,13 +225,13 @@ export default function TajweedTeacher() {
       }
     } catch (err: any) {
       if (err.name !== "AbortError") {
-        toast({ title: "Error", description: "Failed to get response", variant: "destructive" });
+        toast({ title: t("general.error"), description: t("general.retry"), variant: "destructive" });
         setMessages(m => m.slice(0, -1));
       }
     } finally {
       setIsStreaming(false);
     }
-  }, [isStreaming, convId, toast]);
+  }, [isStreaming, convId, toast, t]);
 
   const askAboutRule = (rule: typeof TAJWEED_RULES[0]) => {
     setSelectedRule(rule);
@@ -261,12 +255,12 @@ export default function TajweedTeacher() {
           <div>
             <h1 className="text-2xl font-serif font-bold text-emerald-950 dark:text-emerald-50 flex items-center gap-2">
               <BookMarked className="h-6 w-6 text-amber-600" />
-              Tajweed Specialist
+              {t("tajweed.title")}
             </h1>
-            <p className="text-sm text-muted-foreground mt-1">Dedicated AI Tajweed tutor with deep rule knowledge</p>
+            <p className="text-sm text-muted-foreground mt-1">{t("tajweed.subtitle")}</p>
           </div>
           <Button variant="outline" size="sm" onClick={startNew} className="gap-2">
-            <Plus className="h-4 w-4" /> New Session
+            <Plus className="h-4 w-4" /> {t("tajweed.newSession")}
           </Button>
         </div>
 
@@ -276,8 +270,8 @@ export default function TajweedTeacher() {
             {/* Tajweed Rules */}
             <Card className="border-amber-100 shrink-0">
               <CardHeader className="pb-2 pt-4 px-4">
-                <CardTitle className="text-sm font-medium text-amber-800">Tajweed Rules</CardTitle>
-                <p className="text-xs text-muted-foreground">Click any rule to learn it</p>
+                <CardTitle className="text-sm font-medium text-amber-800">{t("tajweed.rulesTitle")}</CardTitle>
+                <p className="text-xs text-muted-foreground">{t("tajweed.rulesHint")}</p>
               </CardHeader>
               <CardContent className="px-3 pb-3">
                 <div className="space-y-0.5">
@@ -301,9 +295,9 @@ export default function TajweedTeacher() {
               <CardHeader className="pb-2 pt-4 px-4">
                 <CardTitle className="text-sm font-medium text-red-800 flex items-center gap-1.5">
                   <TrendingUp className="h-3.5 w-3.5" />
-                  My Weak Areas
+                  {t("tajweed.weakTitle")}
                 </CardTitle>
-                <p className="text-xs text-muted-foreground">From your recitation history</p>
+                <p className="text-xs text-muted-foreground">{t("tajweed.weakHint")}</p>
               </CardHeader>
               <WeaknessPanel onPracticeRule={practiceWeakRule} />
             </Card>
@@ -319,16 +313,8 @@ export default function TajweedTeacher() {
                       <BookMarked className="h-8 w-8" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-lg text-emerald-950">Tajweed Specialist Ready</h3>
-                      <p className="text-sm text-muted-foreground mt-1 max-w-sm">Ask any Tajweed question or click a rule on the left to get a detailed explanation.</p>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-md">
-                      {SUGGESTED_QUESTIONS.map(q => (
-                        <button key={q} onClick={() => send(q)}
-                          className="text-left text-xs px-3 py-2 rounded-lg border border-amber-100 hover:bg-amber-50 text-muted-foreground hover:text-amber-900 transition-colors">
-                          {q}
-                        </button>
-                      ))}
+                      <h3 className="font-semibold text-lg text-emerald-950">{t("tajweed.ready")}</h3>
+                      <p className="text-sm text-muted-foreground mt-1 max-w-sm">{t("tajweed.readyHint")}</p>
                     </div>
                   </div>
                 ) : (
@@ -357,7 +343,7 @@ export default function TajweedTeacher() {
               <div className="border-t border-amber-100 p-4">
                 <div className="flex gap-2">
                   <Textarea
-                    placeholder="Ask about any Tajweed rule..."
+                    placeholder={t("tajweed.inputPh")}
                     className="min-h-[44px] max-h-32 resize-none border-amber-200 focus-visible:ring-amber-500"
                     value={input}
                     onChange={e => setInput(e.target.value)}

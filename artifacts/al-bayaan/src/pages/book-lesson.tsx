@@ -12,6 +12,7 @@ import {
   RotateCcw, ArrowRight, MessageCircle, BookMarked, Languages,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useI18n } from "@/lib/i18n";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -142,11 +143,11 @@ function useRecorder() {
 // ─── Exercise renderer ────────────────────────────────────────────────────────
 
 function ExerciseSection({ exercises }: { exercises: Exercise[] }) {
+  const { t } = useI18n();
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [checked, setChecked] = useState(false);
 
   const setAnswer = (key: string, val: string) => setAnswers(p => ({ ...p, [key]: val }));
-
   const checkAll = () => setChecked(true);
   const reset = () => { setAnswers({}); setChecked(false); };
 
@@ -156,7 +157,7 @@ function ExerciseSection({ exercises }: { exercises: Exercise[] }) {
     <div className="space-y-6">
       <div className="flex items-center gap-2 mb-2">
         <Star className="h-5 w-5 text-amber-500" />
-        <h3 className="text-base font-bold text-emerald-950">Exercises — التَّدْرِيبَات</h3>
+        <h3 className="text-base font-bold text-emerald-950">{t("lesson.exercises")}</h3>
       </div>
 
       {exercises.map((ex, ei) => (
@@ -190,7 +191,7 @@ function ExerciseSection({ exercises }: { exercises: Exercise[] }) {
                     />
                     {checked && (
                       <span className={`text-xs font-medium ${correct ? "text-emerald-600" : "text-red-600"}`}>
-                        {correct ? "✓ Correct!" : `✗ Answer: ${ex.answers[ii]}`}
+                        {correct ? t("lesson.correctAns") : `${t("lesson.answer")} ${ex.answers[ii]}`}
                       </span>
                     )}
                   </div>
@@ -203,7 +204,6 @@ function ExerciseSection({ exercises }: { exercises: Exercise[] }) {
             <div className="space-y-3">
               {ex.items.map((item: any, ii: number) => {
                 const key = `${ei}-${ii}`;
-                const isChecked = checked;
                 return (
                   <div key={ii} className="space-y-1">
                     <p className="text-sm text-gray-700 font-medium">{item.english}</p>
@@ -212,13 +212,13 @@ function ExerciseSection({ exercises }: { exercises: Exercise[] }) {
                       onChange={e => setAnswer(key, e.target.value)}
                       disabled={checked}
                       rows={2}
-                      placeholder="Type your Arabic answer here…"
+                      placeholder={t("lesson.translatePh")}
                       className="w-full border border-emerald-200 rounded-lg px-3 py-2 text-sm font-arabic focus:outline-none focus:ring-2 focus:ring-emerald-400 resize-none"
                       style={{ fontFamily: "var(--font-arabic)", direction: "rtl" }}
                     />
-                    {isChecked && (
+                    {checked && (
                       <p className="text-xs text-emerald-700 bg-emerald-50 rounded px-2 py-1">
-                        Model answer: <span className="font-arabic font-semibold">{ex.answers[ii]}</span>
+                        {t("lesson.modelAnswer")} <span className="font-arabic font-semibold">{ex.answers[ii]}</span>
                       </p>
                     )}
                   </div>
@@ -245,7 +245,7 @@ function ExerciseSection({ exercises }: { exercises: Exercise[] }) {
               </div>
               {checked && (
                 <div className="col-span-2 text-xs text-emerald-600 bg-emerald-50 rounded px-3 py-2">
-                  ✓ Each Arabic phrase on the left matches the English phrase directly across from it.
+                  ✓ {t("lesson.matchNote")}
                 </div>
               )}
             </div>
@@ -289,11 +289,11 @@ function ExerciseSection({ exercises }: { exercises: Exercise[] }) {
       <div className="flex gap-3">
         {!checked ? (
           <Button onClick={checkAll} className="bg-emerald-600 hover:bg-emerald-700 text-white">
-            <CheckCircle2 className="h-4 w-4 mr-1.5" /> Check Answers
+            <CheckCircle2 className="h-4 w-4 mr-1.5" /> {t("lesson.checkAnswers")}
           </Button>
         ) : (
           <Button onClick={reset} variant="outline" className="border-emerald-200 text-emerald-700">
-            <RotateCcw className="h-4 w-4 mr-1.5" /> Try Again
+            <RotateCcw className="h-4 w-4 mr-1.5" /> {t("lesson.tryAgain")}
           </Button>
         )}
       </div>
@@ -307,6 +307,7 @@ export default function BookLesson() {
   const { bookId, lessonNum } = useParams<{ bookId: string; lessonNum: string }>();
   const [, navigate] = useLocation();
   const { toast } = useToast();
+  const { t } = useI18n();
   const { play, playing } = useTTS();
   const { state: recState, audioBlob, audioDuration, start: startRec, stop: stopRec, reset: resetRec } = useRecorder();
 
@@ -344,7 +345,6 @@ export default function BookLesson() {
       .finally(() => setLoading(false));
   }, [bookId, lessonNum]);
 
-  // Save progress when all pages completed
   useEffect(() => {
     if (!lesson || !bookId) return;
     if (pagesCompleted.size >= lesson.pages.length) {
@@ -384,7 +384,6 @@ export default function BookLesson() {
         reader.readAsDataURL(audioBlob);
       });
 
-      // First transcribe via the existing transcribe endpoint
       const transcribeRes = await fetch("/api/transcribe", {
         method: "POST",
         credentials: "include",
@@ -398,7 +397,6 @@ export default function BookLesson() {
         transcription = td.text || td.transcription || "";
       }
 
-      // Now get AI feedback via SSE stream
       const feedbackRes = await fetch("/api/arabic/feedback", {
         method: "POST",
         credentials: "include",
@@ -469,10 +467,10 @@ export default function BookLesson() {
       <AppLayout>
         <div className="max-w-3xl mx-auto text-center py-20">
           <BookOpen className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-30" />
-          <h2 className="text-xl font-bold text-emerald-950 mb-2">Lesson Not Found</h2>
-          <p className="text-muted-foreground mb-6">{error ?? "This lesson could not be loaded."}</p>
+          <h2 className="text-xl font-bold text-emerald-950 mb-2">{t("lesson.notFound")}</h2>
+          <p className="text-muted-foreground mb-6">{error ?? t("lesson.notFoundSub")}</p>
           <Button onClick={() => navigate(`/library/${bookId}`)} variant="outline">
-            <ChevronLeft className="h-4 w-4 mr-1" /> Back to Course
+            <ChevronLeft className="h-4 w-4 mr-1" /> {t("lesson.backToCourse")}
           </Button>
         </div>
       </AppLayout>
@@ -490,10 +488,10 @@ export default function BookLesson() {
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-emerald-700">
           <button onClick={() => navigate(`/library/${bookId}`)} className="hover:text-emerald-900 flex items-center gap-1">
-            <ChevronLeft className="h-4 w-4" /> Course
+            <ChevronLeft className="h-4 w-4" /> {t("lesson.backToCourse")}
           </button>
           <span className="text-muted-foreground">/</span>
-          <span className="font-medium">Lesson {lessonNumber}</span>
+          <span className="font-medium">{t("lesson.lesson")} {lessonNumber}</span>
         </div>
 
         {/* Lesson Header */}
@@ -502,7 +500,7 @@ export default function BookLesson() {
         >
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-emerald-300 text-xs font-medium mb-1">Lesson {lessonNumber}</p>
+              <p className="text-emerald-300 text-xs font-medium mb-1">{t("lesson.lesson")} {lessonNumber}</p>
               <h1 className="text-xl font-serif font-bold leading-tight">{lesson.title}</h1>
               <p className="text-white/70 font-arabic text-lg mt-1" style={{ fontFamily: "var(--font-arabic)", direction: "rtl" }}>
                 {lesson.titleArabic}
@@ -510,9 +508,9 @@ export default function BookLesson() {
               <p className="text-emerald-200 text-sm mt-2">{lesson.description}</p>
             </div>
             <div className="text-right shrink-0">
-              <p className="text-xs text-emerald-300 mb-1">{pagesCompleted.size}/{totalPages} pages</p>
+              <p className="text-xs text-emerald-300 mb-1">{pagesCompleted.size}/{totalPages} {t("lesson.pages")}</p>
               <Progress value={pagesProgress} className="h-2 w-24 bg-white/20" />
-              {allDone && <p className="text-xs text-emerald-200 mt-1">✓ Complete!</p>}
+              {allDone && <p className="text-xs text-emerald-200 mt-1">{t("lesson.complete")}</p>}
             </div>
           </div>
         </motion.div>
@@ -520,10 +518,10 @@ export default function BookLesson() {
         {/* Tab Bar */}
         <div className="flex gap-1 bg-emerald-50 rounded-xl p-1 border border-emerald-100">
           {[
-            { id: "read", label: "Reading", icon: BookOpen },
-            { id: "vocab", label: "Vocabulary", icon: BookMarked },
-            { id: "grammar", label: "Grammar", icon: Languages },
-            { id: "exercises", label: "Exercises", icon: Star },
+            { id: "read", label: t("lesson.tabRead"), icon: BookOpen },
+            { id: "vocab", label: t("lesson.tabVocab"), icon: BookMarked },
+            { id: "grammar", label: t("lesson.tabGrammar"), icon: Languages },
+            { id: "exercises", label: t("lesson.tabExercises"), icon: Star },
           ].map(tab => (
             <button
               key={tab.id}
@@ -547,7 +545,7 @@ export default function BookLesson() {
 
               {/* Page navigation */}
               <div className="flex items-center justify-between text-sm text-muted-foreground">
-                <span>Page {pageIndex + 1} of {totalPages}</span>
+                <span>{t("lesson.pageOf")} {pageIndex + 1} {t("lesson.of")} {totalPages}</span>
                 <div className="flex gap-1">
                   {lesson.pages.map((_, i) => (
                     <button key={i} onClick={() => setPageIndex(i)}
@@ -559,10 +557,10 @@ export default function BookLesson() {
                 </div>
                 <div className="flex gap-2">
                   <button onClick={() => setShowTranslation(p => !p)} className={`text-xs px-2 py-1 rounded-full border transition-all ${showTranslation ? "border-emerald-500 text-emerald-700 bg-emerald-50" : "border-gray-200 text-gray-500"}`}>
-                    <Eye className="h-3 w-3 inline mr-1" />Translation
+                    <Eye className="h-3 w-3 inline mr-1" />{t("lesson.showTranslation")}
                   </button>
                   <button onClick={() => setShowTranslit(p => !p)} className={`text-xs px-2 py-1 rounded-full border transition-all ${showTranslit ? "border-blue-500 text-blue-700 bg-blue-50" : "border-gray-200 text-gray-500"}`}>
-                    Translit.
+                    {t("lesson.showTranslit")}
                   </button>
                 </div>
               </div>
@@ -620,24 +618,26 @@ export default function BookLesson() {
                       onClick={() => play(currentPage.arabic.replace(/\n/g, " "), "ar")}
                     >
                       {playing === currentPage.arabic.replace(/\n/g, " ")
-                        ? <><Square className="h-3.5 w-3.5 mr-1.5 fill-current" />Stop</>
-                        : <><Volume2 className="h-3.5 w-3.5 mr-1.5" />Listen</>}
+                        ? <><Square className="h-3.5 w-3.5 mr-1.5 fill-current" />{t("lesson.stop")}</>
+                        : <><Volume2 className="h-3.5 w-3.5 mr-1.5" />{t("lesson.listen")}</>}
                     </Button>
 
                     {recState === "idle" && (
                       <Button size="sm" variant="outline" className="border-rose-200 text-rose-700 hover:bg-rose-50" onClick={startRec}>
-                        <Mic className="h-3.5 w-3.5 mr-1.5" />Record My Reading
+                        <Mic className="h-3.5 w-3.5 mr-1.5" />{t("lesson.recordReading")}
                       </Button>
                     )}
                     {recState === "recording" && (
                       <Button size="sm" className="bg-rose-600 hover:bg-rose-700 text-white animate-pulse" onClick={stopRec}>
-                        <Square className="h-3.5 w-3.5 mr-1.5 fill-current" />Stop ({audioDuration}s)
+                        <Square className="h-3.5 w-3.5 mr-1.5 fill-current" />{t("lesson.stop")} ({audioDuration}s)
                       </Button>
                     )}
                     {recState === "done" && (
                       <div className="flex gap-2">
                         <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white" onClick={submitRecording} disabled={aiLoading}>
-                          {aiLoading ? <><Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />Checking…</> : <><Send className="h-3.5 w-3.5 mr-1.5" />Get AI Feedback</>}
+                          {aiLoading
+                            ? <><Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />{t("lesson.checking")}</>
+                            : <><Send className="h-3.5 w-3.5 mr-1.5" />{t("lesson.getAIFeedback")}</>}
                         </Button>
                         <Button size="sm" variant="ghost" onClick={resetRec} className="text-muted-foreground">
                           <RotateCcw className="h-3.5 w-3.5" />
@@ -648,12 +648,12 @@ export default function BookLesson() {
                     {!pagesCompleted.has(pageIndex) && (
                       <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white ml-auto" onClick={markPageDone}>
                         <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />
-                        {pageIndex < totalPages - 1 ? "Done → Next Page" : "Complete Lesson"}
+                        {pageIndex < totalPages - 1 ? t("lesson.markDone") : t("lesson.completeLesson")}
                       </Button>
                     )}
                     {pagesCompleted.has(pageIndex) && pageIndex < totalPages - 1 && (
                       <Button size="sm" variant="outline" className="border-emerald-200 ml-auto" onClick={() => setPageIndex(pageIndex + 1)}>
-                        Next Page <ChevronRight className="h-3.5 w-3.5 ml-1" />
+                        {t("lesson.nextPage")} <ChevronRight className="h-3.5 w-3.5 ml-1" />
                       </Button>
                     )}
                   </div>
@@ -665,7 +665,7 @@ export default function BookLesson() {
                         className="mt-4 bg-blue-50 border border-blue-200 rounded-xl p-4 overflow-hidden">
                         <div className="flex items-center gap-2 mb-2">
                           <MessageCircle className="h-4 w-4 text-blue-600" />
-                          <span className="text-xs font-semibold text-blue-800">AI Teacher Feedback</span>
+                          <span className="text-xs font-semibold text-blue-800">{t("lesson.aiFeedback")}</span>
                           {aiLoading && <Loader2 className="h-3.5 w-3.5 animate-spin text-blue-500 ml-auto" />}
                         </div>
                         {aiFeedback && (
@@ -680,10 +680,10 @@ export default function BookLesson() {
               {/* Page prev/next */}
               <div className="flex justify-between">
                 <Button variant="ghost" onClick={() => setPageIndex(p => Math.max(0, p - 1))} disabled={pageIndex === 0} className="text-emerald-700">
-                  <ChevronLeft className="h-4 w-4 mr-1" />Previous
+                  <ChevronLeft className="h-4 w-4 mr-1" />{t("lesson.prev")}
                 </Button>
                 <Button variant="ghost" onClick={() => setPageIndex(p => Math.min(totalPages - 1, p + 1))} disabled={pageIndex === totalPages - 1} className="text-emerald-700">
-                  Next<ChevronRight className="h-4 w-4 ml-1" />
+                  {t("lesson.next")}<ChevronRight className="h-4 w-4 ml-1" />
                 </Button>
               </div>
 
@@ -691,24 +691,24 @@ export default function BookLesson() {
               {lesson.culturalNote && allDone && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                   className="bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-200 rounded-xl p-5">
-                  <p className="text-xs font-semibold text-amber-800 mb-2">📚 Cultural Note</p>
+                  <p className="text-xs font-semibold text-amber-800 mb-2">📚 {t("lesson.culturalNote")}</p>
                   <p className="text-sm text-amber-900 leading-relaxed">{lesson.culturalNote}</p>
                 </motion.div>
               )}
 
-              {/* Lesson nav */}
+              {/* Lesson nav when all done */}
               {allDone && (
                 <div className="flex justify-between items-center bg-emerald-50 rounded-xl border border-emerald-100 p-4">
                   <div>
-                    <p className="text-sm font-bold text-emerald-900">🎉 Lesson {lessonNumber} Complete!</p>
-                    <p className="text-xs text-muted-foreground">Try the exercises or continue to the next lesson.</p>
+                    <p className="text-sm font-bold text-emerald-900">🎉 {t("lesson.lesson")} {lessonNumber} {t("lesson.complete")}</p>
+                    <p className="text-xs text-muted-foreground">{t("lesson.lessonCompleteMsg")}</p>
                   </div>
                   <div className="flex gap-2">
                     <Button size="sm" variant="outline" className="border-emerald-200" onClick={() => setActiveTab("exercises")}>
-                      <Star className="h-3.5 w-3.5 mr-1" />Exercises
+                      <Star className="h-3.5 w-3.5 mr-1" />{t("lesson.tabExercises")}
                     </Button>
                     <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white" onClick={goToNextLesson}>
-                      Next Lesson <ArrowRight className="h-3.5 w-3.5 ml-1" />
+                      {t("lesson.nextLesson")} <ArrowRight className="h-3.5 w-3.5 ml-1" />
                     </Button>
                   </div>
                 </div>
@@ -720,11 +720,11 @@ export default function BookLesson() {
           {activeTab === "vocab" && (
             <motion.div key="vocab" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}
               className="space-y-3">
-              <p className="text-xs text-muted-foreground">{lesson.vocabulary.length} words in this lesson</p>
+              <p className="text-xs text-muted-foreground">{lesson.vocabulary.length} {t("lesson.vocabWords")}</p>
               {lesson.vocabulary.length === 0 && (
                 <div className="text-center py-10 text-muted-foreground">
                   <BookMarked className="h-10 w-10 mx-auto mb-3 opacity-30" />
-                  <p>Vocabulary for this lesson is covered in the reading section.</p>
+                  <p>{t("lesson.vocabEmpty")}</p>
                 </div>
               )}
               {lesson.vocabulary.map((word, i) => (
@@ -742,7 +742,7 @@ export default function BookLesson() {
                       </div>
                       <p className="text-xs text-blue-600 italic mb-1">{word.transliteration}</p>
                       <p className="text-sm font-semibold text-gray-800">{word.english}</p>
-                      {word.plural && <p className="text-xs text-gray-500 mt-0.5">Plural: <span className="font-arabic">{word.plural}</span></p>}
+                      {word.plural && <p className="text-xs text-gray-500 mt-0.5">{t("lesson.plural")} <span className="font-arabic">{word.plural}</span></p>}
                       {word.example && <p className="text-xs text-emerald-700 mt-1 bg-emerald-50 rounded px-2 py-1 font-arabic" style={{ direction: "rtl" }}>{word.example}</p>}
                     </div>
                     <Badge variant="outline" className="text-[10px] border-gray-200 text-gray-500 whitespace-nowrap shrink-0">
@@ -771,7 +771,7 @@ export default function BookLesson() {
 
                 {lesson.grammar.examples.length > 0 && (
                   <div>
-                    <p className="text-xs font-semibold text-emerald-800 mb-2 uppercase tracking-wide">Examples — أَمْثِلَة</p>
+                    <p className="text-xs font-semibold text-emerald-800 mb-2 uppercase tracking-wide">{t("lesson.grammarExamples")} — أَمْثِلَة</p>
                     <div className="space-y-2">
                       {lesson.grammar.examples.map((ex, i) => (
                         <div key={i} className="flex items-center gap-3 bg-white border border-emerald-100 rounded-lg p-3">
@@ -799,8 +799,7 @@ export default function BookLesson() {
               {lesson.exercises.length === 0 ? (
                 <div className="text-center py-12 text-muted-foreground">
                   <Star className="h-10 w-10 mx-auto mb-3 opacity-30" />
-                  <p className="font-medium">No exercises yet</p>
-                  <p className="text-sm mt-1">Ask your AI Teacher for practice exercises on this lesson.</p>
+                  <p className="font-medium">{t("general.empty")}</p>
                 </div>
               ) : (
                 <ExerciseSection exercises={lesson.exercises} />
@@ -812,13 +811,13 @@ export default function BookLesson() {
         {/* Lesson navigation */}
         <div className="flex justify-between pt-2 border-t border-emerald-100">
           <Button variant="ghost" onClick={goToPrevLesson} disabled={lessonNumber <= 1} className="text-emerald-700 text-sm">
-            <ChevronLeft className="h-4 w-4 mr-1" />Previous Lesson
+            <ChevronLeft className="h-4 w-4 mr-1" />{t("lesson.prevLesson")}
           </Button>
           <Button variant="ghost" onClick={() => navigate(`/library/${bookId}`)} className="text-muted-foreground text-sm">
-            <BookOpen className="h-4 w-4 mr-1" />All Lessons
+            <BookOpen className="h-4 w-4 mr-1" />{t("lesson.backToCourse")}
           </Button>
           <Button variant="ghost" onClick={goToNextLesson} className="text-emerald-700 text-sm">
-            Next Lesson<ChevronRight className="h-4 w-4 ml-1" />
+            {t("lesson.nextLesson")}<ChevronRight className="h-4 w-4 ml-1" />
           </Button>
         </div>
       </div>
