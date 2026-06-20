@@ -334,18 +334,18 @@ export default function SurahDetail() {
   if (!surah || !ayahs || !currentAyah) return <AppLayout><div className="p-8 text-center text-muted-foreground">Failed to load. Please refresh.</div></AppLayout>;
 
   const score = feedback?.overallScore ?? 0;
-  const scoreColor = score >= 90 ? "border-emerald-500 text-emerald-600" : score >= 75 ? "border-amber-500 text-amber-600" : "border-red-500 text-red-600";
+  const scoreColor = score >= 90 ? "border-blue-500 text-blue-700" : score >= 75 ? "border-amber-500 text-amber-600" : "border-red-500 text-red-600";
 
   return (
     <AppLayout>
       <div className="max-w-4xl mx-auto pb-16">
-        <Link href="/learn" className="inline-flex items-center text-emerald-600 hover:text-emerald-700 mb-6 font-medium text-sm">
+        <Link href="/learn" className="inline-flex items-center text-blue-700 hover:text-blue-800 mb-6 font-medium text-sm">
           <ArrowLeft className="mr-1.5 h-4 w-4" /> Back to Surahs
         </Link>
 
         <div className="text-center mb-5">
-          <h1 className="text-3xl font-serif text-emerald-950 dark:text-emerald-50 mb-1">{surah.name}</h1>
-          <p className="font-arabic text-2xl text-emerald-800 dark:text-emerald-300">{surah.nameArabic}</p>
+          <h1 className="text-3xl font-serif text-slate-900 dark:text-blue-50 mb-1">{surah.name}</h1>
+          <p className="font-arabic text-2xl text-blue-900 dark:text-blue-300">{surah.nameArabic}</p>
           <p className="text-sm text-muted-foreground mt-1">{surah.nameTranslation} · {surah.ayahCount} Ayahs · {surah.revelationType}</p>
         </div>
 
@@ -353,13 +353,13 @@ export default function SurahDetail() {
         <div className="relative mb-4 flex justify-center">
           <button
             onClick={() => setShowQariPicker(v => !v)}
-            className="flex items-center gap-3 px-4 py-2.5 rounded-xl border border-emerald-100 bg-white shadow-sm hover:shadow-md transition-all"
+            className="flex items-center gap-3 px-4 py-2.5 rounded-xl border border-blue-100 bg-white shadow-sm hover:shadow-md transition-all"
           >
-            <div className="h-8 w-8 rounded-full bg-gradient-to-br from-emerald-700 to-emerald-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
+            <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-700 to-blue-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
               {selectedQari.name.split(" ").map(w => w[0]).slice(0, 2).join("")}
             </div>
             <div className="text-left">
-              <p className="text-xs font-semibold text-emerald-950 leading-tight">{selectedQari.name}</p>
+              <p className="text-xs font-semibold text-slate-900 leading-tight">{selectedQari.name}</p>
               <p className="text-[10px] text-muted-foreground">{selectedQari.country} · {selectedQari.style}</p>
             </div>
             <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${showQariPicker ? "rotate-180" : ""}`} />
@@ -372,24 +372,24 @@ export default function SurahDetail() {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -8, scale: 0.97 }}
                 transition={{ duration: 0.15 }}
-                className="absolute top-full mt-2 left-1/2 -translate-x-1/2 w-72 bg-white border border-emerald-100 rounded-2xl shadow-xl z-50 overflow-hidden"
+                className="absolute top-full mt-2 left-1/2 -translate-x-1/2 w-72 bg-white border border-blue-100 rounded-2xl shadow-xl z-50 overflow-hidden"
               >
-                <p className="text-[10px] font-semibold text-emerald-600 uppercase tracking-wider px-4 pt-3 pb-1">Select Qari</p>
+                <p className="text-[10px] font-semibold text-blue-700 uppercase tracking-wider px-4 pt-3 pb-1">Select Qari</p>
                 {QARIS.map(q => (
                   <button
                     key={q.id}
                     onClick={() => { setSelectedQariId(q.id); setShowQariPicker(false); if (audioRef.current) { audioRef.current.pause(); setIsPlaying(false); } }}
-                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-emerald-50 transition-colors"
+                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-blue-50 transition-colors"
                   >
-                    <div className="h-9 w-9 rounded-full bg-gradient-to-br from-emerald-700 to-emerald-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
+                    <div className="h-9 w-9 rounded-full bg-gradient-to-br from-blue-700 to-blue-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
                       {q.name.split(" ").map(w => w[0]).slice(0, 2).join("")}
                     </div>
                     <div className="flex-1 text-left">
-                      <p className="text-sm font-medium text-emerald-950">{q.name}</p>
-                      <p className="text-xs font-arabic text-emerald-700">{q.nameAr}</p>
+                      <p className="text-sm font-medium text-slate-900">{q.name}</p>
+                      <p className="text-xs font-arabic text-blue-800">{q.nameAr}</p>
                       <p className="text-[10px] text-muted-foreground">{q.country} · {q.style}</p>
                     </div>
-                    {selectedQariId === q.id && <Check className="h-4 w-4 text-emerald-600 shrink-0" />}
+                    {selectedQariId === q.id && <Check className="h-4 w-4 text-blue-700 shrink-0" />}
                   </button>
                 ))}
               </motion.div>
@@ -399,17 +399,17 @@ export default function SurahDetail() {
 
         {/* ── Main Quran Card ── */}
         <div className="relative mb-6" onClick={() => setShowQariPicker(false)}>
-          <Card className="overflow-hidden border-2 border-emerald-100 shadow-2xl bg-[#fdfdfc] dark:bg-emerald-950/80">
+          <Card className="overflow-hidden border-2 border-blue-100 shadow-2xl bg-[#fdfdfc] dark:bg-blue-950/80">
             <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[url('/images/geometric-pattern.png')] bg-cover" />
             <CardContent className="p-8 md:p-12 relative z-10">
-              <div className="flex justify-between items-center mb-8 text-emerald-600/60 text-sm font-medium">
+              <div className="flex justify-between items-center mb-8 text-blue-700/60 text-sm font-medium">
                 <span>Surah {surahId} · Ayah {currentAyah.numberInSurah}</span>
                 <div className="flex gap-2">
-                  <Button variant="ghost" size="sm" onClick={loadTranslation} className="text-xs gap-1 text-emerald-700 hover:text-emerald-900">
+                  <Button variant="ghost" size="sm" onClick={loadTranslation} className="text-xs gap-1 text-blue-800 hover:text-blue-950">
                     {loadingTranslation ? <Loader2 className="h-3 w-3 animate-spin" /> : <Languages className="h-3 w-3" />}
                     Translation
                   </Button>
-                  <span className="text-emerald-300">{currentAyah.numberInSurah} / {surah.ayahCount}</span>
+                  <span className="text-blue-300">{currentAyah.numberInSurah} / {surah.ayahCount}</span>
                 </div>
               </div>
 
@@ -417,18 +417,18 @@ export default function SurahDetail() {
               <AnimatePresence>
                 {showTranslation && translation && (
                   <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
-                    className="mb-6 p-4 bg-emerald-50 dark:bg-emerald-900/30 rounded-xl border border-emerald-100">
-                    <p className="text-sm text-emerald-800 dark:text-emerald-200 leading-relaxed italic">"{translation}"</p>
+                    className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/30 rounded-xl border border-blue-100">
+                    <p className="text-sm text-blue-900 dark:text-blue-200 leading-relaxed italic">"{translation}"</p>
                   </motion.div>
                 )}
               </AnimatePresence>
 
               {/* Arabic Text */}
               <div className="flex items-center justify-center py-8 min-h-[180px]">
-                <p className="text-4xl md:text-5xl lg:text-6xl text-center leading-[2] md:leading-[2.5] text-emerald-950 dark:text-emerald-50"
+                <p className="text-4xl md:text-5xl lg:text-6xl text-center leading-[2] md:leading-[2.5] text-slate-900 dark:text-blue-50"
                   style={{ fontFamily: "var(--font-arabic)", direction: "rtl" }}>
                   {currentAyah.text}
-                  <span className="inline-block mx-2 text-2xl text-emerald-500/50">﴾{currentAyah.numberInSurah}﴿</span>
+                  <span className="inline-block mx-2 text-2xl text-blue-600/50">﴾{currentAyah.numberInSurah}﴿</span>
                 </p>
               </div>
 
@@ -437,14 +437,14 @@ export default function SurahDetail() {
                 {/* Play Ayah button */}
                 <div className="flex justify-center">
                   <Button variant="outline" onClick={togglePlay}
-                    className="flex items-center gap-2 h-11 px-6 rounded-full border-emerald-200 text-emerald-700 hover:bg-emerald-50">
+                    className="flex items-center gap-2 h-11 px-6 rounded-full border-blue-200 text-blue-800 hover:bg-blue-50">
                     {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4 ml-0.5" />}
                     {isPlaying ? "Pause Qari" : `Listen — ${selectedQari.name}`}
                   </Button>
                 </div>
 
                 {/* ── Recording UI ── */}
-                <div className="rounded-2xl border-2 border-emerald-100 bg-emerald-50/50 dark:bg-emerald-950/30 p-5 space-y-4">
+                <div className="rounded-2xl border-2 border-blue-100 bg-blue-50/50 dark:bg-blue-950/30 p-5 space-y-4">
                   {/* Waveform */}
                   {(recState === "recording" || recState === "preview") && (
                     <WaveformCanvas
@@ -458,7 +458,7 @@ export default function SurahDetail() {
                   {/* Timer */}
                   {(recState === "recording" || recState === "preview") && (
                     <div className="text-center">
-                      <span className={`text-2xl font-mono font-bold tabular-nums ${recState === "recording" ? "text-red-500" : "text-emerald-700"}`}>
+                      <span className={`text-2xl font-mono font-bold tabular-nums ${recState === "recording" ? "text-red-500" : "text-blue-800"}`}>
                         {fmt(recordingSeconds)}
                       </span>
                       <span className="text-xs text-muted-foreground ml-2">{recState === "recording" ? "Recording…" : "Ready to submit"}</span>
@@ -470,7 +470,7 @@ export default function SurahDetail() {
                     <div className="flex flex-col items-center gap-3">
                       <button
                         onClick={startRecording}
-                        className="h-20 w-20 rounded-full bg-emerald-600 hover:bg-emerald-700 hover:scale-105 flex items-center justify-center shadow-lg shadow-emerald-200 transition-all duration-200"
+                        className="h-20 w-20 rounded-full bg-blue-700 hover:bg-blue-700 hover:scale-105 flex items-center justify-center shadow-lg shadow-blue-500 transition-all duration-200"
                       >
                         <Mic className="h-8 w-8 text-white" />
                       </button>
@@ -498,11 +498,11 @@ export default function SurahDetail() {
                       <div className="flex items-center justify-center gap-3">
                         <button
                           onClick={togglePreviewPlay}
-                          className="h-11 w-11 rounded-full bg-emerald-100 hover:bg-emerald-200 flex items-center justify-center transition-colors"
+                          className="h-11 w-11 rounded-full bg-blue-100 hover:bg-teal-200 flex items-center justify-center transition-colors"
                         >
-                          {isPreviewPlaying ? <Pause className="h-5 w-5 text-emerald-700" /> : <Play className="h-5 w-5 text-emerald-700 ml-0.5" />}
+                          {isPreviewPlaying ? <Pause className="h-5 w-5 text-blue-800" /> : <Play className="h-5 w-5 text-blue-800 ml-0.5" />}
                         </button>
-                        <span className="text-sm text-emerald-800 font-medium">Review your recording</span>
+                        <span className="text-sm text-blue-900 font-medium">Review your recording</span>
                       </div>
                       {/* Action buttons */}
                       <div className="flex gap-2">
@@ -515,7 +515,7 @@ export default function SurahDetail() {
                           <RotateCcw className="h-3.5 w-3.5" /> Re-record
                         </Button>
                         <Button size="sm" onClick={submitRecording}
-                          className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5">
+                          className="flex-1 bg-blue-700 hover:bg-blue-700 text-white gap-1.5">
                           <Send className="h-3.5 w-3.5" /> Submit
                         </Button>
                       </div>
@@ -525,8 +525,8 @@ export default function SurahDetail() {
                   {/* Submitting */}
                   {recState === "submitting" && (
                     <div className="flex flex-col items-center gap-3 py-4">
-                      <Loader2 className="h-8 w-8 text-emerald-600 animate-spin" />
-                      <p className="text-sm text-emerald-700 font-medium">Analyzing your recitation with AI…</p>
+                      <Loader2 className="h-8 w-8 text-blue-700 animate-spin" />
+                      <p className="text-sm text-blue-800 font-medium">Analyzing your recitation with AI…</p>
                     </div>
                   )}
 
@@ -543,13 +543,13 @@ export default function SurahDetail() {
           {/* Ayah Navigation */}
           <div className="absolute top-1/2 -translate-y-1/2 -left-4 md:-left-14">
             <Button variant="ghost" size="icon" onClick={handlePrev} disabled={currentAyahIndex === 0}
-              className="rounded-full bg-white shadow-md text-emerald-700 hover:text-emerald-900 disabled:opacity-30">
+              className="rounded-full bg-white shadow-md text-blue-800 hover:text-blue-950 disabled:opacity-30">
               <ArrowLeft className="h-5 w-5" />
             </Button>
           </div>
           <div className="absolute top-1/2 -translate-y-1/2 -right-4 md:-right-14">
             <Button variant="ghost" size="icon" onClick={handleNext} disabled={currentAyahIndex === ayahs.length - 1}
-              className="rounded-full bg-white shadow-md text-emerald-700 hover:text-emerald-900 disabled:opacity-30">
+              className="rounded-full bg-white shadow-md text-blue-800 hover:text-blue-950 disabled:opacity-30">
               <ArrowRight className="h-5 w-5" />
             </Button>
           </div>
@@ -654,7 +654,7 @@ export default function SurahDetail() {
                       onClick={() => { setSttFailure(null); }}>
                       <RotateCcw className="mr-2 h-4 w-4" /> Try Again
                     </Button>
-                    <Button className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white" onClick={handleNext}
+                    <Button className="flex-1 bg-blue-700 hover:bg-blue-700 text-white" onClick={handleNext}
                       disabled={currentAyahIndex === ayahs.length - 1}>
                       Skip to Next <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
@@ -669,7 +669,7 @@ export default function SurahDetail() {
         <AnimatePresence>
           {feedback && (
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}>
-              <Card className="border-emerald-200 shadow-lg overflow-hidden bg-gradient-to-br from-white to-emerald-50 dark:from-emerald-950 dark:to-emerald-900">
+              <Card className="border-blue-200 shadow-lg overflow-hidden bg-gradient-to-br from-white to-blue-50 dark:from-blue-950 dark:to-blue-900">
                 <CardContent className="p-6 md:p-8 space-y-6">
 
                   {/* ── Transcription failed banner ── */}
@@ -695,7 +695,7 @@ export default function SurahDetail() {
                       <div className={`relative h-28 w-28 rounded-full flex items-center justify-center border-8 ${scoreColor}`}>
                         <span className="text-4xl font-bold">{score}</span>
                       </div>
-                      <span className="mt-2 text-sm font-medium text-emerald-800">Overall Score</span>
+                      <span className="mt-2 text-sm font-medium text-blue-900">Overall Score</span>
                       {feedback.transcriptionSuccess === false && (
                         <Badge variant="outline" className="mt-2 text-xs text-amber-600 border-amber-300">Text analysis only</Badge>
                       )}
@@ -713,14 +713,14 @@ export default function SurahDetail() {
                         { label: "Fluency", score: feedback.fluencyScore, desc: "Smoothness" },
                       ].map(({ label, score: s, desc }) => {
                         const pct = Math.max(0, Math.min(100, s));
-                        const color = pct >= 90 ? "bg-emerald-500" : pct >= 70 ? "bg-amber-500" : "bg-red-500";
+                        const color = pct >= 90 ? "bg-blue-600" : pct >= 70 ? "bg-amber-500" : "bg-red-500";
                         return (
                           <div key={label}>
                             <div className="flex justify-between text-sm mb-1">
-                              <span className="font-medium text-emerald-900">{label}</span>
+                              <span className="font-medium text-blue-950">{label}</span>
                               <span className="text-muted-foreground">{pct}%</span>
                             </div>
-                            <div className="h-2 w-full bg-emerald-100 rounded-full overflow-hidden" title={desc}>
+                            <div className="h-2 w-full bg-blue-100 rounded-full overflow-hidden" title={desc}>
                               <motion.div initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8, ease: "easeOut" }}
                                 className={`h-full rounded-full ${color}`} />
                             </div>
@@ -729,7 +729,7 @@ export default function SurahDetail() {
                       })}
                       {feedback.wordStats && (
                         <p className="text-xs text-muted-foreground pt-1">
-                          Words: <span className="text-emerald-700 font-medium">{feedback.wordStats.correct} correct</span>
+                          Words: <span className="text-blue-800 font-medium">{feedback.wordStats.correct} correct</span>
                           {" · "}<span className="text-red-600 font-medium">{feedback.wordStats.missing} missing</span>
                           {feedback.wordStats.extra > 0 && <> · <span className="text-amber-600 font-medium">{feedback.wordStats.extra} extra</span></>}
                           {" · "}<span className="text-muted-foreground">{feedback.wordStats.total} total</span>
@@ -740,9 +740,9 @@ export default function SurahDetail() {
 
                   {/* ── What AI heard ── */}
                   {feedback.transcribedText ? (
-                    <div className="bg-white dark:bg-emerald-950 rounded-xl p-4 border border-emerald-100">
-                      <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wider mb-2">🎤 What the AI Heard</p>
-                      <p className="text-base text-emerald-900 leading-relaxed" dir="rtl" style={{ fontFamily: "var(--font-arabic)" }}>
+                    <div className="bg-white dark:bg-blue-950 rounded-xl p-4 border border-blue-100">
+                      <p className="text-xs font-semibold text-blue-700 uppercase tracking-wider mb-2">🎤 What the AI Heard</p>
+                      <p className="text-base text-blue-950 leading-relaxed" dir="rtl" style={{ fontFamily: "var(--font-arabic)" }}>
                         {feedback.transcribedText}
                       </p>
                       {feedback.transcriptionModel && feedback.transcriptionModel !== "none" && (
@@ -750,7 +750,7 @@ export default function SurahDetail() {
                       )}
                     </div>
                   ) : feedback.transcriptionSuccess === false ? (
-                    <div className="bg-gray-50 dark:bg-emerald-950 rounded-xl p-4 border border-dashed border-gray-200">
+                    <div className="bg-gray-50 dark:bg-blue-950 rounded-xl p-4 border border-dashed border-gray-200">
                       <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">🎤 AI Heard</p>
                       <p className="text-sm text-gray-400 italic">No speech detected — transcription unavailable.</p>
                       <p className="text-xs text-gray-400 mt-1">Make sure you're in a quiet room and speak clearly into the microphone.</p>
@@ -759,18 +759,18 @@ export default function SurahDetail() {
 
                   {/* ── Word-by-word diff ── */}
                   {(feedback.correctWords?.length > 0 || feedback.missingWords?.length > 0 || feedback.incorrectWords?.length > 0) && (
-                    <div className="bg-white dark:bg-emerald-950 rounded-xl p-4 border border-emerald-100 space-y-3">
+                    <div className="bg-white dark:bg-blue-950 rounded-xl p-4 border border-blue-100 space-y-3">
                       <div className="flex items-center justify-between">
-                        <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wider">📝 Word Analysis</p>
+                        <p className="text-xs font-semibold text-blue-700 uppercase tracking-wider">📝 Word Analysis</p>
                         <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
-                          <span><span className="inline-block w-2 h-2 rounded-sm bg-emerald-500 mr-1" />correct</span>
+                          <span><span className="inline-block w-2 h-2 rounded-sm bg-blue-600 mr-1" />correct</span>
                           <span><span className="inline-block w-2 h-2 rounded-sm bg-red-400 mr-1" />missing</span>
                           {feedback.incorrectWords?.length > 0 && <span><span className="inline-block w-2 h-2 rounded-sm bg-amber-400 mr-1" />extra</span>}
                         </div>
                       </div>
                       <div className="flex flex-wrap gap-2" dir="rtl">
                         {feedback.correctWords?.map((w: string, i: number) => (
-                          <span key={`c-${i}`} className="px-2 py-1 bg-emerald-100 text-emerald-800 rounded-md text-sm font-arabic">✓ {w}</span>
+                          <span key={`c-${i}`} className="px-2 py-1 bg-blue-100 text-blue-900 rounded-md text-sm font-arabic">✓ {w}</span>
                         ))}
                         {feedback.incorrectWords?.map((w: string, i: number) => (
                           <span key={`x-${i}`} className="px-2 py-1 bg-amber-100 text-amber-800 rounded-md text-sm font-arabic">+ {w}</span>
@@ -784,14 +784,14 @@ export default function SurahDetail() {
 
                   {/* ── Tajweed rules ── */}
                   {feedback.tajweedRules?.length > 0 && (
-                    <div className="bg-white dark:bg-emerald-950 rounded-xl p-4 border border-emerald-100">
-                      <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wider mb-2">🌙 Tajweed Rules in This Verse</p>
+                    <div className="bg-white dark:bg-blue-950 rounded-xl p-4 border border-blue-100">
+                      <p className="text-xs font-semibold text-blue-700 uppercase tracking-wider mb-2">🌙 Tajweed Rules in This Verse</p>
                       <div className="flex flex-wrap gap-2">
                         {feedback.tajweedRules.map((rule: any) => (
-                          <div key={rule.name} className="bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2">
+                          <div key={rule.name} className="bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
                             <div className="flex items-center gap-2">
-                              <span className="text-emerald-700 font-semibold text-sm">{rule.name}</span>
-                              <span className="text-emerald-600 font-arabic text-base">{rule.nameArabic}</span>
+                              <span className="text-blue-800 font-semibold text-sm">{rule.name}</span>
+                              <span className="text-blue-700 font-arabic text-base">{rule.nameArabic}</span>
                             </div>
                             <p className="text-xs text-muted-foreground mt-0.5">{rule.description}</p>
                             {rule.confidenceNote && (
@@ -820,7 +820,7 @@ export default function SurahDetail() {
                   {/* ── Score formula (collapsed by default) ── */}
                   {feedback.diagnostics?.scoreFormula && (
                     <details className="group">
-                      <summary className="cursor-pointer text-xs text-muted-foreground hover:text-emerald-700 flex items-center gap-1 select-none">
+                      <summary className="cursor-pointer text-xs text-muted-foreground hover:text-blue-800 flex items-center gap-1 select-none">
                         <span className="group-open:rotate-90 transition-transform inline-block">▶</span>
                         How was this score calculated?
                       </summary>
@@ -840,11 +840,11 @@ export default function SurahDetail() {
                   )}
 
                   {/* ── Action buttons ── */}
-                  <div className="flex gap-3 pt-2 border-t border-emerald-100">
-                    <Button variant="outline" className="flex-1 border-emerald-200 text-emerald-700 hover:bg-emerald-50" onClick={() => setFeedback(null)}>
+                  <div className="flex gap-3 pt-2 border-t border-blue-100">
+                    <Button variant="outline" className="flex-1 border-blue-200 text-blue-800 hover:bg-blue-50" onClick={() => setFeedback(null)}>
                       <RotateCcw className="mr-2 h-4 w-4" /> Try Again
                     </Button>
-                    <Button className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white" onClick={handleNext}
+                    <Button className="flex-1 bg-blue-700 hover:bg-blue-700 text-white" onClick={handleNext}
                       disabled={currentAyahIndex === ayahs.length - 1}>
                       Next Ayah <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>

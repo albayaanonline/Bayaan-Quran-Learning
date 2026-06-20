@@ -34,13 +34,13 @@ interface TajweedAnalytics {
 function StatCard({ label, value, icon: Icon, color, sub }: { label: string; value: string | number; icon: any; color: string; sub?: string }) {
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-      <Card className="border-emerald-100">
+      <Card className="border-blue-100">
         <CardContent className="p-4">
           <div className="flex items-center gap-2 mb-2">
             <Icon className={`h-4 w-4 ${color}`} />
             <span className="text-xs text-muted-foreground">{label}</span>
           </div>
-          <p className="text-2xl font-bold text-emerald-950">{value}</p>
+          <p className="text-2xl font-bold text-slate-900">{value}</p>
           {sub && <p className="text-xs text-muted-foreground mt-0.5">{sub}</p>}
         </CardContent>
       </Card>
@@ -48,7 +48,7 @@ function StatCard({ label, value, icon: Icon, color, sub }: { label: string; val
   );
 }
 
-function ScoreBar({ label, score, max = 100, color = "bg-emerald-500" }: { label: string; score: number; max?: number; color?: string }) {
+function ScoreBar({ label, score, max = 100, color = "bg-blue-600" }: { label: string; score: number; max?: number; color?: string }) {
   const pct = max > 0 ? Math.round((score / max) * 100) : 0;
   return (
     <div>
@@ -100,7 +100,7 @@ export default function Analytics() {
       <div className="max-w-5xl mx-auto">
         <Card className="border-dashed">
           <CardContent className="p-12 text-center">
-            <BarChart3 className="h-12 w-12 text-emerald-300 mx-auto mb-4" />
+            <BarChart3 className="h-12 w-12 text-blue-300 mx-auto mb-4" />
             <h3 className="font-semibold text-lg">No data yet</h3>
             <p className="text-sm text-muted-foreground mt-1">Start reciting to see your analytics</p>
           </CardContent>
@@ -115,8 +115,8 @@ export default function Analytics() {
     <AppLayout>
       <div className="max-w-5xl mx-auto space-y-6">
         <div>
-          <h1 className="text-2xl font-serif font-bold text-emerald-950 flex items-center gap-2">
-            <BarChart3 className="h-6 w-6 text-emerald-600" /> Analytics
+          <h1 className="text-2xl font-serif font-bold text-slate-900 flex items-center gap-2">
+            <BarChart3 className="h-6 w-6 text-blue-700" /> Analytics
           </h1>
           <p className="text-sm text-muted-foreground mt-1">Track your learning performance and progress</p>
         </div>
@@ -124,12 +124,12 @@ export default function Analytics() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard label="Avg Score (30d)" value={`${overview.avgScore}%`} icon={Star} color="text-amber-500" sub={`${overview.recentRecordings} recordings`} />
           <StatCard label="Streak" value={`${overview.streakDays} days`} icon={Flame} color="text-orange-500" />
-          <StatCard label="Level" value={overview.level} icon={TrendingUp} color="text-emerald-600" sub={`${overview.totalXp} XP total`} />
+          <StatCard label="Level" value={overview.level} icon={TrendingUp} color="text-blue-700" sub={`${overview.totalXp} XP total`} />
           <StatCard label="AI Chats" value={overview.aiConversations} icon={BotMessageSquare} color="text-blue-500" />
         </div>
 
         <div className="grid gap-4 md:grid-cols-3">
-          <StatCard label="Surahs Studied" value={overview.surahsStudied} icon={BookOpen} color="text-emerald-600" />
+          <StatCard label="Surahs Studied" value={overview.surahsStudied} icon={BookOpen} color="text-blue-700" />
           <StatCard label="Hifdh Surahs" value={hifdh.total} icon={Brain} color="text-purple-600" sub={`${hifdh.mastered} mastered`} />
           <StatCard label="Total Recitations" value={overview.totalRecordings} icon={Target} color="text-sky-500" />
         </div>
@@ -143,7 +143,7 @@ export default function Analytics() {
           </TabsList>
 
           <TabsContent value="scores" className="mt-4 space-y-4">
-            <Card className="border-emerald-100">
+            <Card className="border-blue-100">
               <CardHeader className="pb-2"><CardTitle className="text-sm">Weekly Average Score</CardTitle></CardHeader>
               <CardContent>
                 {scoresByWeek.length === 0 ? (
@@ -158,7 +158,7 @@ export default function Analytics() {
                             initial={{ width: 0 }}
                             animate={{ width: `${w.avgScore}%` }}
                             transition={{ duration: 0.6 }}
-                            className={`h-full rounded-full flex items-center justify-end pr-2 text-[10px] font-bold text-white ${w.avgScore >= 80 ? "bg-emerald-500" : w.avgScore >= 60 ? "bg-amber-500" : "bg-red-400"}`}
+                            className={`h-full rounded-full flex items-center justify-end pr-2 text-[10px] font-bold text-white ${w.avgScore >= 80 ? "bg-blue-600" : w.avgScore >= 60 ? "bg-amber-500" : "bg-red-400"}`}
                           >
                             {w.avgScore > 15 ? `${w.avgScore}%` : ""}
                           </motion.div>
@@ -188,7 +188,7 @@ export default function Analytics() {
           </TabsContent>
 
           <TabsContent value="tajweed" className="mt-4">
-            <Card className="border-emerald-100">
+            <Card className="border-blue-100">
               <CardHeader className="pb-2"><CardTitle className="text-sm">Tajweed Rule Accuracy</CardTitle></CardHeader>
               <CardContent>
                 {!tajweed || tajweed.rules.length === 0 ? (
@@ -200,7 +200,7 @@ export default function Analytics() {
                         <ScoreBar
                           label={`${rule.name} (${rule.found}/${rule.total} correct)`}
                           score={rule.accuracy}
-                          color={rule.accuracy >= 80 ? "bg-emerald-500" : rule.accuracy >= 60 ? "bg-amber-500" : "bg-red-400"}
+                          color={rule.accuracy >= 80 ? "bg-blue-600" : rule.accuracy >= 60 ? "bg-amber-500" : "bg-red-400"}
                         />
                       </div>
                     ))}
@@ -211,7 +211,7 @@ export default function Analytics() {
           </TabsContent>
 
           <TabsContent value="surahs" className="mt-4">
-            <Card className="border-emerald-100">
+            <Card className="border-blue-100">
               <CardHeader className="pb-2"><CardTitle className="text-sm">Surah Completion</CardTitle></CardHeader>
               <CardContent>
                 {surahCompletion.length === 0 ? (
@@ -240,7 +240,7 @@ export default function Analytics() {
             <div className="grid gap-4 sm:grid-cols-3">
               {[
                 { label: "Total Surahs", value: hifdh.total, icon: Brain, color: "text-purple-600", bg: "bg-purple-50" },
-                { label: "Mastered (80%+)", value: hifdh.mastered, icon: CheckCircle2, color: "text-emerald-600", bg: "bg-emerald-50" },
+                { label: "Mastered (80%+)", value: hifdh.mastered, icon: CheckCircle2, color: "text-blue-700", bg: "bg-blue-50" },
                 { label: "Due for Review", value: hifdh.reviewing, icon: AlertTriangle, color: "text-amber-600", bg: "bg-amber-50" },
               ].map(item => (
                 <Card key={item.label} className={`border-0 ${item.bg}`}>

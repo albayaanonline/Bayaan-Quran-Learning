@@ -38,13 +38,13 @@ function MessageBubble({ msg, isStreaming }: { msg: Message; isStreaming?: boole
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
       className={`flex gap-3 ${isUser ? "flex-row-reverse" : "flex-row"}`}>
       <div className={`h-8 w-8 shrink-0 rounded-full flex items-center justify-center ${
-        isUser ? "bg-emerald-600 text-white" : "bg-emerald-100 dark:bg-emerald-900 text-emerald-700"}`}>
+        isUser ? "bg-blue-700 text-white" : "bg-blue-100 dark:bg-blue-900 text-blue-800"}`}>
         {isUser ? <User className="h-4 w-4" /> : <BotMessageSquare className="h-4 w-4" />}
       </div>
       <div className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
         isUser
-          ? "bg-emerald-600 text-white rounded-tr-sm"
-          : "bg-white dark:bg-emerald-950 border border-emerald-100 text-emerald-950 dark:text-emerald-50 rounded-tl-sm shadow-sm"
+          ? "bg-blue-700 text-white rounded-tr-sm"
+          : "bg-white dark:bg-blue-950 border border-blue-100 text-slate-900 dark:text-blue-50 rounded-tl-sm shadow-sm"
       }`}>
         <p className="whitespace-pre-wrap">{msg.content}</p>
         {isStreaming && <span className="inline-block w-1 h-4 bg-current animate-pulse ml-1 align-middle" />}
@@ -199,7 +199,7 @@ export default function Teacher() {
 
         {/* Sidebar */}
         <aside className="hidden md:flex flex-col w-64 shrink-0 gap-3">
-          <Button onClick={() => createConversation()} className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2">
+          <Button onClick={() => createConversation()} className="bg-blue-700 hover:bg-blue-700 text-white gap-2">
             <Plus className="h-4 w-4" /> New Chat
           </Button>
 
@@ -211,10 +211,10 @@ export default function Teacher() {
                 )}
                 {conversations.map((c) => (
                   <div key={c.id} className={`group flex items-center gap-2 rounded-lg px-3 py-2 cursor-pointer transition-colors ${
-                    activeConvId === c.id ? "bg-emerald-100 dark:bg-emerald-900" : "hover:bg-emerald-50 dark:hover:bg-emerald-950"}`}
+                    activeConvId === c.id ? "bg-blue-100 dark:bg-blue-900" : "hover:bg-blue-50 dark:hover:bg-blue-950"}`}
                     onClick={() => openConversation(c.id)}>
-                    <BotMessageSquare className="h-3.5 w-3.5 shrink-0 text-emerald-600" />
-                    <span className="flex-1 text-sm truncate text-emerald-900 dark:text-emerald-100">{c.title}</span>
+                    <BotMessageSquare className="h-3.5 w-3.5 shrink-0 text-blue-700" />
+                    <span className="flex-1 text-sm truncate text-blue-950 dark:text-blue-100">{c.title}</span>
                     <button onClick={(e) => { e.stopPropagation(); deleteConversation(c.id); }}
                       className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-red-500 transition-opacity">
                       <Trash2 className="h-3.5 w-3.5" />
@@ -227,18 +227,18 @@ export default function Teacher() {
         </aside>
 
         {/* Chat Area */}
-        <div className="flex-1 flex flex-col bg-background rounded-2xl border border-emerald-100 shadow-sm overflow-hidden">
+        <div className="flex-1 flex flex-col bg-background rounded-2xl border border-blue-100 shadow-sm overflow-hidden">
 
           {/* Header */}
-          <div className="border-b border-emerald-100 px-6 py-4 flex items-center gap-3 bg-gradient-to-r from-emerald-50 to-white dark:from-emerald-950 dark:to-background">
-            <div className="h-10 w-10 rounded-full bg-emerald-100 dark:bg-emerald-900 flex items-center justify-center">
-              <BotMessageSquare className="h-5 w-5 text-emerald-700" />
+          <div className="border-b border-blue-100 px-6 py-4 flex items-center gap-3 bg-gradient-to-r from-blue-50 to-white dark:from-blue-950 dark:to-background">
+            <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+              <BotMessageSquare className="h-5 w-5 text-blue-800" />
             </div>
             <div>
-              <h2 className="font-semibold text-emerald-950 dark:text-emerald-50">Al Bayaan AI Teacher</h2>
+              <h2 className="font-semibold text-slate-900 dark:text-blue-50">Al Bayaan AI Teacher</h2>
               <p className="text-xs text-muted-foreground">Quran · Tajweed · Tafsir · Hifdh</p>
             </div>
-            <Badge variant="outline" className="ml-auto text-xs border-emerald-200 text-emerald-700">
+            <Badge variant="outline" className="ml-auto text-xs border-blue-200 text-blue-800">
               {streamingContent ? "Typing…" : "Online"}
             </Badge>
           </div>
@@ -254,17 +254,17 @@ export default function Teacher() {
 
             {!isLoading && messages.length === 0 && !streamingContent && (
               <div className="flex flex-col items-center justify-center h-full py-12 text-center gap-6">
-                <div className="h-16 w-16 rounded-2xl bg-emerald-100 dark:bg-emerald-900 flex items-center justify-center">
-                  <Star className="h-8 w-8 text-emerald-600" />
+                <div className="h-16 w-16 rounded-2xl bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                  <Star className="h-8 w-8 text-blue-700" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-emerald-950 dark:text-emerald-50 mb-1">Assalamu Alaikum!</h3>
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-blue-50 mb-1">Assalamu Alaikum!</h3>
                   <p className="text-muted-foreground text-sm max-w-xs">Ask me anything about Quran recitation, Tajweed rules, Tafsir, or Hifdh techniques.</p>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-lg">
                   {SUGGESTED_QUESTIONS.map((q) => (
                     <button key={q} onClick={() => sendMessage(q)}
-                      className="text-left text-sm px-4 py-3 rounded-xl border border-emerald-100 bg-emerald-50/50 hover:bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:border-emerald-800 dark:text-emerald-200 dark:hover:bg-emerald-900 transition-colors">
+                      className="text-left text-sm px-4 py-3 rounded-xl border border-blue-100 bg-blue-50/50 hover:bg-blue-100 text-blue-900 dark:bg-blue-950 dark:border-blue-800 dark:text-blue-200 dark:hover:bg-blue-900 transition-colors">
                       {q}
                     </button>
                   ))}
@@ -279,19 +279,19 @@ export default function Teacher() {
           </ScrollArea>
 
           {/* Input */}
-          <div className="border-t border-emerald-100 px-4 py-4 bg-white dark:bg-background">
+          <div className="border-t border-blue-100 px-4 py-4 bg-white dark:bg-background">
             <div className="flex gap-3 items-end">
               <Textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Ask about Tajweed, Tafsir, Hifdh…"
-                className="flex-1 min-h-[44px] max-h-32 resize-none border-emerald-200 focus:border-emerald-500 focus:ring-emerald-500 rounded-xl"
+                className="flex-1 min-h-[44px] max-h-32 resize-none border-blue-200 focus:border-blue-500 focus:ring-blue-500 rounded-xl"
                 rows={1}
                 disabled={isSending}
               />
               <Button onClick={() => sendMessage(input)} disabled={!input.trim() || isSending}
-                className="h-11 w-11 p-0 rounded-xl bg-emerald-600 hover:bg-emerald-700 shrink-0">
+                className="h-11 w-11 p-0 rounded-xl bg-blue-700 hover:bg-blue-700 shrink-0">
                 {isSending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
               </Button>
             </div>

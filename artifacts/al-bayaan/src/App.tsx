@@ -72,41 +72,41 @@ const clerkAppearance = {
     logoImageUrl: `${window.location.origin}${basePath}/logo.svg`,
   },
   variables: {
-    colorPrimary: "hsl(161 90% 28%)",
-    colorForeground: "hsl(164 86% 14%)",
-    colorMutedForeground: "hsl(164 28% 42%)",
+    colorPrimary: "#1E3A8A",
+    colorForeground: "#0F172A",
+    colorMutedForeground: "#475569",
     colorDanger: "hsl(0 84% 58%)",
-    colorBackground: "hsl(0 0% 100%)",
-    colorInput: "hsl(0 0% 100%)",
-    colorInputForeground: "hsl(164 86% 14%)",
-    colorNeutral: "hsl(161 18% 86%)",
-    fontFamily: "'Inter', sans-serif",
-    borderRadius: "0.75rem",
+    colorBackground: "#FFFFFF",
+    colorInput: "#FFFFFF",
+    colorInputForeground: "#0F172A",
+    colorNeutral: "#E2E8F0",
+    fontFamily: "'Poppins', 'Inter', sans-serif",
+    borderRadius: "0.875rem",
   },
   elements: {
     rootBox: "w-full flex justify-center",
-    cardBox: "bg-white rounded-2xl w-[440px] max-w-full overflow-hidden border border-emerald-100 shadow-xl",
+    cardBox: "bg-white rounded-2xl w-[440px] max-w-full overflow-hidden border border-blue-100 shadow-2xl shadow-blue-900/10",
     card: "!shadow-none !border-0 !bg-transparent !rounded-none",
     footer: "!shadow-none !border-0 !bg-transparent !rounded-none",
-    headerTitle: "text-2xl font-serif text-emerald-950",
-    headerSubtitle: "text-sm text-emerald-700/80",
-    socialButtonsBlockButtonText: "text-emerald-950 font-medium",
-    formFieldLabel: "text-emerald-950 font-medium",
-    footerActionLink: "text-emerald-600 hover:text-emerald-700 font-medium",
-    footerActionText: "text-emerald-800",
-    dividerText: "text-emerald-700/60",
-    identityPreviewEditButton: "text-emerald-600",
+    headerTitle: "text-2xl font-bold text-slate-900",
+    headerSubtitle: "text-sm text-slate-500",
+    socialButtonsBlockButtonText: "text-slate-900 font-medium",
+    formFieldLabel: "text-slate-800 font-medium",
+    footerActionLink: "text-blue-700 hover:text-blue-800 font-semibold",
+    footerActionText: "text-slate-600",
+    dividerText: "text-slate-400",
+    identityPreviewEditButton: "text-blue-600",
     formFieldSuccessText: "text-emerald-600",
     alertText: "text-red-600",
     logoBox: "mb-4",
     logoImage: "h-12 w-auto",
-    socialButtonsBlockButton: "border border-emerald-100 hover:bg-emerald-50 text-emerald-950",
-    formButtonPrimary: "bg-emerald-600 hover:bg-emerald-700 text-white font-medium shadow-sm",
-    formFieldInput: "border-emerald-200 focus:border-emerald-600 focus:ring-emerald-600 bg-white text-emerald-950",
-    footerAction: "bg-emerald-50",
-    dividerLine: "bg-emerald-100",
+    socialButtonsBlockButton: "border border-blue-100 hover:bg-blue-50 text-slate-900 transition-all duration-200",
+    formButtonPrimary: "bg-gradient-to-r from-blue-900 to-blue-600 hover:from-blue-800 hover:to-blue-500 text-white font-semibold shadow-md shadow-blue-900/20 transition-all duration-200",
+    formFieldInput: "border-slate-200 focus:border-blue-600 focus:ring-blue-600 bg-white text-slate-900 transition-all duration-200",
+    footerAction: "bg-blue-50/50",
+    dividerLine: "bg-blue-100",
     alert: "bg-red-50 border border-red-200 text-red-800",
-    otpCodeFieldInput: "border-emerald-200 focus:border-emerald-600 text-emerald-950",
+    otpCodeFieldInput: "border-slate-200 focus:border-blue-600 text-slate-900",
     formFieldRow: "mb-4",
     main: "px-8 py-6",
   },
@@ -123,8 +123,8 @@ function HomeRedirect() {
 
 function AuthPage({ type }: { type: "sign-in" | "sign-up" }) {
   return (
-    <div className="flex min-h-[100dvh] items-center justify-center bg-[#0a0f0a] bg-[url('/images/geometric-pattern.png')] bg-cover bg-center px-4">
-      <div className="absolute inset-0 bg-[#0a0f0a]/85 backdrop-blur-sm z-0" />
+    <div className="flex min-h-[100dvh] items-center justify-center bg-[#0a1628] bg-[url('/images/geometric-pattern.png')] bg-cover bg-center px-4">
+      <div className="absolute inset-0 bg-[#0a1628]/88 backdrop-blur-sm z-0" />
       <div className="relative z-10 w-full max-w-md">
         {type === "sign-in"
           ? <SignIn routing="path" path={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} />
@@ -160,19 +160,19 @@ function ClerkQueryClientCacheInvalidator() {
 
 function MissingConfigError({ message }: { message: string }) {
   return (
-    <div className="flex min-h-[100dvh] items-center justify-center bg-emerald-50 p-6">
-      <div className="max-w-md w-full bg-white rounded-2xl border border-emerald-100 shadow-xl p-10 text-center">
+    <div className="flex min-h-[100dvh] items-center justify-center bg-slate-50 p-6">
+      <div className="max-w-md w-full bg-white rounded-2xl border border-blue-100 shadow-2xl shadow-blue-900/10 p-10 text-center">
         <div className="text-5xl mb-4">⚙️</div>
-        <h1 className="text-2xl font-serif font-bold text-emerald-900 mb-3">Configuration Required</h1>
-        <p className="text-emerald-700 mb-4 leading-relaxed">
+        <h1 className="text-2xl font-bold text-slate-900 mb-3">Configuration Required</h1>
+        <p className="text-slate-600 mb-4 leading-relaxed">
           Al Bayaan requires authentication to be configured before it can start.
           Please contact the administrator or check the environment setup.
         </p>
-        <div className="bg-emerald-50 rounded-lg px-4 py-3 text-left text-sm text-emerald-800 font-mono break-words mb-6">
+        <div className="bg-blue-50 rounded-xl px-4 py-3 text-left text-sm text-blue-900 font-mono break-words mb-6">
           {message}
         </div>
-        <p className="text-sm text-emerald-600">
-          Set <code className="bg-emerald-100 px-1 rounded">VITE_CLERK_PUBLISHABLE_KEY</code> in the environment variables and restart.
+        <p className="text-sm text-blue-700">
+          Set <code className="bg-blue-100 px-1.5 py-0.5 rounded-md">VITE_CLERK_PUBLISHABLE_KEY</code> in the environment variables and restart.
         </p>
       </div>
     </div>

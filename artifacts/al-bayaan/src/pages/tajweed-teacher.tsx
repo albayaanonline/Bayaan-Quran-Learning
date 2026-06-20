@@ -53,12 +53,12 @@ function MessageBubble({ msg }: { msg: Message }) {
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
       className={`flex gap-3 ${isUser ? "flex-row-reverse" : "flex-row"}`}>
       <div className={`h-8 w-8 shrink-0 rounded-full flex items-center justify-center ${
-        isUser ? "bg-emerald-600 text-white" : "bg-amber-100 text-amber-700"}`}>
+        isUser ? "bg-blue-700 text-white" : "bg-amber-100 text-amber-700"}`}>
         {isUser ? <User className="h-4 w-4" /> : <BookMarked className="h-4 w-4" />}
       </div>
       <div className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
         isUser
-          ? "bg-emerald-600 text-white rounded-tr-sm"
+          ? "bg-blue-700 text-white rounded-tr-sm"
           : "bg-white dark:bg-slate-900 border border-amber-100 text-foreground rounded-tl-sm shadow-sm"
       }`}>
         <p className="whitespace-pre-wrap">{msg.content}</p>
@@ -101,10 +101,10 @@ function WeaknessPanel({ onPracticeRule }: { onPracticeRule: (rule: string) => v
     <div className="px-3 pb-3 space-y-2">
       <div className="flex items-center justify-between text-[10px] text-muted-foreground">
         <span>{data.totalRecordings} {t("tajweed.analyzed")}</span>
-        <span className="font-semibold text-emerald-700">{t("tajweed.avg")} {data.avgScore}%</span>
+        <span className="font-semibold text-blue-800">{t("tajweed.avg")} {data.avgScore}%</span>
       </div>
       {data.weakAreas.length === 0 ? (
-        <div className="text-xs text-emerald-700 bg-emerald-50 rounded-lg p-2.5 flex items-center gap-1.5">
+        <div className="text-xs text-blue-800 bg-blue-50 rounded-lg p-2.5 flex items-center gap-1.5">
           <TrendingUp className="h-3.5 w-3.5" /> {t("tajweed.noIssues")}
         </div>
       ) : (
@@ -253,7 +253,7 @@ export default function TajweedTeacher() {
       <div className="max-w-7xl mx-auto h-[calc(100vh-8rem)] flex flex-col gap-4">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-serif font-bold text-emerald-950 dark:text-emerald-50 flex items-center gap-2">
+            <h1 className="text-2xl font-serif font-bold text-slate-900 dark:text-blue-50 flex items-center gap-2">
               <BookMarked className="h-6 w-6 text-amber-600" />
               {t("tajweed.title")}
             </h1>
@@ -313,7 +313,7 @@ export default function TajweedTeacher() {
                       <BookMarked className="h-8 w-8" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-lg text-emerald-950">{t("tajweed.ready")}</h3>
+                      <h3 className="font-semibold text-lg text-slate-900">{t("tajweed.ready")}</h3>
                       <p className="text-sm text-muted-foreground mt-1 max-w-sm">{t("tajweed.readyHint")}</p>
                     </div>
                   </div>

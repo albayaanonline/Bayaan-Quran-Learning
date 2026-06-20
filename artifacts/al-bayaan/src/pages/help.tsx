@@ -8,7 +8,7 @@ const ARTICLES = [
   {
     category: "Getting Started",
     icon: Zap,
-    color: "from-emerald-500 to-teal-500",
+    color: "from-blue-600 to-teal-500",
     items: [
       { title: "How to create your account", time: "2 min read" },
       { title: "Setting up your learning profile", time: "3 min read" },
@@ -115,7 +115,7 @@ export default function Help() {
       </div>
 
       {/* Hero */}
-      <div className="bg-gradient-to-br from-slate-900 to-emerald-950 text-white py-14 px-4">
+      <div className="bg-gradient-to-br from-slate-900 to-blue-950 text-white py-14 px-4">
         <div className="container mx-auto max-w-3xl text-center">
           <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-4xl font-serif font-bold mb-3">
             Help Center
@@ -130,7 +130,7 @@ export default function Help() {
               placeholder="Search help articles..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-11 pr-4 py-3.5 rounded-xl bg-white/10 border border-white/15 text-white placeholder:text-white/35 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400/40 transition-all backdrop-blur-sm"
+              className="w-full pl-11 pr-4 py-3.5 rounded-xl bg-white/10 border border-white/15 text-white placeholder:text-white/35 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all backdrop-blur-sm"
             />
           </motion.div>
           {/* Popular searches */}
@@ -152,7 +152,7 @@ export default function Help() {
           {[
             { icon: Globe, label: "Video Tutorials",     desc: "Watch step-by-step guides",   color: "text-blue-600 bg-blue-100 dark:bg-blue-950 dark:text-blue-300" },
             { icon: Users, label: "Community Forum",     desc: "Ask other Al Bayaan students", color: "text-violet-600 bg-violet-100 dark:bg-violet-950 dark:text-violet-300" },
-            { icon: Mic,   label: "Contact Support",     desc: "Talk to our team directly",    color: "text-emerald-600 bg-emerald-100 dark:bg-emerald-950 dark:text-emerald-300", href: "/contact" },
+            { icon: Mic,   label: "Contact Support",     desc: "Talk to our team directly",    color: "text-blue-700 bg-blue-100 dark:bg-blue-950 dark:text-blue-300", href: "/contact" },
           ].map((action, i) => (
             <motion.div key={action.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}>
               {action.href ? (

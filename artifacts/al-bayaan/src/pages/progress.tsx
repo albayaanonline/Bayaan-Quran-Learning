@@ -32,14 +32,14 @@ export default function Progress() {
     <AppLayout>
       <div className="space-y-8 max-w-6xl mx-auto">
         <div>
-          <h1 className="text-3xl font-serif font-bold text-emerald-950 dark:text-emerald-50">{t("prog.title")}</h1>
+          <h1 className="text-3xl font-serif font-bold text-slate-900 dark:text-blue-50">{t("prog.title")}</h1>
           <p className="text-muted-foreground mt-2">{t("prog.subtitle")}</p>
         </div>
 
         {/* Top Stats */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {[
-            { title: t("prog.tajweed"), value: `${progress.tajweedScore}%`, icon: Target, color: "text-emerald-600", bg: "bg-emerald-100" },
+            { title: t("prog.tajweed"), value: `${progress.tajweedScore}%`, icon: Target, color: "text-blue-700", bg: "bg-blue-100" },
             { title: t("prog.accuracy"), value: `${progress.accuracyScore}%`, icon: Activity, color: "text-blue-600", bg: "bg-blue-100" },
             { title: t("prog.ayahsRecited"), value: progress.totalAyahsRecited, icon: BookOpen, color: "text-purple-600", bg: "bg-purple-100" },
             { title: t("prog.timeSpent"), value: `${Math.round(progress.totalRecordingMinutes)}m`, icon: Clock, color: "text-rose-600", bg: "bg-rose-100" },
@@ -57,7 +57,7 @@ export default function Progress() {
                   </div>
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
-                    <h4 className="text-2xl font-bold text-emerald-950 dark:text-emerald-50">{stat.value}</h4>
+                    <h4 className="text-2xl font-bold text-slate-900 dark:text-blue-50">{stat.value}</h4>
                   </div>
                 </CardContent>
               </Card>
@@ -75,7 +75,7 @@ export default function Progress() {
           >
             <Card className="h-full">
               <CardHeader>
-                <CardTitle className="text-emerald-950 dark:text-emerald-50 text-lg">{t("prog.weeklyChart")}</CardTitle>
+                <CardTitle className="text-slate-900 dark:text-blue-50 text-lg">{t("prog.weeklyChart")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="h-[300px] w-full">
@@ -104,7 +104,7 @@ export default function Progress() {
           >
             <Card className="h-full">
               <CardHeader>
-                <CardTitle className="text-emerald-950 dark:text-emerald-50 text-lg">{t("prog.surahChart")}</CardTitle>
+                <CardTitle className="text-slate-900 dark:text-blue-50 text-lg">{t("prog.surahChart")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="h-[300px] w-full">

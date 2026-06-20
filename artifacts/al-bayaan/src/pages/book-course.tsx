@@ -41,7 +41,7 @@ interface BookDetail {
 }
 
 const DIFFICULTY_COLORS: Record<string, string> = {
-  beginner: "bg-emerald-100 text-emerald-700 border-emerald-200",
+  beginner: "bg-blue-100 text-blue-800 border-blue-200",
   intermediate: "bg-amber-100 text-amber-700 border-amber-200",
   advanced: "bg-red-100 text-red-700 border-red-200",
 };
@@ -151,7 +151,7 @@ export default function BookCourse() {
       <AppLayout>
         <div className="max-w-4xl mx-auto text-center py-20">
           <BookOpen className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-30" />
-          <h2 className="text-xl font-bold text-emerald-950 mb-2">{t("course.notFound")}</h2>
+          <h2 className="text-xl font-bold text-slate-900 mb-2">{t("course.notFound")}</h2>
           <p className="text-muted-foreground mb-6">{error ?? t("course.notFoundSub")}</p>
           <Button onClick={() => navigate("/library")} variant="outline">
             <ChevronLeft className="h-4 w-4 mr-1" /> {t("course.backToLibrary")}
@@ -172,7 +172,7 @@ export default function BookCourse() {
         {/* Back */}
         <button
           onClick={() => navigate("/library")}
-          className="flex items-center gap-1.5 text-sm text-emerald-700 hover:text-emerald-900 transition-colors font-medium"
+          className="flex items-center gap-1.5 text-sm text-blue-800 hover:text-blue-950 transition-colors font-medium"
         >
           <ChevronLeft className="h-4 w-4" />
           {t("course.backToLibrary")}
@@ -182,7 +182,7 @@ export default function BookCourse() {
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-2xl overflow-hidden border border-emerald-100 shadow-md"
+          className="rounded-2xl overflow-hidden border border-blue-100 shadow-md"
         >
           <div
             className="relative px-8 py-10"
@@ -232,7 +232,7 @@ export default function BookCourse() {
                     </p>
                     <Progress value={pct} className="h-2 bg-white/20 mb-4" />
                     <Button
-                      className="w-full bg-white text-emerald-900 hover:bg-white/90 font-semibold shadow-sm"
+                      className="w-full bg-white text-blue-950 hover:bg-white/90 font-semibold shadow-sm"
                       onClick={() => navigate(`/library/${bookId}/lesson/${currentLesson}`)}
                     >
                       {completedLessons === 0 ? t("course.startLearning") : t("general.continue")}
@@ -244,7 +244,7 @@ export default function BookCourse() {
                     <p className="text-white text-sm font-semibold mb-2">{t("course.courseComplete")}</p>
                     <Progress value={100} className="h-2 bg-white/20 mb-4" />
                     <Button
-                      className="w-full bg-white text-emerald-900 hover:bg-white/90 font-semibold"
+                      className="w-full bg-white text-blue-950 hover:bg-white/90 font-semibold"
                       onClick={() => navigate("/certificates")}
                     >
                       <Star className="h-4 w-4 mr-1" /> {t("course.viewCert")}
@@ -267,9 +267,9 @@ export default function BookCourse() {
           </div>
 
           {/* Tags */}
-          <div className="bg-white px-8 py-3 flex flex-wrap gap-2 border-t border-emerald-50">
+          <div className="bg-white px-8 py-3 flex flex-wrap gap-2 border-t border-blue-50">
             {book.tags.map(tag => (
-              <span key={tag} className="text-xs bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full px-2.5 py-0.5">
+              <span key={tag} className="text-xs bg-blue-50 text-blue-800 border border-blue-100 rounded-full px-2.5 py-0.5">
                 {tag}
               </span>
             ))}
@@ -287,10 +287,10 @@ export default function BookCourse() {
               sub: isComplete ? t("course.allComplete") : t("course.current"),
             },
           ].map(s => (
-            <div key={s.label} className="bg-white border border-emerald-100 rounded-xl p-4 text-center shadow-sm">
-              <p className="text-2xl font-bold text-emerald-800">{s.value}</p>
+            <div key={s.label} className="bg-white border border-blue-100 rounded-xl p-4 text-center shadow-sm">
+              <p className="text-2xl font-bold text-blue-900">{s.value}</p>
               <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{s.label}</p>
-              <p className="text-[10px] text-emerald-600">{s.sub}</p>
+              <p className="text-[10px] text-blue-700">{s.sub}</p>
             </div>
           ))}
         </div>
@@ -298,8 +298,8 @@ export default function BookCourse() {
         {/* Lessons List */}
         <div>
           <div className="flex items-center gap-2 mb-4">
-            <BookMarked className="h-5 w-5 text-emerald-600" />
-            <h2 className="text-lg font-serif font-bold text-emerald-950">{t("course.curriculum")}</h2>
+            <BookMarked className="h-5 w-5 text-blue-700" />
+            <h2 className="text-lg font-serif font-bold text-slate-900">{t("course.curriculum")}</h2>
             <span className="text-sm text-muted-foreground">({book.lessonCount} {t("course.lessonsCount")})</span>
           </div>
 
@@ -318,24 +318,24 @@ export default function BookCourse() {
                   transition={{ delay: Math.min(idx * 0.02, 0.4) }}
                   className={`rounded-xl border overflow-hidden transition-all duration-200 ${
                     isCurrent
-                      ? "border-emerald-400 shadow-sm bg-emerald-50/50"
+                      ? "border-blue-400 shadow-sm bg-blue-50/50"
                       : isCompleted
-                      ? "border-emerald-100 bg-white"
+                      ? "border-blue-100 bg-white"
                       : "border-gray-100 bg-white"
                   }`}
                 >
                   {/* Lesson Header */}
                   <button
-                    className="w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-emerald-50/50 transition-colors"
+                    className="w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-blue-50/50 transition-colors"
                     onClick={() => {
                       if (!isLocked) setExpandedLesson(isExpanded ? null : lesson.number);
                     }}
                   >
                     <div className="shrink-0">
                       {isCompleted ? (
-                        <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+                        <CheckCircle2 className="h-5 w-5 text-blue-600" />
                       ) : isCurrent ? (
-                        <PlayCircle className="h-5 w-5 text-emerald-600" />
+                        <PlayCircle className="h-5 w-5 text-blue-700" />
                       ) : isLocked ? (
                         <Lock className="h-5 w-5 text-gray-300" />
                       ) : (
@@ -345,7 +345,7 @@ export default function BookCourse() {
 
                     <span
                       className={`text-xs font-bold w-7 shrink-0 ${
-                        isCompleted ? "text-emerald-600" : isCurrent ? "text-emerald-700" : "text-gray-400"
+                        isCompleted ? "text-blue-700" : isCurrent ? "text-blue-800" : "text-gray-400"
                       }`}
                     >
                       {lesson.number}
@@ -354,12 +354,12 @@ export default function BookCourse() {
                     <div className="flex-1 min-w-0">
                       <p
                         className={`text-sm font-medium truncate ${
-                          isLocked ? "text-gray-400" : isCompleted ? "text-emerald-900" : isCurrent ? "text-emerald-900 font-semibold" : "text-gray-700"
+                          isLocked ? "text-gray-400" : isCompleted ? "text-blue-950" : isCurrent ? "text-blue-950 font-semibold" : "text-gray-700"
                         }`}
                       >
                         {lesson.title}
                         {isCurrent && (
-                          <span className="ml-2 text-[10px] bg-emerald-600 text-white rounded-full px-2 py-0.5 font-normal">
+                          <span className="ml-2 text-[10px] bg-blue-700 text-white rounded-full px-2 py-0.5 font-normal">
                             {t("course.current")}
                           </span>
                         )}
@@ -395,14 +395,14 @@ export default function BookCourse() {
                         transition={{ duration: 0.2 }}
                         className="overflow-hidden"
                       >
-                        <div className="px-4 pb-4 pt-0 border-t border-emerald-100 bg-white">
+                        <div className="px-4 pb-4 pt-0 border-t border-blue-100 bg-white">
                           <p className="text-sm text-gray-600 leading-relaxed mt-3 mb-4">
                             {lesson.description}
                           </p>
                           <div className="flex items-center gap-3 flex-wrap">
                             <Button
                               size="sm"
-                              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                              className="bg-blue-700 hover:bg-blue-700 text-white"
                               onClick={() => navigate(`/library/${bookId}/lesson/${lesson.number}`)}
                             >
                               {isCompleted ? (
@@ -414,7 +414,7 @@ export default function BookCourse() {
                               )}
                             </Button>
                             {isCompleted && (
-                              <span className="flex items-center gap-1.5 text-sm text-emerald-600 font-medium">
+                              <span className="flex items-center gap-1.5 text-sm text-blue-700 font-medium">
                                 <CheckCircle2 className="h-4 w-4" /> {t("course.completedLabel")}
                               </span>
                             )}
@@ -422,7 +422,7 @@ export default function BookCourse() {
                               <Button
                                 size="sm"
                                 variant="outline"
-                                className="border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+                                className="border-blue-200 text-blue-800 hover:bg-blue-50"
                                 onClick={openAITeacher}
                               >
                                 <Video className="h-3.5 w-3.5 mr-1.5" />

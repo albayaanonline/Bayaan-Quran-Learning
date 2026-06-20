@@ -60,10 +60,10 @@ function QuestionEditor({
 
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-      <Card className="border-emerald-100">
+      <Card className="border-blue-100">
         <CardContent className="p-4">
           <div className="flex items-start gap-3 mb-3">
-            <div className="h-6 w-6 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold flex items-center justify-center shrink-0 mt-1">
+            <div className="h-6 w-6 rounded-full bg-blue-100 text-blue-800 text-xs font-bold flex items-center justify-center shrink-0 mt-1">
               {index + 1}
             </div>
             <div className="flex-1 space-y-2">
@@ -100,7 +100,7 @@ function QuestionEditor({
                         name={`correct-${question.id}`}
                         checked={question.answer === opt}
                         onChange={() => onChange({ ...question, answer: opt })}
-                        className="accent-emerald-600 shrink-0"
+                        className="accent-blue-600 shrink-0"
                         title="Mark as correct answer"
                       />
                       <Input
@@ -118,7 +118,7 @@ function QuestionEditor({
                     <Plus className="h-3 w-3" /> Add Option
                   </Button>
                   {question.answer && (
-                    <p className="text-[11px] text-emerald-600">✓ Correct: {question.answer}</p>
+                    <p className="text-[11px] text-blue-700">✓ Correct: {question.answer}</p>
                   )}
                 </div>
               )}
@@ -149,14 +149,14 @@ function ExamCard({ exam, onEdit, onPublish, onDelete }: {
   onDelete: () => void;
 }) {
   return (
-    <Card className="border-emerald-100 hover:shadow-md transition-shadow">
+    <Card className="border-blue-100 hover:shadow-md transition-shadow">
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-3 mb-2">
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-sm text-emerald-950 truncate">{exam.title}</h3>
+            <h3 className="font-semibold text-sm text-slate-900 truncate">{exam.title}</h3>
             {exam.description && <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{exam.description}</p>}
           </div>
-          <Badge className={`shrink-0 text-[10px] ${exam.isPublished ? "bg-emerald-100 text-emerald-700 border-0" : "bg-gray-100 text-gray-600 border-0"}`}>
+          <Badge className={`shrink-0 text-[10px] ${exam.isPublished ? "bg-blue-100 text-blue-800 border-0" : "bg-gray-100 text-gray-600 border-0"}`}>
             {exam.isPublished ? "Published" : "Draft"}
           </Badge>
         </div>
@@ -170,7 +170,7 @@ function ExamCard({ exam, onEdit, onPublish, onDelete }: {
             <Edit3 className="h-3 w-3" /> Edit
           </Button>
           {!exam.isPublished && (
-            <Button size="sm" className="h-7 text-xs gap-1 bg-emerald-600 hover:bg-emerald-700 flex-1" onClick={onPublish}>
+            <Button size="sm" className="h-7 text-xs gap-1 bg-blue-700 hover:bg-blue-700 flex-1" onClick={onPublish}>
               <Send className="h-3 w-3" /> Publish
             </Button>
           )}
@@ -284,27 +284,27 @@ export default function ExamBuilder() {
       <div className="max-w-5xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-serif font-bold text-emerald-950 flex items-center gap-2">
-              <ClipboardList className="h-6 w-6 text-emerald-600" /> Exam Builder
+            <h1 className="text-2xl font-serif font-bold text-slate-900 flex items-center gap-2">
+              <ClipboardList className="h-6 w-6 text-blue-700" /> Exam Builder
             </h1>
             <p className="text-sm text-muted-foreground mt-1">Create, edit, and publish exams for your students</p>
           </div>
-          <Button onClick={openNew} className="bg-emerald-600 hover:bg-emerald-700 gap-2">
+          <Button onClick={openNew} className="bg-blue-700 hover:bg-blue-700 gap-2">
             <Plus className="h-4 w-4" /> New Exam
           </Button>
         </div>
 
         {loading ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {[0,1,2].map(i => <div key={i} className="h-40 rounded-xl bg-emerald-50 animate-pulse" />)}
+            {[0,1,2].map(i => <div key={i} className="h-40 rounded-xl bg-blue-50 animate-pulse" />)}
           </div>
         ) : exams.length === 0 ? (
           <Card className="border-dashed">
             <CardContent className="p-12 text-center">
-              <ClipboardList className="h-12 w-12 text-emerald-300 mx-auto mb-4" />
+              <ClipboardList className="h-12 w-12 text-blue-300 mx-auto mb-4" />
               <h3 className="font-semibold text-lg">No exams yet</h3>
               <p className="text-sm text-muted-foreground mt-1 mb-4">Create your first exam for students</p>
-              <Button onClick={openNew} className="bg-emerald-600 hover:bg-emerald-700">
+              <Button onClick={openNew} className="bg-blue-700 hover:bg-blue-700">
                 <Plus className="h-4 w-4 mr-2" /> Create First Exam
               </Button>
             </CardContent>
@@ -384,7 +384,7 @@ export default function ExamBuilder() {
                       <Plus className="h-3 w-3" /> Recitation
                     </Button>
                     {(editingExam.questions?.length ?? 0) > 0 && (
-                      <Button variant="ghost" size="sm" className="h-7 text-xs ml-auto text-emerald-600" onClick={autoCalcMarks}>
+                      <Button variant="ghost" size="sm" className="h-7 text-xs ml-auto text-blue-700" onClick={autoCalcMarks}>
                         Auto-calc marks ({totalQMarks})
                       </Button>
                     )}
@@ -427,7 +427,7 @@ export default function ExamBuilder() {
                         className="mt-1 h-9 text-sm" />
                     </div>
                   </div>
-                  <div className="bg-emerald-50 rounded-lg p-3 text-xs text-emerald-700 space-y-1">
+                  <div className="bg-blue-50 rounded-lg p-3 text-xs text-blue-800 space-y-1">
                     <p>📋 <strong>{editingExam.questions?.length ?? 0}</strong> questions</p>
                     <p>⏱ <strong>{editingExam.durationMinutes ?? 30}</strong> minutes</p>
                     <p>✅ Pass at <strong>{editingExam.passingMarks ?? 60}</strong> / <strong>{editingExam.totalMarks ?? 100}</strong> marks ({Math.round(((editingExam.passingMarks ?? 60) / (editingExam.totalMarks ?? 100)) * 100)}%)</p>
@@ -438,7 +438,7 @@ export default function ExamBuilder() {
 
               <div className="flex gap-2 pt-2 border-t">
                 <Button variant="outline" onClick={() => setEditingExam(null)} className="flex-1">Cancel</Button>
-                <Button onClick={saveExam} disabled={saving} className="bg-emerald-600 hover:bg-emerald-700 flex-1">
+                <Button onClick={saveExam} disabled={saving} className="bg-blue-700 hover:bg-blue-700 flex-1">
                   {saving ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Saving…</> : "Save Exam"}
                 </Button>
               </div>

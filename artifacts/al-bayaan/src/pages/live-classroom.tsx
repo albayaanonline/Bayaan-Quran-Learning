@@ -111,7 +111,7 @@ function ClassCard({ session, onJoin, onEnroll }: { session: ClassSession; onJoi
             <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" />{session.time} ({session.duration}min)</span>
             <span className="flex items-center gap-1"><Users className="h-3.5 w-3.5" />
               {session.enrolledCount}/{session.maxStudents}
-              {spotsLeft > 0 && <span className="text-emerald-600 ml-1">({spotsLeft} spots left)</span>}
+              {spotsLeft > 0 && <span className="text-blue-700 ml-1">({spotsLeft} spots left)</span>}
               {spotsLeft === 0 && <span className="text-red-500 ml-1">(Full)</span>}
             </span>
           </div>
@@ -130,7 +130,7 @@ function ClassCard({ session, onJoin, onEnroll }: { session: ClassSession; onJoi
                   </Button>
                 )}
                 {spotsLeft > 0 && (
-                  <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white" onClick={onEnroll}>
+                  <Button size="sm" className="bg-blue-700 hover:bg-blue-700 text-white" onClick={onEnroll}>
                     Enroll
                   </Button>
                 )}
@@ -212,19 +212,19 @@ export default function LiveClassroom() {
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-serif font-bold text-emerald-950 flex items-center gap-2">
-              <Video className="h-6 w-6 text-emerald-600" />Live Classroom
+            <h1 className="text-2xl font-serif font-bold text-slate-900 flex items-center gap-2">
+              <Video className="h-6 w-6 text-blue-700" />Live Classroom
             </h1>
             <p className="text-sm text-muted-foreground mt-1">Join live sessions with teachers</p>
           </div>
-          <Button onClick={() => setShowCreate(s => !s)} className="bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-2">
+          <Button onClick={() => setShowCreate(s => !s)} className="bg-blue-700 hover:bg-blue-700 text-white flex items-center gap-2">
             <Plus className="h-4 w-4" />{showCreate ? "Cancel" : "New Class"}
           </Button>
         </div>
 
         {showCreate && (
           <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
-            <Card className="border-emerald-200">
+            <Card className="border-blue-200">
               <CardHeader><CardTitle className="text-base">Schedule a New Class</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid sm:grid-cols-2 gap-4">
@@ -281,7 +281,7 @@ export default function LiveClassroom() {
                     <Textarea placeholder="What will be covered in this class?" value={newClass.description} onChange={e => setNewClass(p => ({ ...p, description: e.target.value }))} rows={2} />
                   </div>
                 </div>
-                <Button onClick={handleCreate} disabled={loading} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                <Button onClick={handleCreate} disabled={loading} className="bg-blue-700 hover:bg-blue-700 text-white">
                   {loading ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Creating…</> : "Schedule Class"}
                 </Button>
               </CardContent>
@@ -293,7 +293,7 @@ export default function LiveClassroom() {
         <div className="flex gap-2">
           {(["all", "live", "upcoming", "completed"] as const).map(s => (
             <Button key={s} variant={filterStatus === s ? "default" : "outline"} size="sm"
-              className={filterStatus === s ? "bg-emerald-600 text-white" : ""}
+              className={filterStatus === s ? "bg-blue-700 text-white" : ""}
               onClick={() => setFilterStatus(s)}>
               {s === "all" ? "All" : s.charAt(0).toUpperCase() + s.slice(1)}
               {s !== "all" && <Badge className="ml-1.5 bg-transparent border-0 p-0 text-inherit">

@@ -34,7 +34,7 @@ interface HifdhPlan {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  memorized: "bg-emerald-100 text-emerald-800 border-emerald-200",
+  memorized: "bg-blue-100 text-blue-900 border-blue-200",
   reviewing: "bg-amber-100 text-amber-800 border-amber-200",
   learning: "bg-blue-100 text-blue-800 border-blue-200",
 };
@@ -61,19 +61,19 @@ function MarkdownRenderer({ content }: { content: string }) {
   return (
     <div className="space-y-1 text-sm">
       {lines.map((line, i) => {
-        if (line.startsWith("# ")) return <h1 key={i} className="text-2xl font-bold font-serif text-emerald-950 mt-6 mb-3">{line.slice(2)}</h1>;
-        if (line.startsWith("## ")) return <h2 key={i} className="text-lg font-bold text-emerald-900 mt-5 mb-2 flex items-center gap-2"><Brain className="h-4 w-4 text-emerald-600 shrink-0" />{line.slice(3)}</h2>;
-        if (line.startsWith("### ")) return <h3 key={i} className="text-base font-semibold text-emerald-800 mt-4 mb-2">{line.slice(4)}</h3>;
-        if (line.startsWith("**") && line.endsWith("**") && line.length > 4) return <p key={i} className="font-semibold text-emerald-900 mt-3">{line.slice(2, -2)}</p>;
+        if (line.startsWith("# ")) return <h1 key={i} className="text-2xl font-bold font-serif text-slate-900 mt-6 mb-3">{line.slice(2)}</h1>;
+        if (line.startsWith("## ")) return <h2 key={i} className="text-lg font-bold text-blue-950 mt-5 mb-2 flex items-center gap-2"><Brain className="h-4 w-4 text-blue-700 shrink-0" />{line.slice(3)}</h2>;
+        if (line.startsWith("### ")) return <h3 key={i} className="text-base font-semibold text-blue-900 mt-4 mb-2">{line.slice(4)}</h3>;
+        if (line.startsWith("**") && line.endsWith("**") && line.length > 4) return <p key={i} className="font-semibold text-blue-950 mt-3">{line.slice(2, -2)}</p>;
         if (line.startsWith("- ")) return (
           <div key={i} className="flex gap-2 my-0.5">
-            <span className="text-emerald-600 mt-0.5 shrink-0">•</span>
+            <span className="text-blue-700 mt-0.5 shrink-0">•</span>
             <span className="text-foreground">{line.slice(2).replace(/\*\*(.*?)\*\*/g, "$1")}</span>
           </div>
         );
         if (/^\d+\./.test(line)) return (
           <div key={i} className="flex gap-2 my-0.5">
-            <span className="text-emerald-600 font-medium shrink-0">{line.split(".")[0]}.</span>
+            <span className="text-blue-700 font-medium shrink-0">{line.split(".")[0]}.</span>
             <span className="text-foreground">{line.replace(/^\d+\.\s*/, "").replace(/\*\*(.*?)\*\*/g, "$1")}</span>
           </div>
         );
@@ -220,12 +220,12 @@ export default function Hifdh() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-serif font-bold text-emerald-950 dark:text-emerald-50">{t("nav.hifdh")}</h1>
+            <h1 className="text-3xl font-serif font-bold text-slate-900 dark:text-blue-50">{t("nav.hifdh")}</h1>
             <p className="text-muted-foreground mt-1">{t("hifdh.subtitle")}</p>
           </div>
           <Dialog open={addOpen} onOpenChange={setAddOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2">
+              <Button className="bg-blue-700 hover:bg-blue-700 text-white gap-2">
                 <Plus className="h-4 w-4" /> {t("hifdh.addSurah")}
               </Button>
             </DialogTrigger>
@@ -246,7 +246,7 @@ export default function Hifdh() {
                     ))}
                   </SelectContent>
                 </Select>
-                <Button onClick={addSurah} disabled={!selectedSurahId} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white">
+                <Button onClick={addSurah} disabled={!selectedSurahId} className="w-full bg-blue-700 hover:bg-blue-700 text-white">
                   {t("hifdh.addToPlan")}
                 </Button>
               </div>
@@ -262,8 +262,8 @@ export default function Hifdh() {
         ) : plan && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { label: t("hifdh.totalSurahs"), value: plan.stats.totalSurahs, icon: BookOpen, color: "text-emerald-600", bg: "bg-emerald-50 dark:bg-emerald-950" },
-              { label: t("hifdh.memorized"), value: plan.stats.memorized, icon: CheckCircle2, color: "text-emerald-600", bg: "bg-emerald-50 dark:bg-emerald-950" },
+              { label: t("hifdh.totalSurahs"), value: plan.stats.totalSurahs, icon: BookOpen, color: "text-blue-700", bg: "bg-blue-50 dark:bg-blue-950" },
+              { label: t("hifdh.memorized"), value: plan.stats.memorized, icon: CheckCircle2, color: "text-blue-700", bg: "bg-blue-50 dark:bg-blue-950" },
               { label: t("hifdh.reviewing"), value: plan.stats.reviewing, icon: RotateCcw, color: "text-amber-600", bg: "bg-amber-50 dark:bg-amber-950" },
               { label: t("hifdh.dueToday"), value: plan.stats.dueToday, icon: Flame, color: "text-red-600", bg: "bg-red-50 dark:bg-red-950" },
             ].map((stat, i) => (
@@ -274,7 +274,7 @@ export default function Hifdh() {
                       <stat.icon className={`h-5 w-5 ${stat.color}`} />
                     </div>
                     <div>
-                      <p className="text-2xl font-bold text-emerald-950 dark:text-emerald-50">{stat.value}</p>
+                      <p className="text-2xl font-bold text-slate-900 dark:text-blue-50">{stat.value}</p>
                       <p className="text-xs text-muted-foreground">{stat.label}</p>
                     </div>
                   </CardContent>
@@ -286,7 +286,7 @@ export default function Hifdh() {
 
         {/* Tabs */}
         <Tabs defaultValue="surahs">
-          <TabsList className="border border-emerald-100">
+          <TabsList className="border border-blue-100">
             <TabsTrigger value="surahs" className="gap-2"><Brain className="h-3.5 w-3.5" />{t("hifdh.mySurahs")}</TabsTrigger>
             <TabsTrigger value="ai-coach" className="gap-2"><Sparkles className="h-3.5 w-3.5" />{t("hifdh.aiCoach")}</TabsTrigger>
           </TabsList>
@@ -305,11 +305,11 @@ export default function Hifdh() {
                   {plan.due.map((entry) => (
                     <div key={entry.id} className="flex items-center justify-between gap-4 bg-white dark:bg-background rounded-xl p-4 border border-red-100">
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-emerald-950 dark:text-emerald-50">{entry.surahName}</p>
+                        <p className="font-semibold text-slate-900 dark:text-blue-50">{entry.surahName}</p>
                         <p className="text-xs text-muted-foreground">Ayahs {entry.ayahStart}–{entry.ayahEnd} · {entry.revisionCount} {t("hifdh.revisions")}</p>
                         <div className="mt-2 flex items-center gap-2">
-                          <Progress value={entry.strengthScore} className="h-1.5 flex-1 bg-emerald-100" />
-                          <span className="text-xs font-medium text-emerald-700">{entry.strengthScore}%</span>
+                          <Progress value={entry.strengthScore} className="h-1.5 flex-1 bg-blue-100" />
+                          <span className="text-xs font-medium text-blue-800">{entry.strengthScore}%</span>
                         </div>
                       </div>
                       <div className="flex gap-2 shrink-0">
@@ -317,7 +317,7 @@ export default function Hifdh() {
                           onClick={() => revise(entry.id, "good")} disabled={revising === entry.id}>
                           <RotateCcw className="h-3.5 w-3.5 mr-1" /> {t("hifdh.good")}
                         </Button>
-                        <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                        <Button size="sm" className="bg-blue-700 hover:bg-blue-700 text-white"
                           onClick={() => revise(entry.id, "excellent")} disabled={revising === entry.id}>
                           <Star className="h-3.5 w-3.5 mr-1" /> {t("hifdh.excellent")}
                         </Button>
@@ -338,7 +338,7 @@ export default function Hifdh() {
                 {loading && <div className="space-y-3">{Array(3).fill(0).map((_, i) => <Skeleton key={i} className="h-20" />)}</div>}
                 {!loading && entries.length === 0 && (
                   <div className="text-center py-12">
-                    <Brain className="h-12 w-12 mx-auto text-emerald-300 mb-3" />
+                    <Brain className="h-12 w-12 mx-auto text-blue-300 mb-3" />
                     <p className="text-muted-foreground text-sm">{t("hifdh.noSurahs")}</p>
                     <p className="text-muted-foreground text-sm">{t("hifdh.clickAdd")}</p>
                   </div>
@@ -346,19 +346,19 @@ export default function Hifdh() {
                 <div className="space-y-3">
                   {entries.map((entry, i) => (
                     <motion.div key={entry.id} initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}
-                      className="flex items-center gap-4 p-4 rounded-xl border border-emerald-100 hover:border-emerald-200 transition-colors">
-                      <div className="h-10 w-10 rounded-full bg-emerald-100 dark:bg-emerald-900 flex items-center justify-center font-bold text-emerald-800 text-sm shrink-0">
+                      className="flex items-center gap-4 p-4 rounded-xl border border-blue-100 hover:border-blue-200 transition-colors">
+                      <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center font-bold text-blue-900 text-sm shrink-0">
                         {entry.surahId}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1 flex-wrap">
-                          <span className="font-semibold text-emerald-950 dark:text-emerald-50">{entry.surahName}</span>
+                          <span className="font-semibold text-slate-900 dark:text-blue-50">{entry.surahName}</span>
                           <Badge className={`text-xs border ${STATUS_COLORS[entry.status] ?? ""}`}>{STATUS_LABELS[entry.status] ?? entry.status}</Badge>
                         </div>
                         <p className="text-xs text-muted-foreground">Ayahs {entry.ayahStart}–{entry.ayahEnd} · {entry.revisionCount} revisions</p>
                         <div className="mt-1.5 flex items-center gap-2">
-                          <Progress value={entry.strengthScore} className="h-1.5 flex-1 bg-emerald-100" />
-                          <span className="text-xs font-medium text-emerald-700 w-8 text-right">{entry.strengthScore}%</span>
+                          <Progress value={entry.strengthScore} className="h-1.5 flex-1 bg-blue-100" />
+                          <span className="text-xs font-medium text-blue-800 w-8 text-right">{entry.strengthScore}%</span>
                         </div>
                       </div>
                       <div className="text-right shrink-0 text-xs text-muted-foreground">
@@ -370,7 +370,7 @@ export default function Hifdh() {
                           <RotateCcw className="h-3.5 w-3.5" />
                         </Button>
                         <Button size="sm" variant="ghost" onClick={() => revise(entry.id, "excellent")} disabled={revising === entry.id}
-                          className="text-emerald-600 hover:bg-emerald-50 h-8 px-2">
+                          className="text-blue-700 hover:bg-blue-50 h-8 px-2">
                           <Star className="h-3.5 w-3.5" />
                         </Button>
                         <Button size="sm" variant="ghost" onClick={() => remove(entry.id)}
@@ -389,14 +389,14 @@ export default function Hifdh() {
               <Card>
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-emerald-600" /> {t("hifdh.upcoming")}
+                    <Calendar className="h-4 w-4 text-blue-700" /> {t("hifdh.upcoming")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
                     {plan.upcoming.map((entry) => (
-                      <div key={entry.id} className="flex items-center justify-between text-sm py-2 border-b border-emerald-50 last:border-0">
-                        <span className="font-medium text-emerald-900 dark:text-emerald-100">{entry.surahName}</span>
+                      <div key={entry.id} className="flex items-center justify-between text-sm py-2 border-b border-blue-50 last:border-0">
+                        <span className="font-medium text-blue-950 dark:text-blue-100">{entry.surahName}</span>
                         <span className="text-muted-foreground">{formatDate(entry.nextRevision)}</span>
                       </div>
                     ))}
@@ -408,12 +408,12 @@ export default function Hifdh() {
 
           {/* ── AI Coach Tab ── */}
           <TabsContent value="ai-coach" className="mt-4">
-            <Card className="border-emerald-100">
+            <Card className="border-blue-100">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle className="flex items-center gap-2 text-emerald-950">
-                      <Sparkles className="h-5 w-5 text-emerald-600" /> {t("hifdh.aiCoachTitle")}
+                    <CardTitle className="flex items-center gap-2 text-slate-900">
+                      <Sparkles className="h-5 w-5 text-blue-700" /> {t("hifdh.aiCoachTitle")}
                     </CardTitle>
                     <CardDescription className="mt-1">
                       {t("hifdh.aiCoachSub")}
@@ -421,14 +421,14 @@ export default function Hifdh() {
                   </div>
                   <div className="flex gap-2">
                     {aiPlan && (
-                      <Button variant="outline" size="sm" onClick={() => setAiPlan("")} className="gap-1.5 border-emerald-200 text-emerald-700">
+                      <Button variant="outline" size="sm" onClick={() => setAiPlan("")} className="gap-1.5 border-blue-200 text-blue-800">
                         <Trash2 className="h-3.5 w-3.5" /> {t("hifdh.clear")}
                       </Button>
                     )}
                     <Button
                       onClick={generateAiPlan}
                       disabled={isGeneratingPlan}
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2"
+                      className="bg-blue-700 hover:bg-blue-700 text-white gap-2"
                     >
                       {isGeneratingPlan
                         ? <><Loader2 className="h-4 w-4 animate-spin" /> {t("hifdh.generating")}</>
@@ -441,19 +441,19 @@ export default function Hifdh() {
               <CardContent>
                 {!aiPlan && !isGeneratingPlan && (
                   <div className="text-center py-16">
-                    <div className="h-16 w-16 rounded-2xl bg-emerald-100 mx-auto flex items-center justify-center mb-4">
-                      <Brain className="h-8 w-8 text-emerald-600" />
+                    <div className="h-16 w-16 rounded-2xl bg-blue-100 mx-auto flex items-center justify-center mb-4">
+                      <Brain className="h-8 w-8 text-blue-700" />
                     </div>
-                    <h3 className="font-semibold text-lg text-emerald-950 mb-2">{t("hifdh.getYourPlan")}</h3>
+                    <h3 className="font-semibold text-lg text-slate-900 mb-2">{t("hifdh.getYourPlan")}</h3>
                     <p className="text-sm text-muted-foreground max-w-sm mx-auto mb-6">
                       {t("hifdh.analyzeDesc")}
                     </p>
                     <div className="flex flex-wrap justify-center gap-2 text-xs text-muted-foreground mb-8">
                       {[t("hifdh.feat1"), t("hifdh.feat2"), t("hifdh.feat3"), t("hifdh.feat4")].map(f => (
-                        <span key={f} className="bg-emerald-50 border border-emerald-100 rounded-full px-3 py-1">{f}</span>
+                        <span key={f} className="bg-blue-50 border border-blue-100 rounded-full px-3 py-1">{f}</span>
                       ))}
                     </div>
-                    <Button onClick={generateAiPlan} className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2 h-11 px-8">
+                    <Button onClick={generateAiPlan} className="bg-blue-700 hover:bg-blue-700 text-white gap-2 h-11 px-8">
                       <Sparkles className="h-4 w-4" /> {t("hifdh.genCoach")}
                     </Button>
                   </div>
@@ -461,11 +461,11 @@ export default function Hifdh() {
 
                 {isGeneratingPlan && !aiPlan && (
                   <div className="flex flex-col items-center py-16 gap-4">
-                    <div className="h-12 w-12 rounded-2xl bg-emerald-100 flex items-center justify-center">
-                      <Loader2 className="h-6 w-6 text-emerald-600 animate-spin" />
+                    <div className="h-12 w-12 rounded-2xl bg-blue-100 flex items-center justify-center">
+                      <Loader2 className="h-6 w-6 text-blue-700 animate-spin" />
                     </div>
                     <div className="text-center">
-                      <p className="font-medium text-emerald-900">{t("hifdh.analyzing")}</p>
+                      <p className="font-medium text-blue-950">{t("hifdh.analyzing")}</p>
                       <p className="text-sm text-muted-foreground mt-1">{t("hifdh.crafting")}</p>
                     </div>
                   </div>
@@ -474,11 +474,11 @@ export default function Hifdh() {
                 {aiPlan && (
                   <div
                     ref={aiScrollRef}
-                    className="max-h-[60vh] overflow-y-auto prose-sm bg-emerald-50/50 rounded-xl p-6 border border-emerald-100"
+                    className="max-h-[60vh] overflow-y-auto prose-sm bg-blue-50/50 rounded-xl p-6 border border-blue-100"
                   >
                     <MarkdownRenderer content={aiPlan} />
                     {isGeneratingPlan && (
-                      <span className="inline-block w-2 h-4 bg-emerald-500 animate-pulse ml-0.5 rounded-sm" />
+                      <span className="inline-block w-2 h-4 bg-blue-600 animate-pulse ml-0.5 rounded-sm" />
                     )}
                   </div>
                 )}

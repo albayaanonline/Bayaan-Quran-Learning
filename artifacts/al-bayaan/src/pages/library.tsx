@@ -36,7 +36,7 @@ const CATEGORY_ICONS: Record<string, string> = {
 };
 
 const DIFFICULTY_COLORS = {
-  beginner: "bg-emerald-100 text-emerald-700 border-emerald-200",
+  beginner: "bg-blue-100 text-blue-800 border-blue-200",
   intermediate: "bg-amber-100 text-amber-700 border-amber-200",
   advanced: "bg-red-100 text-red-700 border-red-200",
 };
@@ -95,7 +95,7 @@ function BookCard({ book, completedLessons, onOpen }: { book: Book; completedLes
       {/* Book Info */}
       <div className="p-4 flex flex-col flex-1">
         <div className="flex items-start justify-between gap-2 mb-1">
-          <h3 className="text-sm font-bold text-gray-900 leading-snug group-hover:text-emerald-700 transition-colors line-clamp-2 flex-1">
+          <h3 className="text-sm font-bold text-gray-900 leading-snug group-hover:text-blue-800 transition-colors line-clamp-2 flex-1">
             {book.title}
           </h3>
         </div>
@@ -110,7 +110,7 @@ function BookCard({ book, completedLessons, onOpen }: { book: Book; completedLes
               <Clock className="h-2.5 w-2.5" />{book.lessonCount} {t("lib.lessons")}
             </span>
           </div>
-          <span className="text-[10px] text-emerald-600 font-medium group-hover:underline">
+          <span className="text-[10px] text-blue-700 font-medium group-hover:underline">
             {started ? t("lib.continue") : t("lib.start")}
           </span>
         </div>
@@ -174,8 +174,8 @@ export default function Library() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-serif font-bold text-emerald-950 flex items-center gap-2">
-              <BookOpen className="h-6 w-6 text-emerald-600" />
+            <h1 className="text-2xl font-serif font-bold text-slate-900 flex items-center gap-2">
+              <BookOpen className="h-6 w-6 text-blue-700" />
               {t("lib.title")}
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
@@ -183,12 +183,12 @@ export default function Library() {
             </p>
           </div>
           <div className="flex items-center gap-3 text-sm">
-            <div className="bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2 text-center">
-              <p className="text-lg font-bold text-emerald-700">{startedCount}</p>
+            <div className="bg-blue-50 border border-blue-100 rounded-xl px-3 py-2 text-center">
+              <p className="text-lg font-bold text-blue-800">{startedCount}</p>
               <p className="text-[10px] text-muted-foreground">{t("lib.inProgress")}</p>
             </div>
-            <div className="bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2 text-center">
-              <p className="text-lg font-bold text-emerald-700">{completedCount}</p>
+            <div className="bg-blue-50 border border-blue-100 rounded-xl px-3 py-2 text-center">
+              <p className="text-lg font-bold text-blue-800">{completedCount}</p>
               <p className="text-[10px] text-muted-foreground">{t("lib.completed")}</p>
             </div>
           </div>
@@ -202,8 +202,8 @@ export default function Library() {
               onClick={() => setCategory(id)}
               className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all border ${
                 category === id
-                  ? "bg-emerald-600 text-white border-emerald-600 shadow-sm"
-                  : "bg-white text-emerald-800 border-emerald-200 hover:bg-emerald-50"
+                  ? "bg-blue-700 text-white border-blue-600 shadow-sm"
+                  : "bg-white text-blue-900 border-blue-200 hover:bg-blue-50"
               }`}
             >
               <span className={id === "hingaad" ? "font-arabic text-base leading-tight" : ""}>{CATEGORY_ICONS[id]}</span>
@@ -217,7 +217,7 @@ export default function Library() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder={t("lib.search")}
-            className="pl-10 border-emerald-200"
+            className="pl-10 border-blue-200"
             value={search}
             onChange={e => setSearch(e.target.value)}
           />

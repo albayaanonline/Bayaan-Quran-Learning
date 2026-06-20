@@ -28,7 +28,7 @@ export default function Bookmarks() {
     <AppLayout>
       <div className="max-w-4xl mx-auto space-y-8">
         <div>
-          <h1 className="text-3xl font-serif font-bold text-emerald-950 dark:text-emerald-50">Saved Ayahs</h1>
+          <h1 className="text-3xl font-serif font-bold text-slate-900 dark:text-blue-50">Saved Ayahs</h1>
           <p className="text-muted-foreground mt-2">Verses you've bookmarked for reflection</p>
         </div>
 
@@ -37,9 +37,9 @@ export default function Bookmarks() {
             {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-32 w-full" />)}
           </div>
         ) : bookmarks?.length === 0 ? (
-          <div className="text-center py-20 bg-[url('/images/islamic-dome.png')] bg-contain bg-center bg-no-repeat opacity-80 h-[400px] flex flex-col items-center justify-center rounded-3xl border border-emerald-100 bg-emerald-50">
-            <h3 className="text-2xl font-serif text-emerald-900 font-bold bg-white/80 px-6 py-2 rounded-full">No bookmarks yet</h3>
-            <p className="text-emerald-800 mt-2 bg-white/80 px-4 py-1 rounded-full">Save meaningful ayahs while you read to find them here.</p>
+          <div className="text-center py-20 bg-[url('/images/islamic-dome.png')] bg-contain bg-center bg-no-repeat opacity-80 h-[400px] flex flex-col items-center justify-center rounded-3xl border border-blue-100 bg-blue-50">
+            <h3 className="text-2xl font-serif text-blue-950 font-bold bg-white/80 px-6 py-2 rounded-full">No bookmarks yet</h3>
+            <p className="text-blue-900 mt-2 bg-white/80 px-4 py-1 rounded-full">Save meaningful ayahs while you read to find them here.</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -50,20 +50,20 @@ export default function Bookmarks() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.1 }}
               >
-                <Card className="overflow-hidden border-l-4 border-l-emerald-500 hover:shadow-md transition-all">
+                <Card className="overflow-hidden border-l-4 border-l-blue-600 hover:shadow-md transition-all">
                   <CardContent className="p-6">
                     <div className="flex justify-between items-start gap-4">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-4">
-                          <span className="text-sm font-semibold text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full">
+                          <span className="text-sm font-semibold text-blue-800 bg-blue-100 px-3 py-1 rounded-full">
                             Surah {bookmark.surahName} • Ayah {bookmark.ayahNumber}
                           </span>
                         </div>
-                        <p className="text-2xl leading-loose font-arabic text-emerald-950 dark:text-emerald-50 text-right" style={{ fontFamily: "var(--font-arabic)", direction: "rtl" }}>
+                        <p className="text-2xl leading-loose font-arabic text-slate-900 dark:text-blue-50 text-right" style={{ fontFamily: "var(--font-arabic)", direction: "rtl" }}>
                           {bookmark.ayahText}
                         </p>
                         {bookmark.note && (
-                          <div className="mt-4 p-4 rounded-xl bg-emerald-50/50 border border-emerald-100 text-emerald-800 text-sm italic">
+                          <div className="mt-4 p-4 rounded-xl bg-blue-50/50 border border-blue-100 text-blue-900 text-sm italic">
                             "{bookmark.note}"
                           </div>
                         )}

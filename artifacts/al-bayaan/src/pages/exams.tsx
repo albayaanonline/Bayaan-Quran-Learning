@@ -44,7 +44,7 @@ interface ExamResult {
 
 function SubjectBadge({ subject }: { subject: string }) {
   const colors: Record<string, string> = {
-    quran: "bg-emerald-100 text-emerald-700",
+    quran: "bg-blue-100 text-blue-800",
     tajweed: "bg-amber-100 text-amber-700",
     hifdh: "bg-purple-100 text-purple-700",
     arabic: "bg-blue-100 text-blue-700",
@@ -57,11 +57,11 @@ function ExamCard({ exam, onStart }: { exam: Exam; onStart: () => void }) {
   const { t } = useI18n();
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-      <Card className="border-emerald-100 hover:shadow-md transition-shadow cursor-pointer" onClick={onStart}>
+      <Card className="border-blue-100 hover:shadow-md transition-shadow cursor-pointer" onClick={onStart}>
         <CardContent className="p-5">
           <div className="flex items-start justify-between gap-3 mb-3">
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-emerald-950 truncate">{exam.title}</h3>
+              <h3 className="font-semibold text-slate-900 truncate">{exam.title}</h3>
               {exam.description && <p className="text-sm text-muted-foreground mt-0.5 line-clamp-2">{exam.description}</p>}
             </div>
             <SubjectBadge subject={exam.subject} />
@@ -73,7 +73,7 @@ function ExamCard({ exam, onStart }: { exam: Exam; onStart: () => void }) {
           </div>
           <div className="mt-3 flex items-center justify-between">
             <span className="text-[11px] text-muted-foreground">{t("exams.pass")}: {exam.passingMarks}/{exam.totalMarks}</span>
-            <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 h-7 text-xs px-3">{t("exams.startExam")}</Button>
+            <Button size="sm" className="bg-blue-700 hover:bg-blue-700 h-7 text-xs px-3">{t("exams.startExam")}</Button>
           </div>
         </CardContent>
       </Card>
@@ -87,23 +87,23 @@ function ResultView({ result, exam, evaluation, onBack }: { result: ExamResult; 
   return (
     <div className="space-y-4">
       <Button variant="ghost" size="sm" onClick={onBack} className="gap-2"><ArrowLeft className="h-4 w-4" /> {t("exams.backToExams")}</Button>
-      <Card className={`border-2 ${result.passed ? "border-emerald-400 bg-emerald-50" : "border-red-300 bg-red-50"}`}>
+      <Card className={`border-2 ${result.passed ? "border-blue-400 bg-blue-50" : "border-red-300 bg-red-50"}`}>
         <CardContent className="p-6 text-center">
           {result.passed
-            ? <CheckCircle2 className="h-16 w-16 text-emerald-600 mx-auto mb-3" />
+            ? <CheckCircle2 className="h-16 w-16 text-blue-700 mx-auto mb-3" />
             : <XCircle className="h-16 w-16 text-red-500 mx-auto mb-3" />
           }
           <h2 className="text-2xl font-bold mb-1">{result.passed ? t("exams.passed") : t("exams.tryAgain")}</h2>
-          <p className="text-4xl font-bold text-emerald-900 mt-2">{percentage}%</p>
+          <p className="text-4xl font-bold text-blue-950 mt-2">{percentage}%</p>
           <p className="text-muted-foreground text-sm mt-1">{result.score}/{result.totalMarks} {t("exams.marks")}</p>
           <Progress value={percentage} className="mt-4 h-3" />
         </CardContent>
       </Card>
 
       {evaluation && (
-        <Card className="border-emerald-100">
+        <Card className="border-blue-100">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm flex items-center gap-2"><Sparkles className="h-4 w-4 text-emerald-600" />{t("exams.aiEvaluation")}</CardTitle>
+            <CardTitle className="text-sm flex items-center gap-2"><Sparkles className="h-4 w-4 text-blue-700" />{t("exams.aiEvaluation")}</CardTitle>
           </CardHeader>
           <CardContent>
             <ScrollArea className="h-48">
@@ -238,8 +238,8 @@ export default function Exams() {
       <AppLayout>
         <div className="max-w-2xl mx-auto space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="font-serif font-bold text-lg text-emerald-950">{activeExam.title}</h2>
-            <div className={`flex items-center gap-2 font-mono text-lg font-bold px-3 py-1 rounded-lg ${timeLeft < 120 ? "bg-red-100 text-red-700" : "bg-emerald-100 text-emerald-700"}`}>
+            <h2 className="font-serif font-bold text-lg text-slate-900">{activeExam.title}</h2>
+            <div className={`flex items-center gap-2 font-mono text-lg font-bold px-3 py-1 rounded-lg ${timeLeft < 120 ? "bg-red-100 text-red-700" : "bg-blue-100 text-blue-800"}`}>
               <Clock className="h-4 w-4" /> {mins}:{String(secs).padStart(2, "0")}
             </div>
           </div>
@@ -248,10 +248,10 @@ export default function Exams() {
 
           <div className="space-y-4">
             {questions.map((q, i) => (
-              <Card key={q.id} className="border-emerald-100">
+              <Card key={q.id} className="border-blue-100">
                 <CardContent className="p-4">
                   <div className="flex gap-2 mb-3">
-                    <span className="text-xs font-bold bg-emerald-100 text-emerald-700 rounded-full h-5 w-5 flex items-center justify-center shrink-0">{i + 1}</span>
+                    <span className="text-xs font-bold bg-blue-100 text-blue-800 rounded-full h-5 w-5 flex items-center justify-center shrink-0">{i + 1}</span>
                     <p className="text-sm font-medium">{q.text}</p>
                     <Badge variant="outline" className="ml-auto shrink-0 text-xs">{q.marks}{t("exams.marks")}</Badge>
                   </div>
@@ -261,7 +261,7 @@ export default function Exams() {
                         <label key={j} className="flex items-center gap-2.5 cursor-pointer">
                           <input type="radio" name={q.id} value={opt} checked={answers[q.id] === opt}
                             onChange={() => setAnswers(a => ({ ...a, [q.id]: opt }))}
-                            className="accent-emerald-600" />
+                            className="accent-blue-600" />
                           <span className="text-sm">{opt}</span>
                         </label>
                       ))}
@@ -281,7 +281,7 @@ export default function Exams() {
 
           <div className="flex gap-3">
             <Button variant="outline" onClick={() => { if (timerRef.current) clearInterval(timerRef.current); setActiveExam(null); }}>{t("exams.cancel")}</Button>
-            <Button onClick={handleSubmit} disabled={submitting} className="bg-emerald-600 hover:bg-emerald-700 flex-1">
+            <Button onClick={handleSubmit} disabled={submitting} className="bg-blue-700 hover:bg-blue-700 flex-1">
               {submitting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />{t("exams.submitting")}</> : t("exams.submitExam")}
             </Button>
           </div>
@@ -294,8 +294,8 @@ export default function Exams() {
     <AppLayout>
       <div className="max-w-3xl mx-auto space-y-6">
         <div>
-          <h1 className="text-2xl font-serif font-bold text-emerald-950 flex items-center gap-2">
-            <ClipboardList className="h-6 w-6 text-emerald-600" /> {t("exams.title")}
+          <h1 className="text-2xl font-serif font-bold text-slate-900 flex items-center gap-2">
+            <ClipboardList className="h-6 w-6 text-blue-700" /> {t("exams.title")}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">{t("exams.subtitle")}</p>
         </div>
@@ -307,7 +307,7 @@ export default function Exams() {
         ) : exams.length === 0 ? (
           <Card className="border-dashed">
             <CardContent className="p-12 text-center">
-              <ClipboardList className="h-12 w-12 text-emerald-300 mx-auto mb-4" />
+              <ClipboardList className="h-12 w-12 text-blue-300 mx-auto mb-4" />
               <h3 className="font-semibold text-lg">{t("exams.noExams")}</h3>
               <p className="text-sm text-muted-foreground mt-1">{t("exams.noExamsSub")}</p>
             </CardContent>

@@ -206,7 +206,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
           <div className="h-1.5 bg-muted rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full transition-all duration-700"
+              className="h-full bg-gradient-to-r from-blue-800 to-blue-500 rounded-full transition-all duration-700"
               style={{ width: `${xpPct}%` }}
             />
           </div>
@@ -217,7 +217,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           {profile?.avatarUrl ? (
             <img src={profile.avatarUrl} alt="Avatar" className="h-8 w-8 rounded-full shrink-0 ring-2 ring-primary/20" />
           ) : (
-            <div className="h-8 w-8 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-700 text-white flex items-center justify-center font-bold text-sm shrink-0">
+            <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-600 to-blue-900 text-white flex items-center justify-center font-bold text-sm shrink-0">
               {profile?.displayName?.[0]?.toUpperCase() ?? "S"}
             </div>
           )}

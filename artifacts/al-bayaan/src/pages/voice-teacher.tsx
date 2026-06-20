@@ -400,12 +400,12 @@ export default function VoiceTeacher() {
       <div className="max-w-3xl mx-auto space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-serif font-bold text-emerald-950 dark:text-emerald-50 flex items-center gap-2">
-              <Mic className="h-6 w-6 text-emerald-600" />
+            <h1 className="text-2xl font-serif font-bold text-slate-900 dark:text-blue-50 flex items-center gap-2">
+              <Mic className="h-6 w-6 text-blue-700" />
               Voice Quran Teacher
-              <Badge className="bg-emerald-600 text-white border-0 text-xs">AI</Badge>
+              <Badge className="bg-blue-700 text-white border-0 text-xs">AI</Badge>
               {hasSpeechAPI
-                ? <Badge variant="outline" className="text-xs text-emerald-700 border-emerald-300">Browser Speech ✓</Badge>
+                ? <Badge variant="outline" className="text-xs text-blue-800 border-blue-300">Browser Speech ✓</Badge>
                 : <Badge variant="outline" className="text-xs text-amber-700 border-amber-300">Whisper Mode</Badge>
               }
             </h1>
@@ -416,10 +416,10 @@ export default function VoiceTeacher() {
             </p>
           </div>
           <div className="flex gap-2 items-center">
-            <div className="flex rounded-lg border border-emerald-200 overflow-hidden text-xs">
+            <div className="flex rounded-lg border border-blue-200 overflow-hidden text-xs">
               {LANG_OPTIONS.map(l => (
                 <button key={l.value} onClick={() => setVoiceLang(l.value)}
-                  className={`px-2 py-1 font-medium transition-colors ${voiceLang === l.value ? "bg-emerald-600 text-white" : "bg-white text-emerald-700 hover:bg-emerald-50"}`}>
+                  className={`px-2 py-1 font-medium transition-colors ${voiceLang === l.value ? "bg-blue-700 text-white" : "bg-white text-blue-800 hover:bg-blue-50"}`}>
                   {l.label}
                 </button>
               ))}
@@ -441,16 +441,16 @@ export default function VoiceTeacher() {
           </div>
         )}
 
-        <Card className="border-emerald-100">
+        <Card className="border-blue-100">
           <CardContent className="p-0">
             <ScrollArea className="h-[46vh] p-4" ref={scrollRef as any}>
               {messages.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-center gap-4 py-12">
-                  <div className="h-16 w-16 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                  <div className="h-16 w-16 rounded-2xl bg-blue-100 text-blue-800 flex items-center justify-center">
                     <Mic className="h-8 w-8" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-lg text-emerald-950">Voice Teacher Ready</h3>
+                    <h3 className="font-semibold text-lg text-slate-900">Voice Teacher Ready</h3>
                     <p className="text-sm text-muted-foreground mt-1 max-w-xs">
                       {hasSpeechAPI
                         ? "Hold the mic button and speak, or type below."
@@ -470,15 +470,15 @@ export default function VoiceTeacher() {
                       <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
                         className={`flex gap-3 ${m.role === "user" ? "flex-row-reverse" : "flex-row"}`}>
                         <div className={`h-8 w-8 shrink-0 rounded-full flex items-center justify-center ${
-                          m.role === "user" ? "bg-emerald-600 text-white" : m.isError ? "bg-red-100 text-red-600" : "bg-emerald-100 text-emerald-700"}`}>
+                          m.role === "user" ? "bg-blue-700 text-white" : m.isError ? "bg-red-100 text-red-600" : "bg-blue-100 text-blue-800"}`}>
                           {m.role === "user" ? <User className="h-4 w-4" /> : m.isError ? <AlertCircle className="h-4 w-4" /> : <BotMessageSquare className="h-4 w-4" />}
                         </div>
                         <div className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm ${
                           m.role === "user"
-                            ? "bg-emerald-600 text-white rounded-tr-sm"
+                            ? "bg-blue-700 text-white rounded-tr-sm"
                             : m.isError
                               ? "bg-red-50 border border-red-200 text-red-800 rounded-tl-sm"
-                              : "bg-white dark:bg-emerald-950 border border-emerald-100 rounded-tl-sm shadow-sm"
+                              : "bg-white dark:bg-blue-950 border border-blue-100 rounded-tl-sm shadow-sm"
                         }`}>
                           <p className="whitespace-pre-wrap">{m.content}</p>
                         </div>
@@ -487,10 +487,10 @@ export default function VoiceTeacher() {
                   </AnimatePresence>
                   {(isProcessing || statusMsg) && (
                     <div className="flex gap-3">
-                      <div className="h-8 w-8 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                      <div className="h-8 w-8 rounded-full bg-blue-100 text-blue-800 flex items-center justify-center">
                         <Loader2 className="h-4 w-4 animate-spin" />
                       </div>
-                      <div className="bg-white border border-emerald-100 rounded-2xl rounded-tl-sm px-4 py-3 text-sm text-muted-foreground">
+                      <div className="bg-white border border-blue-100 rounded-2xl rounded-tl-sm px-4 py-3 text-sm text-muted-foreground">
                         {statusMsg || "Processing…"}
                       </div>
                     </div>
@@ -532,7 +532,7 @@ export default function VoiceTeacher() {
                 isProcessing   ? "bg-gray-200 text-gray-400 cursor-not-allowed"
                 : isRecording  ? "bg-red-500 text-white"
                 : micStatus === "denied" ? "bg-red-100 text-red-400 cursor-not-allowed"
-                : "bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer"
+                : "bg-blue-700 hover:bg-blue-700 text-white cursor-pointer"
               }`}
             >
               {isProcessing ? <Loader2 className="h-8 w-8 animate-spin" />
@@ -558,7 +558,7 @@ export default function VoiceTeacher() {
               className="flex-1"
             />
             <Button type="submit" disabled={!textInput.trim() || isProcessing} size="icon"
-              className="bg-emerald-600 hover:bg-emerald-700">
+              className="bg-blue-700 hover:bg-blue-700">
               <Send className="h-4 w-4" />
             </Button>
           </form>

@@ -521,11 +521,11 @@ export default function VideoTeacher() {
 
   const currentMode = TEACHER_MODES.find(m => m.value === mode)!;
   const colorClass: Record<string, string> = {
-    emerald: "bg-emerald-600", amber: "bg-amber-600", blue: "bg-blue-600",
+    emerald: "bg-blue-700", amber: "bg-amber-600", blue: "bg-blue-600",
     purple: "bg-purple-600", teal: "bg-teal-600", rose: "bg-rose-600",
   };
   const bgClass: Record<string, string> = {
-    emerald: "from-emerald-50 to-white", amber: "from-amber-50 to-white", blue: "from-blue-50 to-white",
+    emerald: "from-blue-50 to-white", amber: "from-amber-50 to-white", blue: "from-blue-50 to-white",
     purple: "from-purple-50 to-white", teal: "from-teal-50 to-white", rose: "from-rose-50 to-white",
   };
 
@@ -534,12 +534,12 @@ export default function VideoTeacher() {
       <div className="max-w-6xl mx-auto space-y-4">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
-            <h1 className="text-2xl font-serif font-bold text-emerald-950 flex items-center gap-2">
-              <Video className="h-6 w-6 text-emerald-600" />
+            <h1 className="text-2xl font-serif font-bold text-slate-900 flex items-center gap-2">
+              <Video className="h-6 w-6 text-blue-700" />
               AI Video Teacher
-              <Badge className="bg-emerald-600 text-white border-0">LIVE</Badge>
+              <Badge className="bg-blue-700 text-white border-0">LIVE</Badge>
               {ttsMode !== "unknown" && (
-                <Badge variant="outline" className="text-xs border-emerald-200 text-emerald-700">
+                <Badge variant="outline" className="text-xs border-blue-200 text-blue-800">
                   {ttsMode === "api" ? "🔊 Audio-sync" : "🔊 Browser TTS"}
                 </Badge>
               )}
@@ -635,7 +635,7 @@ export default function VideoTeacher() {
                     <div className="flex flex-col items-center justify-center h-full text-center gap-4 py-8">
                       <span className="text-4xl">{currentMode.emoji}</span>
                       <div>
-                        <h3 className="font-semibold text-lg text-emerald-950">{currentMode.label}</h3>
+                        <h3 className="font-semibold text-lg text-slate-900">{currentMode.label}</h3>
                         <p className="text-sm text-muted-foreground mt-1 max-w-xs">{currentMode.desc}</p>
                       </div>
                       <p className="text-xs text-muted-foreground">Ask a question or hold the mic to speak</p>

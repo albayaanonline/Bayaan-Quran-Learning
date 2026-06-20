@@ -125,9 +125,9 @@ export default function Privacy() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="p-5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 mb-10"
+          className="p-5 rounded-2xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/50 mb-10"
         >
-          <p className="text-sm text-emerald-800 dark:text-emerald-200 leading-relaxed">
+          <p className="text-sm text-blue-900 dark:text-blue-200 leading-relaxed">
             <strong>In plain English:</strong> We collect your name, email, and learning data to run the platform. We never sell your data. Voice recordings are deleted after processing. You can delete your account anytime. We use industry-standard security.
           </p>
         </motion.div>

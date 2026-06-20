@@ -38,7 +38,7 @@ const TYPE_ICONS: Record<string, any> = {
 };
 
 const TYPE_COLORS: Record<string, string> = {
-  book: "bg-emerald-100 text-emerald-700",
+  book: "bg-blue-100 text-blue-800",
   pdf: "bg-red-100 text-red-700",
   audio: "bg-blue-100 text-blue-700",
   video: "bg-purple-100 text-purple-700",
@@ -56,14 +56,14 @@ function ContentCard({ item, onDownload }: { item: ContentItem; onDownload: (id:
 
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-      <Card className="border-emerald-100 hover:shadow-md transition-shadow h-full">
+      <Card className="border-blue-100 hover:shadow-md transition-shadow h-full">
         <CardContent className="p-4 flex flex-col h-full">
           <div className="flex items-start gap-3 mb-3">
             <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${color}`}>
               <Icon className="h-5 w-5" />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-sm leading-snug text-emerald-950 line-clamp-2">{item.title}</h3>
+              <h3 className="font-semibold text-sm leading-snug text-slate-900 line-clamp-2">{item.title}</h3>
               <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                 <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${color}`}>{item.type}</Badge>
                 <Badge variant="outline" className="text-[10px] px-1.5 py-0">{item.subject}</Badge>
@@ -74,7 +74,7 @@ function ContentCard({ item, onDownload }: { item: ContentItem; onDownload: (id:
 
           {item.description && <p className="text-xs text-muted-foreground mb-3 line-clamp-2 flex-1">{item.description}</p>}
 
-          <div className="flex items-center justify-between mt-auto pt-2 border-t border-emerald-50">
+          <div className="flex items-center justify-between mt-auto pt-2 border-t border-blue-50">
             <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
               <span className="flex items-center gap-1"><Eye className="h-3 w-3" />{item.viewCount}</span>
               <span className="flex items-center gap-1"><Download className="h-3 w-3" />{item.downloadCount}</span>
@@ -133,7 +133,7 @@ function AddContentDialog({ onAdded }: { onAdded: () => void }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 gap-2"><Plus className="h-4 w-4" />Add Content</Button>
+        <Button size="sm" className="bg-blue-700 hover:bg-blue-700 gap-2"><Plus className="h-4 w-4" />Add Content</Button>
       </DialogTrigger>
       <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
@@ -185,7 +185,7 @@ function AddContentDialog({ onAdded }: { onAdded: () => void }) {
             <Label className="text-xs">Tags (comma-separated)</Label>
             <Input value={form.tags} onChange={e => setForm(f => ({ ...f, tags: e.target.value }))} className="h-8 text-sm mt-1" placeholder="tajweed, beginner, rules" />
           </div>
-          <Button onClick={save} disabled={saving} className="w-full bg-emerald-600 hover:bg-emerald-700">
+          <Button onClick={save} disabled={saving} className="w-full bg-blue-700 hover:bg-blue-700">
             {saving ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Saving…</> : "Add Content"}
           </Button>
         </div>
@@ -235,8 +235,8 @@ export default function CMS() {
       <div className="max-w-5xl mx-auto space-y-6">
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div>
-            <h1 className="text-2xl font-serif font-bold text-emerald-950 flex items-center gap-2">
-              <BookOpen className="h-6 w-6 text-emerald-600" /> Islamic Library
+            <h1 className="text-2xl font-serif font-bold text-slate-900 flex items-center gap-2">
+              <BookOpen className="h-6 w-6 text-blue-700" /> Islamic Library
             </h1>
             <p className="text-sm text-muted-foreground mt-1">Books, PDFs, audio, videos, and lessons</p>
           </div>
@@ -271,7 +271,7 @@ export default function CMS() {
         ) : filtered.length === 0 ? (
           <Card className="border-dashed">
             <CardContent className="p-12 text-center">
-              <BookOpen className="h-12 w-12 text-emerald-300 mx-auto mb-4" />
+              <BookOpen className="h-12 w-12 text-blue-300 mx-auto mb-4" />
               <h3 className="font-semibold text-lg">{items.length === 0 ? "No content yet" : "No results found"}</h3>
               <p className="text-sm text-muted-foreground mt-1">
                 {items.length === 0 ? "Add books, PDFs, and lessons using the button above" : "Try adjusting your filters"}

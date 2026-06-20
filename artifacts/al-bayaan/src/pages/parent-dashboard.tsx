@@ -144,7 +144,7 @@ export default function ParentDashboard() {
       <div className="max-w-5xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-serif font-bold text-emerald-950">{t("parent.title")}</h1>
+            <h1 className="text-2xl font-serif font-bold text-slate-900">{t("parent.title")}</h1>
             <p className="text-sm text-muted-foreground mt-1">{t("parent.subtitle")}</p>
           </div>
           <Button variant="outline" size="sm" onClick={() => setAddingChild(true)} className="gap-2">
@@ -168,9 +168,9 @@ export default function ParentDashboard() {
         )}
 
         {addingChild && (
-          <Card className="border-emerald-200 bg-emerald-50">
+          <Card className="border-blue-200 bg-blue-50">
             <CardContent className="p-4">
-              <p className="text-sm font-medium text-emerald-900 mb-2">{t("parent.enterChildId")}</p>
+              <p className="text-sm font-medium text-blue-950 mb-2">{t("parent.enterChildId")}</p>
               <div className="flex gap-2">
                 <Input value={newChildId} onChange={e => setNewChildId(e.target.value)} placeholder="user_xxxxxxxxxxxx" className="h-8 text-sm" />
                 <Button size="sm" onClick={addChild} disabled={saving}>{t("gen.add")}</Button>
@@ -183,10 +183,10 @@ export default function ParentDashboard() {
         {children.length === 0 ? (
           <Card className="border-dashed">
             <CardContent className="p-12 text-center">
-              <Users className="h-12 w-12 text-emerald-300 mx-auto mb-4" />
+              <Users className="h-12 w-12 text-blue-300 mx-auto mb-4" />
               <h3 className="font-semibold text-lg">{t("parent.noChildren")}</h3>
               <p className="text-sm text-muted-foreground mt-1 mb-4">{t("parent.noChildrenSub")}</p>
-              <Button onClick={() => setAddingChild(true)} className="bg-emerald-600 hover:bg-emerald-700">
+              <Button onClick={() => setAddingChild(true)} className="bg-blue-700 hover:bg-blue-700">
                 <Plus className="h-4 w-4 mr-2" /> {t("parent.addChildAccount")}
               </Button>
             </CardContent>
@@ -199,10 +199,10 @@ export default function ParentDashboard() {
                 <button
                   key={child.clerkId}
                   onClick={() => setSelectedChild(child)}
-                  className={`w-full text-left rounded-xl p-3 transition-all ${selectedChild?.clerkId === child.clerkId ? "bg-emerald-100 border border-emerald-300" : "bg-white border border-transparent hover:bg-emerald-50"}`}
+                  className={`w-full text-left rounded-xl p-3 transition-all ${selectedChild?.clerkId === child.clerkId ? "bg-blue-100 border border-blue-300" : "bg-white border border-transparent hover:bg-blue-50"}`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <div className="h-9 w-9 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-sm shrink-0">
+                    <div className="h-9 w-9 rounded-full bg-blue-700 text-white flex items-center justify-center font-bold text-sm shrink-0">
                       {child.displayName?.[0] ?? "?"}
                     </div>
                     <div className="min-w-0">
@@ -214,7 +214,7 @@ export default function ParentDashboard() {
                     <Flame className="h-3 w-3 text-orange-500" />
                     <span className="text-xs text-muted-foreground">{child.stats.streakDays}d streak</span>
                     {child.stats.lastStudied && (
-                      <span className="text-[10px] text-emerald-600 ml-auto">Active</span>
+                      <span className="text-[10px] text-blue-700 ml-auto">Active</span>
                     )}
                   </div>
                 </button>
@@ -227,11 +227,11 @@ export default function ParentDashboard() {
                   {[
                     { label: t("parent.avgScore"), value: `${selectedChild.stats.avgScore}%`, icon: Star, color: "text-amber-600" },
                     { label: t("parent.streak"), value: `${selectedChild.stats.streakDays} ${t("parent.days")}`, icon: Flame, color: "text-orange-600" },
-                    { label: t("parent.surahs"), value: selectedChild.stats.surahsStudied, icon: BookOpen, color: "text-emerald-600" },
+                    { label: t("parent.surahs"), value: selectedChild.stats.surahsStudied, icon: BookOpen, color: "text-blue-700" },
                     { label: t("nav.hifdh"), value: selectedChild.stats.hifdhSurahs, icon: Brain, color: "text-purple-600" },
                   ].map(stat => (
                     <motion.div key={stat.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-                      <Card className="border-emerald-100">
+                      <Card className="border-blue-100">
                         <CardContent className="p-4">
                           <div className="flex items-center gap-2 mb-1">
                             <stat.icon className={`h-4 w-4 ${stat.color}`} />
@@ -257,7 +257,7 @@ export default function ParentDashboard() {
                     ) : (
                       <div className="space-y-2">
                         {childProgress.surahProgress.slice(0, 10).map((s, i) => (
-                          <div key={i} className="bg-white border border-emerald-100 rounded-lg p-3">
+                          <div key={i} className="bg-white border border-blue-100 rounded-lg p-3">
                             <div className="flex items-center justify-between mb-1.5">
                               <span className="text-sm font-medium">{s.surahName}</span>
                               <Badge variant="outline" className="text-xs">{s.averageScore ?? 0}%</Badge>
@@ -277,7 +277,7 @@ export default function ParentDashboard() {
                     {!childProgress ? <Skeleton className="h-32" /> : (
                       <div className="space-y-2">
                         {childProgress.summary.weakAreas.length === 0 ? (
-                          <div className="flex items-center gap-2 text-emerald-700 bg-emerald-50 rounded-lg p-4">
+                          <div className="flex items-center gap-2 text-blue-800 bg-blue-50 rounded-lg p-4">
                             <CheckCircle2 className="h-5 w-5" />
                             <span className="text-sm">{t("parent.noWeakAreas")}</span>
                           </div>

@@ -23,7 +23,7 @@ interface Certificate {
 }
 
 const TYPE_COLORS: Record<string, string> = {
-  completion: "bg-emerald-100 text-emerald-700 border-emerald-200",
+  completion: "bg-blue-100 text-blue-800 border-blue-200",
   hifdh: "bg-purple-100 text-purple-700 border-purple-200",
   tajweed: "bg-amber-100 text-amber-700 border-amber-200",
   exam: "bg-blue-100 text-blue-700 border-blue-200",
@@ -151,15 +151,15 @@ function CertificateCard({ cert }: { cert: Certificate }) {
 
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-      <Card className={`border-2 ${cert.isRevoked ? "border-gray-200 opacity-60" : "border-emerald-200 hover:shadow-lg"} transition-shadow`}>
+      <Card className={`border-2 ${cert.isRevoked ? "border-gray-200 opacity-60" : "border-blue-200 hover:shadow-lg"} transition-shadow`}>
         <CardContent className="p-5">
           <div className="flex items-start gap-4">
-            <div className={`h-14 w-14 rounded-2xl flex items-center justify-center shrink-0 ${cert.isRevoked ? "bg-gray-100" : "bg-emerald-100"}`}>
-              <Award className={`h-7 w-7 ${cert.isRevoked ? "text-gray-400" : "text-emerald-600"}`} />
+            <div className={`h-14 w-14 rounded-2xl flex items-center justify-center shrink-0 ${cert.isRevoked ? "bg-gray-100" : "bg-blue-100"}`}>
+              <Award className={`h-7 w-7 ${cert.isRevoked ? "text-gray-400" : "text-blue-700"}`} />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-2 mb-1">
-                <h3 className="font-semibold text-emerald-950 leading-snug">{cert.title}</h3>
+                <h3 className="font-semibold text-slate-900 leading-snug">{cert.title}</h3>
                 {cert.isRevoked
                   ? <Badge variant="outline" className="text-xs text-gray-500 shrink-0">{t("certs.revoked")}</Badge>
                   : <Badge variant="outline" className={`text-xs shrink-0 ${TYPE_COLORS[cert.type] ?? "bg-gray-100 text-gray-700"}`}>{cert.type}</Badge>
@@ -174,7 +174,7 @@ function CertificateCard({ cert }: { cert: Certificate }) {
           </div>
 
           {!cert.isRevoked && (
-            <div className="flex gap-2 mt-4 pt-4 border-t border-emerald-100 flex-wrap">
+            <div className="flex gap-2 mt-4 pt-4 border-t border-blue-100 flex-wrap">
               <Button variant="outline" size="sm" onClick={handleDownload} disabled={downloading} className="gap-1.5 text-xs h-7">
                 {downloading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
                 {downloading ? t("certs.downloading") : t("certs.download")}
@@ -227,28 +227,28 @@ function VerifyPanel() {
   };
 
   return (
-    <Card className="border-emerald-100">
+    <Card className="border-blue-100">
       <CardContent className="p-5">
-        <h3 className="font-semibold text-sm mb-3 flex items-center gap-2"><QrCode className="h-4 w-4 text-emerald-600" />{t("certs.verify")}</h3>
+        <h3 className="font-semibold text-sm mb-3 flex items-center gap-2"><QrCode className="h-4 w-4 text-blue-700" />{t("certs.verify")}</h3>
         <div className="flex gap-2">
           <Input value={code} onChange={e => setCode(e.target.value.toUpperCase())} placeholder={t("certs.verifyCode")} className="font-mono text-sm h-9" onKeyDown={e => e.key === "Enter" && verify()} />
-          <Button size="sm" onClick={verify} disabled={checking} className="bg-emerald-600 hover:bg-emerald-700 h-9 px-4">
+          <Button size="sm" onClick={verify} disabled={checking} className="bg-blue-700 hover:bg-blue-700 h-9 px-4">
             {checking ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
           </Button>
         </div>
 
         {result && (
-          <div className={`mt-3 rounded-lg p-3 flex items-start gap-2.5 ${result.valid ? "bg-emerald-50 border border-emerald-200" : "bg-red-50 border border-red-200"}`}>
+          <div className={`mt-3 rounded-lg p-3 flex items-start gap-2.5 ${result.valid ? "bg-blue-50 border border-blue-200" : "bg-red-50 border border-red-200"}`}>
             {result.valid
-              ? <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
+              ? <CheckCircle2 className="h-4 w-4 text-blue-700 shrink-0 mt-0.5" />
               : <XCircle className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
             }
             <div>
               {result.valid && result.certificate ? (
                 <div>
-                  <p className="font-semibold text-sm text-emerald-900">{t("certs.validCert")}</p>
-                  <p className="text-xs text-emerald-700 mt-0.5">{t("certs.awardedTo")} <strong>{result.certificate.studentName}</strong></p>
-                  <p className="text-xs text-emerald-700">{t("certs.for")} {result.certificate.title}</p>
+                  <p className="font-semibold text-sm text-blue-950">{t("certs.validCert")}</p>
+                  <p className="text-xs text-blue-800 mt-0.5">{t("certs.awardedTo")} <strong>{result.certificate.studentName}</strong></p>
+                  <p className="text-xs text-blue-800">{t("certs.for")} {result.certificate.title}</p>
                   <p className="text-xs text-muted-foreground">{t("certs.issued")} {new Date(result.certificate.issuedAt).toLocaleDateString()}</p>
                 </div>
               ) : (
@@ -280,8 +280,8 @@ export default function Certificates() {
     <AppLayout>
       <div className="max-w-3xl mx-auto space-y-6">
         <div>
-          <h1 className="text-2xl font-serif font-bold text-emerald-950 flex items-center gap-2">
-            <Award className="h-6 w-6 text-emerald-600" /> {t("certs.title")}
+          <h1 className="text-2xl font-serif font-bold text-slate-900 flex items-center gap-2">
+            <Award className="h-6 w-6 text-blue-700" /> {t("certs.title")}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">{t("certs.subtitle")}</p>
         </div>
@@ -293,7 +293,7 @@ export default function Certificates() {
         ) : certs.length === 0 ? (
           <Card className="border-dashed">
             <CardContent className="p-12 text-center">
-              <Award className="h-12 w-12 text-emerald-300 mx-auto mb-4" />
+              <Award className="h-12 w-12 text-blue-300 mx-auto mb-4" />
               <h3 className="font-semibold text-lg">{t("certs.noCerts")}</h3>
               <p className="text-sm text-muted-foreground mt-1">{t("certs.noCertsSub")}</p>
             </CardContent>

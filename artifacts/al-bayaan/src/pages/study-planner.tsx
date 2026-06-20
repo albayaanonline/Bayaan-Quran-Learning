@@ -14,19 +14,19 @@ function MarkdownRenderer({ content }: { content: string }) {
   return (
     <div className="space-y-1">
       {lines.map((line, i) => {
-        if (line.startsWith("# ")) return <h1 key={i} className="text-2xl font-bold font-serif text-emerald-950 mt-6 mb-3">{line.slice(2)}</h1>;
-        if (line.startsWith("## ")) return <h2 key={i} className="text-lg font-bold text-emerald-900 mt-5 mb-2 flex items-center gap-2"><CalendarDays className="h-4 w-4 text-emerald-600 shrink-0" />{line.slice(3)}</h2>;
-        if (line.startsWith("### ")) return <h3 key={i} className="text-base font-semibold text-emerald-800 mt-4 mb-2">{line.slice(4)}</h3>;
-        if (line.startsWith("**") && line.endsWith("**") && line.length > 4) return <p key={i} className="font-semibold text-emerald-900 mt-3">{line.slice(2, -2)}</p>;
+        if (line.startsWith("# ")) return <h1 key={i} className="text-2xl font-bold font-serif text-slate-900 mt-6 mb-3">{line.slice(2)}</h1>;
+        if (line.startsWith("## ")) return <h2 key={i} className="text-lg font-bold text-blue-950 mt-5 mb-2 flex items-center gap-2"><CalendarDays className="h-4 w-4 text-blue-700 shrink-0" />{line.slice(3)}</h2>;
+        if (line.startsWith("### ")) return <h3 key={i} className="text-base font-semibold text-blue-900 mt-4 mb-2">{line.slice(4)}</h3>;
+        if (line.startsWith("**") && line.endsWith("**") && line.length > 4) return <p key={i} className="font-semibold text-blue-950 mt-3">{line.slice(2, -2)}</p>;
         if (line.startsWith("- ")) return (
           <div key={i} className="flex gap-2 my-0.5">
-            <span className="text-emerald-600 mt-0.5 shrink-0">•</span>
+            <span className="text-blue-700 mt-0.5 shrink-0">•</span>
             <span className="text-sm text-foreground">{line.slice(2).replace(/\*\*(.*?)\*\*/g, "$1")}</span>
           </div>
         );
         if (/^\d+\./.test(line)) return (
           <div key={i} className="flex gap-2 my-0.5">
-            <span className="text-emerald-600 font-medium text-sm shrink-0">{line.split(".")[0]}.</span>
+            <span className="text-blue-700 font-medium text-sm shrink-0">{line.split(".")[0]}.</span>
             <span className="text-sm text-foreground">{line.replace(/^\d+\.\s*/, "").replace(/\*\*(.*?)\*\*/g, "$1")}</span>
           </div>
         );
@@ -100,8 +100,8 @@ export default function StudyPlanner() {
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-serif font-bold text-emerald-950 dark:text-emerald-50 flex items-center gap-2">
-              <CalendarDays className="h-6 w-6 text-emerald-600" />
+            <h1 className="text-2xl font-serif font-bold text-slate-900 dark:text-blue-50 flex items-center gap-2">
+              <CalendarDays className="h-6 w-6 text-blue-700" />
               {t("planner.title")}
             </h1>
             <p className="text-sm text-muted-foreground mt-1">{t("planner.subtitle")}</p>
@@ -109,36 +109,36 @@ export default function StudyPlanner() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <Card className="border-emerald-100">
+          <Card className="border-blue-100">
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-emerald-100 flex items-center justify-center shrink-0">
-                <Clock className="h-5 w-5 text-emerald-700" />
+              <div className="h-10 w-10 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
+                <Clock className="h-5 w-5 text-blue-800" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">{t("planner.dailyGoal")}</p>
-                <p className="font-bold text-emerald-950">{dailyGoal} {t("planner.minutes")}</p>
+                <p className="font-bold text-slate-900">{dailyGoal} {t("planner.minutes")}</p>
               </div>
             </CardContent>
           </Card>
-          <Card className="border-emerald-100">
+          <Card className="border-blue-100">
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-emerald-100 flex items-center justify-center shrink-0">
-                <BookOpen className="h-5 w-5 text-emerald-700" />
+              <div className="h-10 w-10 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
+                <BookOpen className="h-5 w-5 text-blue-800" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">{t("planner.surahsStarted")}</p>
-                <p className="font-bold text-emerald-950">{progress?.totalSurahsStarted ?? 0}</p>
+                <p className="font-bold text-slate-900">{progress?.totalSurahsStarted ?? 0}</p>
               </div>
             </CardContent>
           </Card>
-          <Card className="border-emerald-100">
+          <Card className="border-blue-100">
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-emerald-100 flex items-center justify-center shrink-0">
-                <Target className="h-5 w-5 text-emerald-700" />
+              <div className="h-10 w-10 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
+                <Target className="h-5 w-5 text-blue-800" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">{t("planner.hifdhSurahs")}</p>
-                <p className="font-bold text-emerald-950">{hifdhCount}</p>
+                <p className="font-bold text-slate-900">{hifdhCount}</p>
               </div>
             </CardContent>
           </Card>
@@ -148,24 +148,24 @@ export default function StudyPlanner() {
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-sm text-muted-foreground">{t("planner.yourGoals")}</span>
             {goals.map(g => (
-              <Badge key={g} variant="outline" className="border-emerald-200 text-emerald-700 text-xs">{g}</Badge>
+              <Badge key={g} variant="outline" className="border-blue-200 text-blue-800 text-xs">{g}</Badge>
             ))}
           </div>
         )}
 
         {!plan && !isGenerating ? (
-          <Card className="border-emerald-100 border-dashed">
+          <Card className="border-blue-100 border-dashed">
             <CardContent className="p-12 flex flex-col items-center text-center gap-4">
-              <div className="h-20 w-20 rounded-2xl bg-emerald-100 flex items-center justify-center">
-                <Sparkles className="h-10 w-10 text-emerald-600" />
+              <div className="h-20 w-20 rounded-2xl bg-blue-100 flex items-center justify-center">
+                <Sparkles className="h-10 w-10 text-blue-700" />
               </div>
               <div>
-                <h3 className="font-semibold text-lg text-emerald-950">{t("planner.generateTitle")}</h3>
+                <h3 className="font-semibold text-lg text-slate-900">{t("planner.generateTitle")}</h3>
                 <p className="text-sm text-muted-foreground mt-1 max-w-sm">
                   {t("planner.generateDesc")}
                 </p>
               </div>
-              <Button onClick={generatePlan} className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2 px-8">
+              <Button onClick={generatePlan} className="bg-blue-700 hover:bg-blue-700 text-white gap-2 px-8">
                 <Sparkles className="h-4 w-4" />
                 {t("planner.generateBtn")}
               </Button>
@@ -173,13 +173,13 @@ export default function StudyPlanner() {
           </Card>
         ) : (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-            <Card className="border-emerald-100">
+            <Card className="border-blue-100">
               <CardHeader className="pb-3 flex-row items-center justify-between">
-                <CardTitle className="text-base font-semibold text-emerald-950 flex items-center gap-2">
-                  <Sparkles className="h-4 w-4 text-emerald-600" />
+                <CardTitle className="text-base font-semibold text-slate-900 flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-blue-700" />
                   {t("planner.planTitle")}
                   {isGenerating && (
-                    <Badge variant="outline" className="border-emerald-200 text-emerald-700 text-xs gap-1 ml-2">
+                    <Badge variant="outline" className="border-blue-200 text-blue-800 text-xs gap-1 ml-2">
                       <Loader2 className="h-3 w-3 animate-spin" />{t("planner.generating")}
                     </Badge>
                   )}
@@ -197,7 +197,7 @@ export default function StudyPlanner() {
                 <ScrollArea className="max-h-[60vh] pr-2">
                   <MarkdownRenderer content={plan} />
                   {isGenerating && (
-                    <span className="inline-block w-1 h-4 bg-emerald-600 animate-pulse ml-1 align-middle" />
+                    <span className="inline-block w-1 h-4 bg-blue-700 animate-pulse ml-1 align-middle" />
                   )}
                 </ScrollArea>
               </CardContent>

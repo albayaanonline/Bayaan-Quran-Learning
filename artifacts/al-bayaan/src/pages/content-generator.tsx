@@ -199,10 +199,10 @@ export default function ContentGenerator() {
     <AppLayout>
       <div className="max-w-4xl mx-auto space-y-6">
         <div>
-          <h1 className="text-2xl font-serif font-bold text-emerald-950 flex items-center gap-2">
-            <Sparkles className="h-6 w-6 text-emerald-600" />
+          <h1 className="text-2xl font-serif font-bold text-slate-900 flex items-center gap-2">
+            <Sparkles className="h-6 w-6 text-blue-700" />
             AI Content Generator
-            <Badge className="bg-emerald-600 text-white border-0">AI</Badge>
+            <Badge className="bg-blue-700 text-white border-0">AI</Badge>
           </h1>
           <p className="text-sm text-muted-foreground mt-1">Generate lessons, quizzes, exams and homework with AI — for any Islamic subject</p>
         </div>

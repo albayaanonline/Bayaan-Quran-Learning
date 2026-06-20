@@ -157,14 +157,14 @@ function ExerciseSection({ exercises }: { exercises: Exercise[] }) {
     <div className="space-y-6">
       <div className="flex items-center gap-2 mb-2">
         <Star className="h-5 w-5 text-amber-500" />
-        <h3 className="text-base font-bold text-emerald-950">{t("lesson.exercises")}</h3>
+        <h3 className="text-base font-bold text-slate-900">{t("lesson.exercises")}</h3>
       </div>
 
       {exercises.map((ex, ei) => (
-        <div key={ei} className="bg-white rounded-xl border border-emerald-100 p-5 shadow-sm">
-          <p className="text-sm font-semibold text-emerald-800 mb-1">{ex.instruction}</p>
+        <div key={ei} className="bg-white rounded-xl border border-blue-100 p-5 shadow-sm">
+          <p className="text-sm font-semibold text-blue-900 mb-1">{ex.instruction}</p>
           {ex.instructionArabic && (
-            <p className="text-sm text-emerald-700 font-arabic mb-3" style={{ fontFamily: "var(--font-arabic)", direction: "rtl" }}>
+            <p className="text-sm text-blue-800 font-arabic mb-3" style={{ fontFamily: "var(--font-arabic)", direction: "rtl" }}>
               {ex.instructionArabic}
             </p>
           )}
@@ -177,7 +177,7 @@ function ExerciseSection({ exercises }: { exercises: Exercise[] }) {
                 const wrong = checked && answers[key]?.trim() !== ex.answers[ii];
                 return (
                   <div key={ii} className="flex items-center gap-2 flex-wrap">
-                    <p className="text-base font-arabic text-emerald-900" style={{ fontFamily: "var(--font-arabic)", direction: "rtl" }}>
+                    <p className="text-base font-arabic text-blue-950" style={{ fontFamily: "var(--font-arabic)", direction: "rtl" }}>
                       {item.sentence}
                     </p>
                     <input
@@ -185,12 +185,12 @@ function ExerciseSection({ exercises }: { exercises: Exercise[] }) {
                       onChange={e => setAnswer(key, e.target.value)}
                       placeholder={item.hint}
                       disabled={checked}
-                      className={`border rounded-lg px-3 py-1.5 text-sm font-arabic w-36 focus:outline-none focus:ring-2 focus:ring-emerald-400 ${
-                        correct ? "border-emerald-500 bg-emerald-50" : wrong ? "border-red-400 bg-red-50" : "border-emerald-200"
+                      className={`border rounded-lg px-3 py-1.5 text-sm font-arabic w-36 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                        correct ? "border-blue-500 bg-blue-50" : wrong ? "border-red-400 bg-red-50" : "border-blue-200"
                       }`}
                     />
                     {checked && (
-                      <span className={`text-xs font-medium ${correct ? "text-emerald-600" : "text-red-600"}`}>
+                      <span className={`text-xs font-medium ${correct ? "text-blue-700" : "text-red-600"}`}>
                         {correct ? t("lesson.correctAns") : `${t("lesson.answer")} ${ex.answers[ii]}`}
                       </span>
                     )}
@@ -213,11 +213,11 @@ function ExerciseSection({ exercises }: { exercises: Exercise[] }) {
                       disabled={checked}
                       rows={2}
                       placeholder={t("lesson.translatePh")}
-                      className="w-full border border-emerald-200 rounded-lg px-3 py-2 text-sm font-arabic focus:outline-none focus:ring-2 focus:ring-emerald-400 resize-none"
+                      className="w-full border border-blue-200 rounded-lg px-3 py-2 text-sm font-arabic focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                       style={{ fontFamily: "var(--font-arabic)", direction: "rtl" }}
                     />
                     {checked && (
-                      <p className="text-xs text-emerald-700 bg-emerald-50 rounded px-2 py-1">
+                      <p className="text-xs text-blue-800 bg-blue-50 rounded px-2 py-1">
                         {t("lesson.modelAnswer")} <span className="font-arabic font-semibold">{ex.answers[ii]}</span>
                       </p>
                     )}
@@ -231,7 +231,7 @@ function ExerciseSection({ exercises }: { exercises: Exercise[] }) {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 {ex.items.map((item: any, ii: number) => (
-                  <div key={ii} className="bg-emerald-50 rounded-lg px-3 py-2 text-right font-arabic text-emerald-900" style={{ fontFamily: "var(--font-arabic)" }}>
+                  <div key={ii} className="bg-blue-50 rounded-lg px-3 py-2 text-right font-arabic text-blue-950" style={{ fontFamily: "var(--font-arabic)" }}>
                     {item.arabic}
                   </div>
                 ))}
@@ -244,7 +244,7 @@ function ExerciseSection({ exercises }: { exercises: Exercise[] }) {
                 ))}
               </div>
               {checked && (
-                <div className="col-span-2 text-xs text-emerald-600 bg-emerald-50 rounded px-3 py-2">
+                <div className="col-span-2 text-xs text-blue-700 bg-blue-50 rounded px-3 py-2">
                   ✓ {t("lesson.matchNote")}
                 </div>
               )}
@@ -264,13 +264,13 @@ function ExerciseSection({ exercises }: { exercises: Exercise[] }) {
                         const isCorrect = oi === item.answer;
                         let cls = "border rounded-lg px-3 py-2 text-sm cursor-pointer transition-all text-left ";
                         if (checked) {
-                          cls += isCorrect ? "border-emerald-500 bg-emerald-50 text-emerald-800 font-medium" : selected ? "border-red-400 bg-red-50 text-red-700" : "border-gray-200 text-gray-500";
+                          cls += isCorrect ? "border-blue-500 bg-blue-50 text-blue-900 font-medium" : selected ? "border-red-400 bg-red-50 text-red-700" : "border-gray-200 text-gray-500";
                         } else {
-                          cls += selected ? "border-emerald-500 bg-emerald-50" : "border-gray-200 hover:border-emerald-300 hover:bg-emerald-50/50";
+                          cls += selected ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-blue-300 hover:bg-blue-50/50";
                         }
                         return (
                           <button key={oi} className={cls} onClick={() => !checked && setAnswer(key, String(oi))}>
-                            <span className="font-medium mr-2 text-emerald-600">{String.fromCharCode(65 + oi)}.</span>
+                            <span className="font-medium mr-2 text-blue-700">{String.fromCharCode(65 + oi)}.</span>
                             <span className="font-arabic" style={{ fontFamily: opt.match(/[\u0600-\u06FF]/) ? "var(--font-arabic)" : undefined }}>
                               {opt}
                             </span>
@@ -288,11 +288,11 @@ function ExerciseSection({ exercises }: { exercises: Exercise[] }) {
 
       <div className="flex gap-3">
         {!checked ? (
-          <Button onClick={checkAll} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+          <Button onClick={checkAll} className="bg-blue-700 hover:bg-blue-700 text-white">
             <CheckCircle2 className="h-4 w-4 mr-1.5" /> {t("lesson.checkAnswers")}
           </Button>
         ) : (
-          <Button onClick={reset} variant="outline" className="border-emerald-200 text-emerald-700">
+          <Button onClick={reset} variant="outline" className="border-blue-200 text-blue-800">
             <RotateCcw className="h-4 w-4 mr-1.5" /> {t("lesson.tryAgain")}
           </Button>
         )}
@@ -467,7 +467,7 @@ export default function BookLesson() {
       <AppLayout>
         <div className="max-w-3xl mx-auto text-center py-20">
           <BookOpen className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-30" />
-          <h2 className="text-xl font-bold text-emerald-950 mb-2">{t("lesson.notFound")}</h2>
+          <h2 className="text-xl font-bold text-slate-900 mb-2">{t("lesson.notFound")}</h2>
           <p className="text-muted-foreground mb-6">{error ?? t("lesson.notFoundSub")}</p>
           <Button onClick={() => navigate(`/library/${bookId}`)} variant="outline">
             <ChevronLeft className="h-4 w-4 mr-1" /> {t("lesson.backToCourse")}
@@ -486,8 +486,8 @@ export default function BookLesson() {
       <div className="max-w-3xl mx-auto space-y-5 pb-12">
 
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-emerald-700">
-          <button onClick={() => navigate(`/library/${bookId}`)} className="hover:text-emerald-900 flex items-center gap-1">
+        <div className="flex items-center gap-2 text-sm text-blue-800">
+          <button onClick={() => navigate(`/library/${bookId}`)} className="hover:text-blue-950 flex items-center gap-1">
             <ChevronLeft className="h-4 w-4" /> {t("lesson.backToCourse")}
           </button>
           <span className="text-muted-foreground">/</span>
@@ -496,27 +496,27 @@ export default function BookLesson() {
 
         {/* Lesson Header */}
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
-          className="bg-gradient-to-r from-emerald-900 to-emerald-700 rounded-2xl px-6 py-5 text-white shadow-md"
+          className="bg-gradient-to-r from-blue-900 to-blue-700 rounded-2xl px-6 py-5 text-white shadow-md"
         >
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-emerald-300 text-xs font-medium mb-1">{t("lesson.lesson")} {lessonNumber}</p>
+              <p className="text-blue-300 text-xs font-medium mb-1">{t("lesson.lesson")} {lessonNumber}</p>
               <h1 className="text-xl font-serif font-bold leading-tight">{lesson.title}</h1>
               <p className="text-white/70 font-arabic text-lg mt-1" style={{ fontFamily: "var(--font-arabic)", direction: "rtl" }}>
                 {lesson.titleArabic}
               </p>
-              <p className="text-emerald-200 text-sm mt-2">{lesson.description}</p>
+              <p className="text-blue-200 text-sm mt-2">{lesson.description}</p>
             </div>
             <div className="text-right shrink-0">
-              <p className="text-xs text-emerald-300 mb-1">{pagesCompleted.size}/{totalPages} {t("lesson.pages")}</p>
+              <p className="text-xs text-blue-300 mb-1">{pagesCompleted.size}/{totalPages} {t("lesson.pages")}</p>
               <Progress value={pagesProgress} className="h-2 w-24 bg-white/20" />
-              {allDone && <p className="text-xs text-emerald-200 mt-1">{t("lesson.complete")}</p>}
+              {allDone && <p className="text-xs text-blue-200 mt-1">{t("lesson.complete")}</p>}
             </div>
           </div>
         </motion.div>
 
         {/* Tab Bar */}
-        <div className="flex gap-1 bg-emerald-50 rounded-xl p-1 border border-emerald-100">
+        <div className="flex gap-1 bg-blue-50 rounded-xl p-1 border border-blue-100">
           {[
             { id: "read", label: t("lesson.tabRead"), icon: BookOpen },
             { id: "vocab", label: t("lesson.tabVocab"), icon: BookMarked },
@@ -528,8 +528,8 @@ export default function BookLesson() {
               onClick={() => setActiveTab(tab.id as any)}
               className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-semibold transition-all ${
                 activeTab === tab.id
-                  ? "bg-white text-emerald-800 shadow-sm border border-emerald-100"
-                  : "text-emerald-600 hover:text-emerald-800"
+                  ? "bg-white text-blue-900 shadow-sm border border-blue-100"
+                  : "text-blue-700 hover:text-blue-900"
               }`}
             >
               <tab.icon className="h-3.5 w-3.5" />
@@ -550,13 +550,13 @@ export default function BookLesson() {
                   {lesson.pages.map((_, i) => (
                     <button key={i} onClick={() => setPageIndex(i)}
                       className={`w-2.5 h-2.5 rounded-full transition-all ${
-                        i === pageIndex ? "bg-emerald-600 scale-125" : pagesCompleted.has(i) ? "bg-emerald-300" : "bg-gray-200"
+                        i === pageIndex ? "bg-blue-700 scale-125" : pagesCompleted.has(i) ? "bg-teal-400" : "bg-gray-200"
                       }`}
                     />
                   ))}
                 </div>
                 <div className="flex gap-2">
-                  <button onClick={() => setShowTranslation(p => !p)} className={`text-xs px-2 py-1 rounded-full border transition-all ${showTranslation ? "border-emerald-500 text-emerald-700 bg-emerald-50" : "border-gray-200 text-gray-500"}`}>
+                  <button onClick={() => setShowTranslation(p => !p)} className={`text-xs px-2 py-1 rounded-full border transition-all ${showTranslation ? "border-blue-500 text-blue-800 bg-blue-50" : "border-gray-200 text-gray-500"}`}>
                     <Eye className="h-3 w-3 inline mr-1" />{t("lesson.showTranslation")}
                   </button>
                   <button onClick={() => setShowTranslit(p => !p)} className={`text-xs px-2 py-1 rounded-full border transition-all ${showTranslit ? "border-blue-500 text-blue-700 bg-blue-50" : "border-gray-200 text-gray-500"}`}>
@@ -568,12 +568,12 @@ export default function BookLesson() {
               {/* Arabic text card */}
               {currentPage && (
                 <motion.div key={pageIndex} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                  className="bg-white rounded-2xl border border-emerald-100 shadow-sm p-6"
+                  className="bg-white rounded-2xl border border-blue-100 shadow-sm p-6"
                 >
                   {/* Arabic text */}
-                  <div className="bg-emerald-50/60 rounded-xl p-5 mb-4 text-right" style={{ direction: "rtl" }}>
+                  <div className="bg-blue-50/60 rounded-xl p-5 mb-4 text-right" style={{ direction: "rtl" }}>
                     {currentPage.arabic.split("\n").map((line, li) => (
-                      <p key={li} className={`font-arabic text-emerald-950 leading-loose ${li === 0 ? "text-2xl" : "text-xl mt-2"}`}
+                      <p key={li} className={`font-arabic text-slate-900 leading-loose ${li === 0 ? "text-2xl" : "text-xl mt-2"}`}
                         style={{ fontFamily: "var(--font-arabic)" }}>
                         {line}
                       </p>
@@ -614,7 +614,7 @@ export default function BookLesson() {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+                      className="border-blue-200 text-blue-800 hover:bg-blue-50"
                       onClick={() => play(currentPage.arabic.replace(/\n/g, " "), "ar")}
                     >
                       {playing === currentPage.arabic.replace(/\n/g, " ")
@@ -634,7 +634,7 @@ export default function BookLesson() {
                     )}
                     {recState === "done" && (
                       <div className="flex gap-2">
-                        <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white" onClick={submitRecording} disabled={aiLoading}>
+                        <Button size="sm" className="bg-blue-700 hover:bg-blue-700 text-white" onClick={submitRecording} disabled={aiLoading}>
                           {aiLoading
                             ? <><Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />{t("lesson.checking")}</>
                             : <><Send className="h-3.5 w-3.5 mr-1.5" />{t("lesson.getAIFeedback")}</>}
@@ -646,13 +646,13 @@ export default function BookLesson() {
                     )}
 
                     {!pagesCompleted.has(pageIndex) && (
-                      <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white ml-auto" onClick={markPageDone}>
+                      <Button size="sm" className="bg-blue-700 hover:bg-blue-700 text-white ml-auto" onClick={markPageDone}>
                         <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />
                         {pageIndex < totalPages - 1 ? t("lesson.markDone") : t("lesson.completeLesson")}
                       </Button>
                     )}
                     {pagesCompleted.has(pageIndex) && pageIndex < totalPages - 1 && (
-                      <Button size="sm" variant="outline" className="border-emerald-200 ml-auto" onClick={() => setPageIndex(pageIndex + 1)}>
+                      <Button size="sm" variant="outline" className="border-blue-200 ml-auto" onClick={() => setPageIndex(pageIndex + 1)}>
                         {t("lesson.nextPage")} <ChevronRight className="h-3.5 w-3.5 ml-1" />
                       </Button>
                     )}
@@ -679,10 +679,10 @@ export default function BookLesson() {
 
               {/* Page prev/next */}
               <div className="flex justify-between">
-                <Button variant="ghost" onClick={() => setPageIndex(p => Math.max(0, p - 1))} disabled={pageIndex === 0} className="text-emerald-700">
+                <Button variant="ghost" onClick={() => setPageIndex(p => Math.max(0, p - 1))} disabled={pageIndex === 0} className="text-blue-800">
                   <ChevronLeft className="h-4 w-4 mr-1" />{t("lesson.prev")}
                 </Button>
-                <Button variant="ghost" onClick={() => setPageIndex(p => Math.min(totalPages - 1, p + 1))} disabled={pageIndex === totalPages - 1} className="text-emerald-700">
+                <Button variant="ghost" onClick={() => setPageIndex(p => Math.min(totalPages - 1, p + 1))} disabled={pageIndex === totalPages - 1} className="text-blue-800">
                   {t("lesson.next")}<ChevronRight className="h-4 w-4 ml-1" />
                 </Button>
               </div>
@@ -698,16 +698,16 @@ export default function BookLesson() {
 
               {/* Lesson nav when all done */}
               {allDone && (
-                <div className="flex justify-between items-center bg-emerald-50 rounded-xl border border-emerald-100 p-4">
+                <div className="flex justify-between items-center bg-blue-50 rounded-xl border border-blue-100 p-4">
                   <div>
-                    <p className="text-sm font-bold text-emerald-900">🎉 {t("lesson.lesson")} {lessonNumber} {t("lesson.complete")}</p>
+                    <p className="text-sm font-bold text-blue-950">🎉 {t("lesson.lesson")} {lessonNumber} {t("lesson.complete")}</p>
                     <p className="text-xs text-muted-foreground">{t("lesson.lessonCompleteMsg")}</p>
                   </div>
                   <div className="flex gap-2">
-                    <Button size="sm" variant="outline" className="border-emerald-200" onClick={() => setActiveTab("exercises")}>
+                    <Button size="sm" variant="outline" className="border-blue-200" onClick={() => setActiveTab("exercises")}>
                       <Star className="h-3.5 w-3.5 mr-1" />{t("lesson.tabExercises")}
                     </Button>
-                    <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white" onClick={goToNextLesson}>
+                    <Button size="sm" className="bg-blue-700 hover:bg-blue-700 text-white" onClick={goToNextLesson}>
                       {t("lesson.nextLesson")} <ArrowRight className="h-3.5 w-3.5 ml-1" />
                     </Button>
                   </div>
@@ -729,21 +729,21 @@ export default function BookLesson() {
               )}
               {lesson.vocabulary.map((word, i) => (
                 <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
-                  className="bg-white rounded-xl border border-emerald-100 p-4 shadow-sm">
+                  className="bg-white rounded-xl border border-blue-100 p-4 shadow-sm">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-1">
-                        <p className="text-2xl font-arabic text-emerald-900 font-bold" style={{ fontFamily: "var(--font-arabic)" }}>
+                        <p className="text-2xl font-arabic text-blue-950 font-bold" style={{ fontFamily: "var(--font-arabic)" }}>
                           {word.arabic}
                         </p>
-                        <button onClick={() => play(word.arabic, "ar")} className="text-emerald-500 hover:text-emerald-700 transition-colors">
+                        <button onClick={() => play(word.arabic, "ar")} className="text-blue-600 hover:text-blue-800 transition-colors">
                           <Volume2 className="h-4 w-4" />
                         </button>
                       </div>
                       <p className="text-xs text-blue-600 italic mb-1">{word.transliteration}</p>
                       <p className="text-sm font-semibold text-gray-800">{word.english}</p>
                       {word.plural && <p className="text-xs text-gray-500 mt-0.5">{t("lesson.plural")} <span className="font-arabic">{word.plural}</span></p>}
-                      {word.example && <p className="text-xs text-emerald-700 mt-1 bg-emerald-50 rounded px-2 py-1 font-arabic" style={{ direction: "rtl" }}>{word.example}</p>}
+                      {word.example && <p className="text-xs text-blue-800 mt-1 bg-blue-50 rounded px-2 py-1 font-arabic" style={{ direction: "rtl" }}>{word.example}</p>}
                     </div>
                     <Badge variant="outline" className="text-[10px] border-gray-200 text-gray-500 whitespace-nowrap shrink-0">
                       {word.pos}
@@ -757,29 +757,29 @@ export default function BookLesson() {
           {/* ── GRAMMAR TAB ── */}
           {activeTab === "grammar" && (
             <motion.div key="grammar" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}>
-              <div className="bg-white rounded-2xl border border-emerald-100 shadow-sm p-6 space-y-4">
+              <div className="bg-white rounded-2xl border border-blue-100 shadow-sm p-6 space-y-4">
                 <div>
-                  <h2 className="text-lg font-serif font-bold text-emerald-950">{lesson.grammar.title}</h2>
-                  <p className="text-base font-arabic text-emerald-700 mt-0.5" style={{ fontFamily: "var(--font-arabic)", direction: "rtl" }}>
+                  <h2 className="text-lg font-serif font-bold text-slate-900">{lesson.grammar.title}</h2>
+                  <p className="text-base font-arabic text-blue-800 mt-0.5" style={{ fontFamily: "var(--font-arabic)", direction: "rtl" }}>
                     {lesson.grammar.titleArabic}
                   </p>
                 </div>
 
-                <div className="bg-emerald-50 rounded-xl p-4">
+                <div className="bg-blue-50 rounded-xl p-4">
                   <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">{lesson.grammar.explanation}</p>
                 </div>
 
                 {lesson.grammar.examples.length > 0 && (
                   <div>
-                    <p className="text-xs font-semibold text-emerald-800 mb-2 uppercase tracking-wide">{t("lesson.grammarExamples")} — أَمْثِلَة</p>
+                    <p className="text-xs font-semibold text-blue-900 mb-2 uppercase tracking-wide">{t("lesson.grammarExamples")} — أَمْثِلَة</p>
                     <div className="space-y-2">
                       {lesson.grammar.examples.map((ex, i) => (
-                        <div key={i} className="flex items-center gap-3 bg-white border border-emerald-100 rounded-lg p-3">
-                          <button onClick={() => play(ex.arabic, "ar")} className="text-emerald-400 hover:text-emerald-600 shrink-0">
+                        <div key={i} className="flex items-center gap-3 bg-white border border-blue-100 rounded-lg p-3">
+                          <button onClick={() => play(ex.arabic, "ar")} className="text-blue-400 hover:text-blue-700 shrink-0">
                             <Volume2 className="h-4 w-4" />
                           </button>
                           <div className="flex-1">
-                            <p className="text-base font-arabic text-emerald-900" style={{ fontFamily: "var(--font-arabic)", direction: "rtl" }}>
+                            <p className="text-base font-arabic text-blue-950" style={{ fontFamily: "var(--font-arabic)", direction: "rtl" }}>
                               {ex.arabic}
                             </p>
                             <p className="text-xs text-gray-600 mt-0.5">{ex.translation}</p>
@@ -809,14 +809,14 @@ export default function BookLesson() {
         </AnimatePresence>
 
         {/* Lesson navigation */}
-        <div className="flex justify-between pt-2 border-t border-emerald-100">
-          <Button variant="ghost" onClick={goToPrevLesson} disabled={lessonNumber <= 1} className="text-emerald-700 text-sm">
+        <div className="flex justify-between pt-2 border-t border-blue-100">
+          <Button variant="ghost" onClick={goToPrevLesson} disabled={lessonNumber <= 1} className="text-blue-800 text-sm">
             <ChevronLeft className="h-4 w-4 mr-1" />{t("lesson.prevLesson")}
           </Button>
           <Button variant="ghost" onClick={() => navigate(`/library/${bookId}`)} className="text-muted-foreground text-sm">
             <BookOpen className="h-4 w-4 mr-1" />{t("lesson.backToCourse")}
           </Button>
-          <Button variant="ghost" onClick={goToNextLesson} className="text-emerald-700 text-sm">
+          <Button variant="ghost" onClick={goToNextLesson} className="text-blue-800 text-sm">
             {t("lesson.nextLesson")}<ChevronRight className="h-4 w-4 ml-1" />
           </Button>
         </div>

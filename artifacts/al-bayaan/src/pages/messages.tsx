@@ -45,7 +45,7 @@ const TYPE_ICONS: Record<string, React.ReactNode> = {
 };
 
 const TYPE_COLORS: Record<string, string> = {
-  teacher: "bg-emerald-100 text-emerald-700",
+  teacher: "bg-blue-100 text-blue-800",
   parent: "bg-blue-100 text-blue-700",
   student: "bg-purple-100 text-purple-700",
   announcement: "bg-amber-100 text-amber-700",
@@ -152,15 +152,15 @@ export default function Messages() {
       <div className="max-w-6xl mx-auto space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-serif font-bold text-emerald-950 flex items-center gap-2">
-              <MessageSquare className="h-6 w-6 text-emerald-600" />
+            <h1 className="text-2xl font-serif font-bold text-slate-900 flex items-center gap-2">
+              <MessageSquare className="h-6 w-6 text-blue-700" />
               Messages
             </h1>
             <p className="text-sm text-muted-foreground mt-1">Communicate with teachers, parents and students</p>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={loadMessages}><RefreshCw className="h-4 w-4" /></Button>
-            <Button size="sm" onClick={() => setShowCompose(true)} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+            <Button size="sm" onClick={() => setShowCompose(true)} className="bg-blue-700 hover:bg-blue-700 text-white">
               <Plus className="h-4 w-4 mr-1" /> New Message
             </Button>
           </div>
@@ -174,7 +174,7 @@ export default function Messages() {
               {(["inbox", "sent", "announcements"] as Tab[]).map(t => (
                 <button key={t} onClick={() => setTab(t)}
                   className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-colors capitalize ${
-                    tab === t ? "bg-emerald-600 text-white" : "hover:bg-gray-100 text-muted-foreground"
+                    tab === t ? "bg-blue-700 text-white" : "hover:bg-gray-100 text-muted-foreground"
                   }`}>
                   {t}
                 </button>
@@ -193,7 +193,7 @@ export default function Messages() {
               <ScrollArea className="h-full">
                 {loading ? (
                   <div className="flex items-center justify-center h-32">
-                    <Loader2 className="h-5 w-5 animate-spin text-emerald-600" />
+                    <Loader2 className="h-5 w-5 animate-spin text-blue-700" />
                   </div>
                 ) : filteredMessages.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-32 gap-2">
@@ -206,7 +206,7 @@ export default function Messages() {
                       <button key={msg.id}
                         onClick={() => { setSelectedThread(msg.senderId === "me" ? msg.receiverId : msg.senderId); markRead(msg.id); }}
                         className={`w-full text-left px-3 py-3 hover:bg-gray-50 transition-colors ${
-                          selectedThread === (msg.senderId === "me" ? msg.receiverId : msg.senderId) ? "bg-emerald-50" : ""
+                          selectedThread === (msg.senderId === "me" ? msg.receiverId : msg.senderId) ? "bg-blue-50" : ""
                         }`}>
                         <div className="flex items-start gap-2">
                           <div className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 ${TYPE_COLORS[msg.messageType] || "bg-gray-100 text-gray-600"}`}>
@@ -214,10 +214,10 @@ export default function Messages() {
                           </div>
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center justify-between gap-1">
-                              <span className={`text-xs font-semibold truncate ${!msg.isRead ? "text-emerald-900" : "text-foreground"}`}>
+                              <span className={`text-xs font-semibold truncate ${!msg.isRead ? "text-blue-950" : "text-foreground"}`}>
                                 {msg.senderName || "Unknown"}
                               </span>
-                              {!msg.isRead && <div className="h-2 w-2 rounded-full bg-emerald-600 shrink-0" />}
+                              {!msg.isRead && <div className="h-2 w-2 rounded-full bg-blue-700 shrink-0" />}
                             </div>
                             <p className="text-xs font-medium truncate text-foreground">{msg.subject}</p>
                             <p className="text-[11px] text-muted-foreground truncate">{msg.body}</p>
@@ -257,13 +257,13 @@ export default function Messages() {
                         return (
                           <motion.div key={msg.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
                             className={`flex gap-2 ${isMe ? "flex-row-reverse" : "flex-row"}`}>
-                            <div className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 text-xs font-bold ${isMe ? "bg-emerald-600 text-white" : TYPE_COLORS[msg.messageType]}`}>
+                            <div className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 text-xs font-bold ${isMe ? "bg-blue-700 text-white" : TYPE_COLORS[msg.messageType]}`}>
                               {isMe ? "Me" : msg.senderName?.[0] ?? "?"}
                             </div>
-                            <div className={`max-w-[75%] rounded-2xl px-4 py-3 text-sm ${isMe ? "bg-emerald-600 text-white rounded-tr-sm" : "bg-white border rounded-tl-sm shadow-sm"}`}>
+                            <div className={`max-w-[75%] rounded-2xl px-4 py-3 text-sm ${isMe ? "bg-blue-700 text-white rounded-tr-sm" : "bg-white border rounded-tl-sm shadow-sm"}`}>
                               {!isMe && <p className="text-[11px] font-semibold mb-1 opacity-70">{msg.senderName}</p>}
                               <p className="leading-relaxed">{msg.body}</p>
-                              <p className={`text-[10px] mt-1 ${isMe ? "text-emerald-200" : "text-muted-foreground"}`}>
+                              <p className={`text-[10px] mt-1 ${isMe ? "text-blue-200" : "text-muted-foreground"}`}>
                                 {msg.createdAt ? formatDistanceToNow(new Date(msg.createdAt), { addSuffix: true }) : ""}
                               </p>
                             </div>
@@ -279,7 +279,7 @@ export default function Messages() {
                       value={replyText} onChange={e => setReplyText(e.target.value)}
                       onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendReply(); } }}
                     />
-                    <Button onClick={sendReply} disabled={sending || !replyText.trim()} className="bg-emerald-600 hover:bg-emerald-700 text-white shrink-0">
+                    <Button onClick={sendReply} disabled={sending || !replyText.trim()} className="bg-blue-700 hover:bg-blue-700 text-white shrink-0">
                       {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                     </Button>
                   </div>
@@ -314,7 +314,7 @@ export default function Messages() {
                     <div className="flex gap-2 mt-1">
                       {(["teacher", "parent"] as const).map(t => (
                         <button key={t} onClick={() => setComposeType(t)}
-                          className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors capitalize ${composeType === t ? "bg-emerald-600 text-white border-emerald-600" : "border-gray-200 hover:border-emerald-300"}`}>
+                          className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors capitalize ${composeType === t ? "bg-blue-700 text-white border-blue-600" : "border-gray-200 hover:border-blue-300"}`}>
                           {t}
                         </button>
                       ))}
@@ -331,7 +331,7 @@ export default function Messages() {
                 </div>
                 <div className="flex gap-2 justify-end">
                   <Button variant="outline" onClick={() => setShowCompose(false)}>Cancel</Button>
-                  <Button onClick={sendNew} disabled={sending || !composeBody.trim() || !composeSubject.trim()} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                  <Button onClick={sendNew} disabled={sending || !composeBody.trim() || !composeSubject.trim()} className="bg-blue-700 hover:bg-blue-700 text-white">
                     {sending ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Send className="h-4 w-4 mr-1" />} Send
                   </Button>
                 </div>

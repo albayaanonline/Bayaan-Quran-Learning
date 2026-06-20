@@ -38,7 +38,7 @@ interface RevisionStats {
 }
 
 const STRENGTH_LABEL = (s: number) => {
-  if (s >= 90) return { text: "Excellent", color: "text-emerald-600", bg: "bg-emerald-100" };
+  if (s >= 90) return { text: "Excellent", color: "text-blue-700", bg: "bg-blue-100" };
   if (s >= 70) return { text: "Good", color: "text-blue-600", bg: "bg-blue-100" };
   if (s >= 50) return { text: "Fair", color: "text-amber-600", bg: "bg-amber-100" };
   return { text: "Weak", color: "text-red-600", bg: "bg-red-100" };
@@ -81,15 +81,15 @@ function RevisionCard({
         className="flex items-center gap-4 p-4 cursor-pointer hover:bg-gray-50 transition-colors"
         onClick={() => setExpanded((v) => !v)}
       >
-        <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-emerald-50 flex flex-col items-center justify-center border border-emerald-100">
-          <span className="text-xs font-bold text-emerald-700">{entry.surahId}</span>
-          <BookOpen className="h-3 w-3 text-emerald-500 mt-0.5" />
+        <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-blue-50 flex flex-col items-center justify-center border border-blue-100">
+          <span className="text-xs font-bold text-blue-800">{entry.surahId}</span>
+          <BookOpen className="h-3 w-3 text-blue-600 mt-0.5" />
         </div>
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-0.5">
-            <span className="font-semibold text-emerald-950 truncate">{entry.surahName}</span>
-            <span className="text-sm text-emerald-700 font-arabic">{entry.surahNameAr}</span>
+            <span className="font-semibold text-slate-900 truncate">{entry.surahName}</span>
+            <span className="text-sm text-blue-800 font-arabic">{entry.surahNameAr}</span>
           </div>
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <span>Ayahs {entry.ayahStart}–{entry.ayahEnd}</span>
@@ -161,7 +161,7 @@ function RevisionCard({
                 </Button>
                 <Button
                   size="sm"
-                  className="text-xs bg-emerald-600 hover:bg-emerald-700 text-white"
+                  className="text-xs bg-blue-700 hover:bg-blue-700 text-white"
                   disabled={isRevising}
                   onClick={() => onRevise(entry.id, 5)}
                 >
@@ -333,8 +333,8 @@ export default function Muraajacah() {
       label: "Total Revisions",
       value: stats?.totalRevisions ?? 0,
       icon: RotateCcw,
-      color: "text-emerald-600",
-      bg: "bg-emerald-50",
+      color: "text-blue-700",
+      bg: "bg-blue-50",
     },
     {
       label: "Strong Surahs",
@@ -351,10 +351,10 @@ export default function Muraajacah() {
         {/* Header */}
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-3xl font-serif font-bold text-emerald-950 mb-1">
+            <h1 className="text-3xl font-serif font-bold text-slate-900 mb-1">
               مُراجَعَة
             </h1>
-            <p className="text-base font-semibold text-emerald-800 mb-1">Muraaja'ah — Revision</p>
+            <p className="text-base font-semibold text-blue-900 mb-1">Muraaja'ah — Revision</p>
             <p className="text-sm text-muted-foreground">
               Spaced-repetition Quran revision. Review what is due and strengthen weak memorisation.
             </p>
@@ -376,21 +376,21 @@ export default function Muraajacah() {
           <motion.div
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
-            className="rounded-2xl bg-gradient-to-r from-emerald-700 to-emerald-600 text-white p-5 flex items-center gap-4 shadow-lg"
+            className="rounded-2xl bg-gradient-to-r from-blue-700 to-blue-700 text-white p-5 flex items-center gap-4 shadow-lg"
           >
             <div className="flex-shrink-0 w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
               <Flame className="h-6 w-6 text-amber-300" />
             </div>
             <div className="flex-1">
               <p className="font-bold text-lg leading-tight">Subci — Today's Session</p>
-              <p className="text-emerald-100 text-sm">
+              <p className="text-blue-100 text-sm">
                 {dueEntries.length} surah{dueEntries.length !== 1 ? "s" : ""} due for revision today.
                 Complete them to maintain your memorisation strength.
               </p>
             </div>
             <Button
               size="sm"
-              className="bg-white text-emerald-700 hover:bg-emerald-50 font-semibold shrink-0"
+              className="bg-white text-blue-800 hover:bg-blue-50 font-semibold shrink-0"
               onClick={() => setActiveTab("due")}
             >
               Start
@@ -411,7 +411,7 @@ export default function Muraajacah() {
                     <div className={`w-8 h-8 rounded-lg ${s.bg} flex items-center justify-center mb-2`}>
                       <s.icon className={`h-4 w-4 ${s.color}`} />
                     </div>
-                    <p className="text-xl font-bold text-emerald-950">{s.value}</p>
+                    <p className="text-xl font-bold text-slate-900">{s.value}</p>
                     <p className="text-xs text-muted-foreground">{s.label}</p>
                   </CardContent>
                 </Card>
@@ -441,8 +441,8 @@ export default function Muraajacah() {
                 ))
               ) : displayEntries.length === 0 ? (
                 <div className="text-center py-12 text-muted-foreground">
-                  <CheckCircle2 className="h-10 w-10 mx-auto mb-3 text-emerald-400" />
-                  <p className="font-semibold text-emerald-800">
+                  <CheckCircle2 className="h-10 w-10 mx-auto mb-3 text-blue-400" />
+                  <p className="font-semibold text-blue-900">
                     {tab === "due" ? "All caught up! No revisions due." : "No entries found."}
                   </p>
                   <p className="text-sm mt-1">
@@ -469,7 +469,7 @@ export default function Muraajacah() {
         <Card className="rounded-2xl border-gray-100 shadow-sm">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
-              <Brain className="h-5 w-5 text-emerald-600" />
+              <Brain className="h-5 w-5 text-blue-700" />
               AI Revision Coach
             </CardTitle>
           </CardHeader>
@@ -477,7 +477,7 @@ export default function Muraajacah() {
             {aiCoach && (
               <div
                 ref={coachScrollRef}
-                className="max-h-56 overflow-y-auto bg-emerald-50 rounded-xl p-4 text-sm text-emerald-900 leading-relaxed whitespace-pre-wrap"
+                className="max-h-56 overflow-y-auto bg-blue-50 rounded-xl p-4 text-sm text-blue-950 leading-relaxed whitespace-pre-wrap"
               >
                 {aiCoach}
               </div>
@@ -485,7 +485,7 @@ export default function Muraajacah() {
             <Button
               onClick={generateAiCoach}
               disabled={isGeneratingCoach}
-              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white gap-2"
+              className="w-full bg-blue-700 hover:bg-blue-700 text-white gap-2"
             >
               {isGeneratingCoach ? (
                 <>

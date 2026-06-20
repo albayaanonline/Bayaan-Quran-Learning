@@ -295,13 +295,13 @@ export default function AIAssistant() {
         {/* Header */}
         <div className="flex items-center justify-between mb-4 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-sm">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-teal-600 flex items-center justify-center shadow-sm">
               <Bot className="h-5 w-5 text-white" />
             </div>
             <div>
               <h1 className="text-lg font-bold">AI Learning Assistant</h1>
               <p className="text-xs text-muted-foreground flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-600 inline-block" />
                 Always available · Islamic education focused
               </p>
             </div>
@@ -322,7 +322,7 @@ export default function AIAssistant() {
               animate={{ opacity: 1, y: 0 }}
               className="flex flex-col items-center justify-center h-full text-center py-12 px-4"
             >
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mb-5 shadow-lg shadow-emerald-200 dark:shadow-emerald-900/30">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-teal-600 flex items-center justify-center mb-5 shadow-lg shadow-blue-500 dark:shadow-blue-500/30">
                 <Bot className="h-8 w-8 text-white" />
               </div>
               <h2 className="text-xl font-bold mb-2">Assalamu Alaikum! 🌙</h2>
@@ -353,7 +353,7 @@ export default function AIAssistant() {
                     className={`flex gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                   >
                     {msg.role === "assistant" && (
-                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shrink-0 mt-1 shadow-sm">
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-teal-600 flex items-center justify-center shrink-0 mt-1 shadow-sm">
                         <Bot className="h-4 w-4 text-white" />
                       </div>
                     )}
@@ -396,7 +396,7 @@ export default function AIAssistant() {
                   animate={{ opacity: 1 }}
                   className="flex gap-3 justify-start"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shrink-0 mt-1 shadow-sm">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-teal-600 flex items-center justify-center shrink-0 mt-1 shadow-sm">
                     <Bot className="h-4 w-4 text-white" />
                   </div>
                   <div className="bg-card border rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm">
@@ -404,7 +404,7 @@ export default function AIAssistant() {
                       {[0, 1, 2].map((i) => (
                         <motion.span
                           key={i}
-                          className="w-2 h-2 rounded-full bg-emerald-400"
+                          className="w-2 h-2 rounded-full bg-blue-400"
                           animate={{ y: [0, -6, 0] }}
                           transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.15 }}
                         />
@@ -438,7 +438,7 @@ export default function AIAssistant() {
               onClick={() => sendMessage()}
               disabled={!input.trim() || loading}
               size="icon"
-              className="h-9 w-9 rounded-xl shrink-0 bg-emerald-600 hover:bg-emerald-700"
+              className="h-9 w-9 rounded-xl shrink-0 bg-blue-700 hover:bg-blue-700"
             >
               <Send className="h-4 w-4" />
             </Button>

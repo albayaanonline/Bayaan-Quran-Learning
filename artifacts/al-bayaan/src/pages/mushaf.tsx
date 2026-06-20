@@ -124,10 +124,10 @@ function buildAudioBase64(blob: Blob): Promise<string> {
 }
 
 function AccuracyRing({ score }: { score: number }) {
-  const color = score >= 90 ? "text-emerald-600" : score >= 70 ? "text-blue-600" : score >= 50 ? "text-amber-600" : "text-red-600";
-  const bg = score >= 90 ? "bg-emerald-50" : score >= 70 ? "bg-blue-50" : score >= 50 ? "bg-amber-50" : "bg-red-50";
+  const color = score >= 90 ? "text-blue-700" : score >= 70 ? "text-blue-600" : score >= 50 ? "text-amber-600" : "text-red-600";
+  const bg = score >= 90 ? "bg-blue-50" : score >= 70 ? "bg-blue-50" : score >= 50 ? "bg-amber-50" : "bg-red-50";
   return (
-    <div className={`flex flex-col items-center justify-center w-24 h-24 rounded-full ${bg} border-4 ${score >= 90 ? "border-emerald-300" : score >= 70 ? "border-blue-300" : score >= 50 ? "border-amber-300" : "border-red-300"}`}>
+    <div className={`flex flex-col items-center justify-center w-24 h-24 rounded-full ${bg} border-4 ${score >= 90 ? "border-blue-300" : score >= 70 ? "border-blue-300" : score >= 50 ? "border-amber-300" : "border-red-300"}`}>
       <span className={`text-2xl font-bold ${color}`}>{score}%</span>
       <span className="text-xs text-muted-foreground">accuracy</span>
     </div>
@@ -392,10 +392,10 @@ export default function Mushaf() {
         {/* ── Header ── */}
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
-            <h1 className="text-2xl font-serif font-bold text-emerald-950 dark:text-emerald-50 flex items-center gap-2">
-              <BookOpen className="h-6 w-6 text-emerald-600" />
+            <h1 className="text-2xl font-serif font-bold text-slate-900 dark:text-blue-50 flex items-center gap-2">
+              <BookOpen className="h-6 w-6 text-blue-700" />
               {t("mushaf.title", "Mushaf Reader")}
-              <Badge className="bg-emerald-600 text-white border-0 text-xs">
+              <Badge className="bg-blue-700 text-white border-0 text-xs">
                 {t("mushaf.page", "Page")} {page}/{TOTAL_PAGES}
               </Badge>
             </h1>
@@ -419,12 +419,12 @@ export default function Mushaf() {
                 <Button variant="outline" size="icon" onClick={() => setAudioEnabled(!audioEnabled)} title={audioEnabled ? "Mute" : "Enable audio"}>
                   {audioEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
                 </Button>
-                <Button variant={isPlaying ? "default" : "outline"} size="icon" onClick={playPage} disabled={loading || !pageData} className={isPlaying ? "bg-emerald-600 text-white" : ""}>
+                <Button variant={isPlaying ? "default" : "outline"} size="icon" onClick={playPage} disabled={loading || !pageData} className={isPlaying ? "bg-blue-700 text-white" : ""}>
                   {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
                 </Button>
               </>
             )}
-            <Button variant={isBookmarked ? "default" : "outline"} size="icon" onClick={toggleBookmark} className={isBookmarked ? "bg-emerald-600 text-white" : ""}>
+            <Button variant={isBookmarked ? "default" : "outline"} size="icon" onClick={toggleBookmark} className={isBookmarked ? "bg-blue-700 text-white" : ""}>
               {isBookmarked ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
             </Button>
           </div>
@@ -436,7 +436,7 @@ export default function Mushaf() {
             onClick={() => { setPageMode("read"); resetRecitation(); }}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
               pageMode === "read"
-                ? "bg-white dark:bg-gray-700 text-emerald-700 shadow-sm"
+                ? "bg-white dark:bg-gray-700 text-blue-800 shadow-sm"
                 : "text-gray-500 hover:text-gray-700"
             }`}
           >
@@ -447,7 +447,7 @@ export default function Mushaf() {
             onClick={() => { setPageMode("recite"); stopAudio(); }}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
               pageMode === "recite"
-                ? "bg-white dark:bg-gray-700 text-emerald-700 shadow-sm"
+                ? "bg-white dark:bg-gray-700 text-blue-800 shadow-sm"
                 : "text-gray-500 hover:text-gray-700"
             }`}
           >
@@ -457,7 +457,7 @@ export default function Mushaf() {
         </div>
 
         {/* ── Navigation bar ── */}
-        <div className="flex items-center gap-2 flex-wrap bg-emerald-50/80 border border-emerald-100 rounded-xl p-3">
+        <div className="flex items-center gap-2 flex-wrap bg-blue-50/80 border border-blue-100 rounded-xl p-3">
           <Button variant="outline" size="sm" onClick={() => goToPage(page - 1)} disabled={page <= 1} className="gap-1">
             <ChevronLeft className="h-4 w-4" /> {t("general.back", "Prev")}
           </Button>
@@ -509,7 +509,7 @@ export default function Mushaf() {
         <AnimatePresence mode="wait">
           {loading && (
             <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <div className="bg-white dark:bg-emerald-950/30 border border-emerald-100 rounded-2xl p-8 space-y-6">
+              <div className="bg-white dark:bg-blue-950/30 border border-blue-100 rounded-2xl p-8 space-y-6">
                 {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-8 w-full" />)}
               </div>
             </motion.div>
@@ -534,29 +534,29 @@ export default function Mushaf() {
             >
               {/* ────────── READ MODE ────────── */}
               {pageMode === "read" && (
-                <div className="bg-white dark:bg-emerald-950/30 border border-emerald-100 rounded-2xl overflow-hidden shadow-sm">
+                <div className="bg-white dark:bg-blue-950/30 border border-blue-100 rounded-2xl overflow-hidden shadow-sm">
                   {groups.map((group, gi) => (
                     <div key={gi}>
-                      <div className="border-b border-emerald-100 bg-emerald-50/60 dark:bg-emerald-900/20 px-6 py-3 flex items-center justify-between">
+                      <div className="border-b border-blue-100 bg-blue-50/60 dark:bg-blue-900/20 px-6 py-3 flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <div className="h-8 w-8 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-bold">
+                          <div className="h-8 w-8 rounded-full bg-blue-700 text-white flex items-center justify-center text-xs font-bold">
                             {group.ayahsInGroup[0].surah.number}
                           </div>
                           <div>
-                            <p className="text-sm font-bold text-emerald-900 dark:text-emerald-100 font-arabic" style={{ fontFamily: "var(--font-arabic)" }}>
+                            <p className="text-sm font-bold text-blue-950 dark:text-blue-100 font-arabic" style={{ fontFamily: "var(--font-arabic)" }}>
                               {group.surahName}
                             </p>
                             <p className="text-xs text-muted-foreground">{group.surahEnglish} · {group.isMakki ? "Meccan" : "Medinan"}</p>
                           </div>
                         </div>
                         {group.ayahsInGroup[0].numberInSurah === 1 && group.ayahsInGroup[0].surah.number !== 9 && (
-                          <p className="text-sm text-emerald-800 dark:text-emerald-200 font-arabic" style={{ fontFamily: "var(--font-arabic)" }}>
+                          <p className="text-sm text-blue-900 dark:text-blue-200 font-arabic" style={{ fontFamily: "var(--font-arabic)" }}>
                             بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ
                           </p>
                         )}
                       </div>
                       <div className="px-6 py-6" dir="rtl">
-                        <p className="text-right leading-[3rem] text-2xl text-emerald-950 dark:text-emerald-50" style={{ fontFamily: "var(--font-arabic)" }}>
+                        <p className="text-right leading-[3rem] text-2xl text-slate-900 dark:text-blue-50" style={{ fontFamily: "var(--font-arabic)" }}>
                           {group.ayahsInGroup.map((ayah) => {
                             const globalIdx = pageData.ayahs.indexOf(ayah);
                             const isCurrentPlaying = isPlaying && currentAyahIdx === globalIdx;
@@ -565,13 +565,13 @@ export default function Mushaf() {
                                 onClick={() => playAyah(ayah, globalIdx)}
                                 className={`cursor-pointer rounded transition-colors px-0.5 ${
                                   isCurrentPlaying
-                                    ? "bg-emerald-200 dark:bg-emerald-700"
-                                    : "hover:bg-emerald-50 dark:hover:bg-emerald-900/40"
+                                    ? "bg-teal-200 dark:bg-blue-700"
+                                    : "hover:bg-blue-50 dark:hover:bg-blue-900/40"
                                 }`}
                                 title={`Verse ${ayah.numberInSurah} — click to play`}
                               >
                                 {ayah.text}
-                                <span className="text-emerald-500 dark:text-emerald-400 text-base mx-1">
+                                <span className="text-blue-600 dark:text-blue-400 text-base mx-1">
                                   ۝{ayah.numberInSurah.toLocaleString("ar-SA")}
                                 </span>
                               </span>
@@ -581,9 +581,9 @@ export default function Mushaf() {
                       </div>
                     </div>
                   ))}
-                  <div className="border-t border-emerald-100 px-6 py-3 flex items-center justify-between text-xs text-muted-foreground bg-emerald-50/40">
+                  <div className="border-t border-blue-100 px-6 py-3 flex items-center justify-between text-xs text-muted-foreground bg-blue-50/40">
                     <span>Juz {juzNumber}</span>
-                    <span className="font-arabic text-emerald-700 dark:text-emerald-400" style={{ fontFamily: "var(--font-arabic)" }}>{page}</span>
+                    <span className="font-arabic text-blue-800 dark:text-blue-400" style={{ fontFamily: "var(--font-arabic)" }}>{page}</span>
                     <span>{pageData.ayahs.length} verses on this page</span>
                   </div>
                 </div>
@@ -627,10 +627,10 @@ export default function Mushaf() {
                   </div>
 
                   {/* Mushaf display with word-level coloring */}
-                  <div className="bg-white dark:bg-emerald-950/30 border border-emerald-100 rounded-2xl overflow-hidden shadow-sm">
+                  <div className="bg-white dark:bg-blue-950/30 border border-blue-100 rounded-2xl overflow-hidden shadow-sm">
                     {recitationResult && (
                       <div className="px-4 py-2 bg-gray-50 border-b border-gray-100 flex items-center gap-4 text-xs">
-                        <span className="flex items-center gap-1"><span className="inline-block w-3 h-3 rounded-sm bg-emerald-200 border border-emerald-400"></span> {t("mushaf.correct")}</span>
+                        <span className="flex items-center gap-1"><span className="inline-block w-3 h-3 rounded-sm bg-teal-200 border border-blue-400"></span> {t("mushaf.correct")}</span>
                         <span className="flex items-center gap-1"><span className="inline-block w-3 h-3 rounded-sm bg-red-200 border border-red-400"></span> {t("mushaf.missing")}</span>
                         <span className="flex items-center gap-1"><span className="inline-block w-3 h-3 rounded-sm bg-orange-200 border border-orange-400"></span> {t("mushaf.extra")}</span>
                       </div>
@@ -639,20 +639,20 @@ export default function Mushaf() {
                       globalWordCounter = 0;
                       return groups.map((group, gi) => (
                         <div key={gi}>
-                          <div className="border-b border-emerald-100 bg-emerald-50/60 dark:bg-emerald-900/20 px-6 py-3 flex items-center justify-between">
+                          <div className="border-b border-blue-100 bg-blue-50/60 dark:bg-blue-900/20 px-6 py-3 flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                              <div className="h-8 w-8 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-bold">
+                              <div className="h-8 w-8 rounded-full bg-blue-700 text-white flex items-center justify-center text-xs font-bold">
                                 {group.ayahsInGroup[0].surah.number}
                               </div>
                               <div>
-                                <p className="text-sm font-bold text-emerald-900 dark:text-emerald-100" style={{ fontFamily: "var(--font-arabic)" }}>
+                                <p className="text-sm font-bold text-blue-950 dark:text-blue-100" style={{ fontFamily: "var(--font-arabic)" }}>
                                   {group.surahName}
                                 </p>
                                 <p className="text-xs text-muted-foreground">{group.surahEnglish}</p>
                               </div>
                             </div>
                             {group.ayahsInGroup[0].numberInSurah === 1 && group.ayahsInGroup[0].surah.number !== 9 && (
-                              <p className="text-sm text-emerald-800 font-arabic" style={{ fontFamily: "var(--font-arabic)" }}>
+                              <p className="text-sm text-blue-900 font-arabic" style={{ fontFamily: "var(--font-arabic)" }}>
                                 بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ
                               </p>
                             )}
@@ -669,10 +669,10 @@ export default function Mushaf() {
                                     key={wi}
                                     className={`inline-block leading-loose mx-0.5 rounded px-0.5 transition-colors cursor-default text-2xl ${
                                       status === "correct"
-                                        ? "bg-emerald-200 text-emerald-900 dark:bg-emerald-700 dark:text-emerald-50"
+                                        ? "bg-teal-200 text-blue-950 dark:bg-blue-700 dark:text-blue-50"
                                         : status === "missing"
                                         ? "bg-red-200 text-red-900 dark:bg-red-900/60 dark:text-red-100"
-                                        : "text-emerald-950 dark:text-emerald-50"
+                                        : "text-slate-900 dark:text-blue-50"
                                     }`}
                                     style={{ fontFamily: "var(--font-arabic)" }}
                                     title={
@@ -688,7 +688,7 @@ export default function Mushaf() {
                               return (
                                 <span key={ayah.number} className={`${!isTargetAyah && recitationResult ? "opacity-40" : ""}`}>
                                   {renderedWords}
-                                  <span className="inline-block text-emerald-500 text-base mx-1" style={{ fontFamily: "var(--font-arabic)" }}>
+                                  <span className="inline-block text-blue-600 text-base mx-1" style={{ fontFamily: "var(--font-arabic)" }}>
                                     ۝{ayah.numberInSurah.toLocaleString("ar-SA")}
                                   </span>
                                   {" "}
@@ -720,9 +720,9 @@ export default function Mushaf() {
                   </div>
 
                   {/* ── Recording Controls ── */}
-                  <div className="bg-white border border-emerald-100 rounded-2xl p-5 shadow-sm">
+                  <div className="bg-white border border-blue-100 rounded-2xl p-5 shadow-sm">
                     <div className="flex items-center justify-between mb-4">
-                      <p className="font-semibold text-emerald-900">{t("mushaf.recitationRec")}</p>
+                      <p className="font-semibold text-blue-950">{t("mushaf.recitationRec")}</p>
                       {recordState === "done" && recitationResult && (
                         <Button variant="outline" size="sm" onClick={resetRecitation} className="gap-1.5 text-xs">
                           <RefreshCw className="h-3.5 w-3.5" /> {t("mushaf.tryAgain")}
@@ -742,8 +742,8 @@ export default function Mushaf() {
                               : recordState === "analyzing"
                               ? "bg-amber-500 text-white cursor-not-allowed"
                               : recordState === "done"
-                              ? "bg-emerald-600 hover:bg-emerald-700 text-white"
-                              : "bg-emerald-600 hover:bg-emerald-700 text-white"
+                              ? "bg-blue-700 hover:bg-blue-700 text-white"
+                              : "bg-blue-700 hover:bg-blue-700 text-white"
                           }`}
                         >
                           {recordState === "recording" ? (
@@ -782,7 +782,7 @@ export default function Mushaf() {
                       {/* Quick tips */}
                       {recordState === "idle" && (
                         <div className="flex items-start gap-2 text-xs text-muted-foreground bg-gray-50 rounded-xl p-3 w-full max-w-sm">
-                          <Info className="h-3.5 w-3.5 mt-0.5 shrink-0 text-emerald-600" />
+                          <Info className="h-3.5 w-3.5 mt-0.5 shrink-0 text-blue-700" />
                           <span>Use a quiet environment. Speak each word clearly. Record at least 3 seconds for best results.</span>
                         </div>
                       )}
@@ -843,7 +843,7 @@ export default function Mushaf() {
                         {!recitationResult.sttFailed && recitationResult.correction && (
                           <>
                             {/* Score header */}
-                            <div className="bg-white border border-emerald-100 rounded-2xl p-5 shadow-sm">
+                            <div className="bg-white border border-blue-100 rounded-2xl p-5 shadow-sm">
                               <div className="flex items-center gap-4 flex-wrap">
                                 <AccuracyRing score={recitationResult.correction.accuracyScore} />
                                 <div className="flex-1 min-w-0 space-y-3">
@@ -852,9 +852,9 @@ export default function Mushaf() {
                                     <Progress value={recitationResult.correction.accuracyScore} className="h-3" />
                                   </div>
                                   <div className="grid grid-cols-3 gap-2 text-center">
-                                    <div className="bg-emerald-50 rounded-lg p-2">
-                                      <p className="text-lg font-bold text-emerald-700">{recitationResult.correction.wordStats.correct}</p>
-                                      <p className="text-xs text-emerald-600">{t("mushaf.correct")}</p>
+                                    <div className="bg-blue-50 rounded-lg p-2">
+                                      <p className="text-lg font-bold text-blue-800">{recitationResult.correction.wordStats.correct}</p>
+                                      <p className="text-xs text-blue-700">{t("mushaf.correct")}</p>
                                     </div>
                                     <div className="bg-red-50 rounded-lg p-2">
                                       <p className="text-lg font-bold text-red-700">{recitationResult.correction.wordStats.missing}</p>
@@ -872,8 +872,8 @@ export default function Mushaf() {
                             {/* Transcription & confidence */}
                             <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm space-y-3">
                               <div className="flex items-center justify-between flex-wrap gap-2">
-                                <p className="text-sm font-semibold text-emerald-900 flex items-center gap-1.5">
-                                  <Mic className="h-4 w-4 text-emerald-600" />
+                                <p className="text-sm font-semibold text-blue-950 flex items-center gap-1.5">
+                                  <Mic className="h-4 w-4 text-blue-700" />
                                   {t("mushaf.recognizedText")}
                                 </p>
                                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -918,14 +918,14 @@ export default function Mushaf() {
 
                             {/* Correct words */}
                             {recitationResult.correction.correctWords.length > 0 && (
-                              <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-5">
-                                <p className="text-sm font-semibold text-emerald-800 mb-3 flex items-center gap-1.5">
+                              <div className="bg-blue-50 border border-blue-100 rounded-2xl p-5">
+                                <p className="text-sm font-semibold text-blue-900 mb-3 flex items-center gap-1.5">
                                   <CheckCircle2 className="h-4 w-4" />
                                   {t("mushaf.correctWords")} ({recitationResult.correction.correctWords.length})
                                 </p>
                                 <div className="flex flex-wrap gap-2" dir="rtl">
                                   {recitationResult.correction.correctWords.map((w, i) => (
-                                    <span key={i} className="bg-emerald-100 text-emerald-900 border border-emerald-200 rounded-lg px-3 py-1 text-lg"
+                                    <span key={i} className="bg-blue-100 text-blue-950 border border-blue-200 rounded-lg px-3 py-1 text-lg"
                                       style={{ fontFamily: "var(--font-arabic)" }}>{w}</span>
                                   ))}
                                 </div>
@@ -934,14 +934,14 @@ export default function Mushaf() {
 
                             {/* AI Teacher Feedback */}
                             {recitationResult.correction.suggestions.length > 0 && (
-                              <div className="bg-gradient-to-br from-emerald-700 to-emerald-600 rounded-2xl p-5 text-white shadow-lg">
+                              <div className="bg-gradient-to-br from-blue-700 to-blue-700 rounded-2xl p-5 text-white shadow-lg">
                                 <p className="text-sm font-semibold mb-3 flex items-center gap-2">
                                   <Sparkles className="h-4 w-4 text-amber-300" />
                                   {t("mushaf.aiFeedback")}
                                 </p>
                                 <div className="space-y-2">
                                   {recitationResult.correction.suggestions.map((s, i) => (
-                                    <p key={i} className="text-sm text-emerald-50 leading-relaxed bg-white/10 rounded-xl px-4 py-3">{s}</p>
+                                    <p key={i} className="text-sm text-blue-50 leading-relaxed bg-white/10 rounded-xl px-4 py-3">{s}</p>
                                   ))}
                                 </div>
                               </div>
@@ -959,14 +959,14 @@ export default function Mushaf() {
 
         {/* ── Bottom navigation ── */}
         <div className="flex items-center justify-between">
-          <Button variant="outline" onClick={() => goToPage(page - 1)} disabled={page <= 1} className="gap-2 border-emerald-200 hover:bg-emerald-50">
+          <Button variant="outline" onClick={() => goToPage(page - 1)} disabled={page <= 1} className="gap-2 border-blue-200 hover:bg-blue-50">
             <ChevronLeft className="h-4 w-4" />
             {t("general.back")}
           </Button>
           <span className="text-sm text-muted-foreground">
             {Math.round((page / TOTAL_PAGES) * 100)}% {t("mushaf.complete")}
           </span>
-          <Button variant="outline" onClick={() => goToPage(page + 1)} disabled={page >= TOTAL_PAGES} className="gap-2 border-emerald-200 hover:bg-emerald-50">
+          <Button variant="outline" onClick={() => goToPage(page + 1)} disabled={page >= TOTAL_PAGES} className="gap-2 border-blue-200 hover:bg-blue-50">
             {t("general.next")}
             <ChevronRight className="h-4 w-4" />
           </Button>

@@ -48,10 +48,10 @@ export default function Learn() {
             </p>
           </div>
           <div className="relative w-full md:w-72">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-600/50" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-700/50" />
             <Input
               placeholder={t("learn.searchPlaceholder")}
-              className="pl-10 border-emerald-200 focus-visible:ring-emerald-600"
+              className="pl-10 border-blue-200 focus-visible:ring-blue-500"
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
@@ -80,7 +80,7 @@ export default function Learn() {
                   >
                     <Card className={`card-premium cursor-pointer h-full transition-all duration-200 group ${
                       isCompleted
-                        ? "border-emerald-300 dark:border-emerald-700 bg-gradient-to-br from-emerald-50/80 to-teal-50/40 dark:from-emerald-950/60 dark:to-teal-950/30"
+                        ? "border-blue-300 dark:border-blue-700 bg-gradient-to-br from-blue-50/80 to-teal-50/40 dark:from-blue-950/60 dark:to-teal-950/30"
                         : "hover:border-primary/40"
                     }`}>
                       <CardContent className="p-5 flex flex-col justify-between h-full">
@@ -88,7 +88,7 @@ export default function Learn() {
                           <div className="flex items-center gap-3">
                             <div className={`h-10 w-10 rounded-xl flex items-center justify-center font-bold text-sm transition-all duration-200 ${
                               isCompleted
-                                ? "bg-emerald-500 text-white shadow-sm shadow-emerald-200 dark:shadow-emerald-900"
+                                ? "bg-blue-600 text-white shadow-sm shadow-blue-500 dark:shadow-blue-500"
                                 : "bg-muted text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground"
                             }`}>
                               {isCompleted ? <CheckCircle2 className="h-5 w-5" /> : surah.number}
@@ -123,7 +123,7 @@ export default function Learn() {
                           </div>
                           <div className="h-1.5 rounded-full bg-muted overflow-hidden">
                             <div
-                              className={`h-full rounded-full transition-all duration-700 ${isCompleted ? "bg-emerald-500" : "bg-primary/60"}`}
+                              className={`h-full rounded-full transition-all duration-700 ${isCompleted ? "bg-blue-600" : "bg-primary/60"}`}
                               style={{ width: `${progressPercent}%` }}
                             />
                           </div>

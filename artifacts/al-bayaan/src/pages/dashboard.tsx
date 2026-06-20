@@ -20,7 +20,7 @@ const MOTIVATIONAL_HADITHS = [
 const todayHadith = MOTIVATIONAL_HADITHS[new Date().getDate() % MOTIVATIONAL_HADITHS.length];
 
 const QUICK_LINKS = [
-  { href: "/learn",          label: "Continue Quran",       icon: BookOpen,  color: "from-emerald-500 to-teal-500",   badge: null },
+  { href: "/learn",          label: "Continue Quran",       icon: BookOpen,  color: "from-blue-600 to-teal-500",   badge: null },
   { href: "/teacher",        label: "Ask AI Teacher",        icon: MessageSquare, color: "from-violet-500 to-purple-500", badge: "AI" },
   { href: "/hifdh",          label: "Hifdh Tracker",        icon: Brain,     color: "from-blue-500 to-indigo-500",    badge: null },
   { href: "/achievements",   label: "My Achievements",      icon: Trophy,    color: "from-amber-500 to-orange-500",   badge: null },
@@ -109,20 +109,20 @@ export default function Dashboard() {
             transition={{ delay: 0.1 }}
             className="md:col-span-2"
           >
-            <Card className="card-premium h-full border-0 shadow-sm bg-gradient-to-br from-emerald-50 to-teal-50/50 dark:from-emerald-950/60 dark:to-teal-950/40">
+            <Card className="card-premium h-full border-0 shadow-sm bg-gradient-to-br from-blue-50 to-teal-50/50 dark:from-blue-950/60 dark:to-teal-950/40">
               <CardContent className="p-5">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
-                    <div className="h-8 w-8 rounded-lg bg-emerald-500/15 flex items-center justify-center">
-                      <Target className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                    <div className="h-8 w-8 rounded-lg bg-blue-600/15 flex items-center justify-center">
+                      <Target className="h-4 w-4 text-blue-700 dark:text-blue-400" />
                     </div>
-                    <span className="font-semibold text-emerald-900 dark:text-emerald-100">{t("dash.dailyGoal")}</span>
+                    <span className="font-semibold text-blue-950 dark:text-blue-100">{t("dash.dailyGoal")}</span>
                   </div>
-                  <span className={`text-sm font-bold px-2.5 py-1 rounded-full ${goalDone ? "bg-emerald-500 text-white" : "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200"}`}>
+                  <span className={`text-sm font-bold px-2.5 py-1 rounded-full ${goalDone ? "bg-blue-600 text-white" : "bg-blue-100 text-blue-900 dark:bg-blue-900 dark:text-blue-200"}`}>
                     {dashboard.todayMinutes} / {dashboard.streak.dailyGoalMinutes} min
                   </span>
                 </div>
-                <Progress value={goalPct} className="h-3 bg-emerald-100 dark:bg-emerald-900/50" />
+                <Progress value={goalPct} className="h-3 bg-blue-100 dark:bg-blue-900/50" />
                 <div className="mt-3 flex items-center justify-between">
                   <p className="text-sm text-muted-foreground">
                     {goalDone
@@ -131,7 +131,7 @@ export default function Dashboard() {
                   </p>
                   {!goalDone && (
                     <Link href="/learn">
-                      <Button size="sm" variant="outline" className="h-7 text-xs gap-1 border-emerald-200 hover:bg-emerald-50">
+                      <Button size="sm" variant="outline" className="h-7 text-xs gap-1 border-blue-200 hover:bg-blue-50">
                         Study now <ArrowRight className="h-3 w-3" />
                       </Button>
                     </Link>
@@ -179,7 +179,7 @@ export default function Dashboard() {
         <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
           {[
             { key: "dash.totalXP",     value: (dashboard.streak.xp ?? 0).toLocaleString(), icon: Star,     color: "text-blue-600 dark:text-blue-400",   bg: "from-blue-50 to-indigo-50/50 dark:from-blue-950/50 dark:to-indigo-950/30",   glow: "stat-glow-blue" },
-            { key: "dash.ayahsRead",   value: dashboard.totalAyahs.toLocaleString(),        icon: BookOpen,  color: "text-emerald-600 dark:text-emerald-400", bg: "from-emerald-50 to-teal-50/50 dark:from-emerald-950/50 dark:to-teal-950/30", glow: "stat-glow-emerald" },
+            { key: "dash.ayahsRead",   value: dashboard.totalAyahs.toLocaleString(),        icon: BookOpen,  color: "text-blue-700 dark:text-blue-400", bg: "from-blue-50 to-teal-50/50 dark:from-blue-950/50 dark:to-teal-950/30", glow: "stat-glow-emerald" },
             { key: "dash.avgAccuracy", value: `${dashboard.quickStats.avgAccuracy}%`,        icon: Target,   color: "text-purple-600 dark:text-purple-400", bg: "from-purple-50 to-violet-50/50 dark:from-purple-950/50 dark:to-violet-950/30", glow: "stat-glow-purple" },
             { key: "dash.totalTime",   value: `${Math.round(dashboard.quickStats.totalRecordings / 60)}h`, icon: Clock, color: "text-rose-600 dark:text-rose-400", bg: "from-rose-50 to-pink-50/50 dark:from-rose-950/50 dark:to-pink-950/30", glow: "stat-glow-rose" },
           ].map((stat, i) => (
@@ -241,12 +241,12 @@ export default function Dashboard() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.65 }}
         >
-          <Card className="card-premium border-0 shadow-sm bg-gradient-to-br from-slate-900 to-emerald-950 dark:from-black dark:to-emerald-950/80 text-white overflow-hidden">
+          <Card className="card-premium border-0 shadow-sm bg-gradient-to-br from-slate-900 to-blue-950 dark:from-black dark:to-blue-950/80 text-white overflow-hidden">
             <CardContent className="p-5 relative">
               <div className="absolute top-0 right-0 text-[120px] leading-none font-serif text-white/5 select-none pointer-events-none">"</div>
               <div className="absolute inset-0 bg-[url('/images/geometric-pattern.png')] opacity-[0.04] bg-repeat bg-[length:200px] pointer-events-none" />
               <div className="relative z-10">
-                <p className="text-[10px] uppercase tracking-widest text-emerald-400 font-semibold mb-3">✨ Hadith of the Day</p>
+                <p className="text-[10px] uppercase tracking-widest text-blue-400 font-semibold mb-3">✨ Hadith of the Day</p>
                 <p className="text-sm md:text-base text-white/85 leading-relaxed italic">"{todayHadith.text}"</p>
                 <p className="mt-2 text-xs text-white/35">— {todayHadith.source}</p>
               </div>

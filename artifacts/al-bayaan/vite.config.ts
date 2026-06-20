@@ -25,7 +25,7 @@ export default defineConfig({
         name: "Al Bayaan AI Quran",
         short_name: "Al Bayaan",
         description: "AI-powered Quran learning with Tajweed coaching, Hifdh tracking, and personalized guidance",
-        theme_color: "#047857",
+        theme_color: "#1E3A8A",
         background_color: "#ffffff",
         display: "standalone",
         orientation: "portrait",

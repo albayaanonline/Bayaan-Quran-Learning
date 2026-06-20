@@ -8,10 +8,10 @@ import {
 } from "lucide-react";
 
 const PROGRAMS = [
-  { id: "quran", icon: "📖", title: "Quran", titleAr: "القرآن الكريم", desc: "Master recitation and Tajweed with real-time AI feedback", color: "from-emerald-950 to-emerald-900", border: "border-emerald-800/40" },
+  { id: "quran", icon: "📖", title: "Quran", titleAr: "القرآن الكريم", desc: "Master recitation and Tajweed with real-time AI feedback", color: "from-blue-950 to-blue-900", border: "border-blue-800/40" },
   { id: "hingaad", icon: "ا", title: "Hingaad", titleAr: "هنقاد", desc: "Learn Arabic reading from the letters up — the Baghdadi method", color: "from-violet-950 to-violet-900", border: "border-violet-800/40" },
-  { id: "arabic", icon: "🗣️", title: "Arabic Language", titleAr: "اللغة العربية", desc: "Complete Arabic language courses for all levels", color: "from-blue-950 to-blue-900", border: "border-blue-800/40" },
-  { id: "fiqh", icon: "⚖️", title: "Fiqh", titleAr: "الفقه الإسلامي", desc: "Structured Islamic jurisprudence curriculum with exams", color: "from-green-950 to-green-900", border: "border-green-800/40" },
+  { id: "arabic", icon: "🗣️", title: "Arabic Language", titleAr: "اللغة العربية", desc: "Complete Arabic language courses for all levels", color: "from-indigo-950 to-indigo-900", border: "border-indigo-800/40" },
+  { id: "fiqh", icon: "⚖️", title: "Fiqh", titleAr: "الفقه الإسلامي", desc: "Structured Islamic jurisprudence curriculum with exams", color: "from-teal-950 to-teal-900", border: "border-teal-800/40" },
   { id: "aqeedah", icon: "🌙", title: "Aqeedah", titleAr: "علم العقيدة", desc: "Study the core principles of Islamic belief and theology", color: "from-purple-950 to-purple-900", border: "border-purple-800/40" },
   { id: "hadith", icon: "📜", title: "Hadith", titleAr: "علوم الحديث", desc: "Learn prophetic traditions with sciences and commentary", color: "from-amber-950 to-amber-900", border: "border-amber-800/40" },
 ];
@@ -55,27 +55,27 @@ export default function Landing() {
   const heroOpacity = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
 
   return (
-    <div className="min-h-screen bg-[#0a0f0a] text-white overflow-x-hidden">
+    <div className="min-h-screen bg-[#080f24] text-white overflow-x-hidden">
       {/* ── NAV ───────────────────────────────────────────────────────── */}
-      <nav className="fixed top-0 inset-x-0 z-50 flex items-center justify-between px-6 py-4 backdrop-blur-md bg-[#0a0f0a]/80 border-b border-white/5">
+      <nav className="fixed top-0 inset-x-0 z-50 flex items-center justify-between px-6 py-4 backdrop-blur-md bg-[#080f24]/85 border-b border-white/5">
         <Link href="/" className="flex items-center gap-2.5">
           <img src="/logo.svg" alt="Al Bayaan" className="h-7 w-auto brightness-0 invert" />
           <span className="font-semibold text-white/90 text-sm tracking-wide">Al Bayaan</span>
         </Link>
         <div className="hidden md:flex items-center gap-8 text-sm text-white/60">
-          <Link href="/about" className="hover:text-white transition-colors">About</Link>
-          <Link href="/sign-in" className="hover:text-white transition-colors">Programs</Link>
-          <Link href="/sign-in" className="hover:text-white transition-colors">Library</Link>
-          <Link href="/sign-in" className="hover:text-white transition-colors">AI Teacher</Link>
+          <Link href="/about" className="hover:text-white transition-colors duration-200">About</Link>
+          <Link href="/sign-in" className="hover:text-white transition-colors duration-200">Programs</Link>
+          <Link href="/sign-in" className="hover:text-white transition-colors duration-200">Library</Link>
+          <Link href="/sign-in" className="hover:text-white transition-colors duration-200">AI Teacher</Link>
         </div>
         <div className="flex items-center gap-3">
           <Link href="/sign-in">
-            <Button variant="ghost" size="sm" className="text-white/70 hover:text-white hover:bg-white/10 text-sm">
+            <Button variant="ghost" size="sm" className="text-white/70 hover:text-white hover:bg-white/10 text-sm transition-all duration-200">
               Sign In
             </Button>
           </Link>
           <Link href="/sign-up">
-            <Button size="sm" className="bg-emerald-500 hover:bg-emerald-400 text-black font-semibold rounded-full px-5 text-sm shadow-[0_0_20px_rgba(52,211,153,0.3)]">
+            <Button size="sm" className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-semibold rounded-full px-5 text-sm shadow-[0_0_20px_rgba(37,99,235,0.35)] hover:shadow-[0_0_30px_rgba(37,99,235,0.5)] transition-all duration-300">
               Get Started Free
             </Button>
           </Link>
@@ -86,12 +86,11 @@ export default function Landing() {
       <section ref={heroRef} className="relative min-h-screen flex flex-col items-center justify-center px-4 pt-20">
         {/* Ambient bg */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[900px] h-[600px] bg-emerald-600/10 rounded-full blur-[120px]" />
-          <div className="absolute top-1/3 left-1/3 w-[400px] h-[400px] bg-violet-600/8 rounded-full blur-[100px]" />
-          {/* Islamic geometric pattern overlay */}
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[900px] h-[600px] bg-blue-600/12 rounded-full blur-[130px]" />
+          <div className="absolute top-1/3 left-1/3 w-[400px] h-[400px] bg-indigo-600/8 rounded-full blur-[100px]" />
+          <div className="absolute bottom-1/4 right-1/4 w-[300px] h-[300px] bg-teal-500/6 rounded-full blur-[90px]" />
           <div className="absolute inset-0 bg-[url('/images/geometric-pattern.png')] opacity-[0.035] bg-repeat bg-[length:300px]" />
-          {/* Grid */}
-          <div className="absolute inset-0" style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)", backgroundSize: "60px 60px" }} />
+          <div className="absolute inset-0" style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)", backgroundSize: "60px 60px" }} />
         </div>
 
         <motion.div style={{ y: heroY, opacity: heroOpacity }} className="relative z-10 text-center max-w-5xl mx-auto">
@@ -99,9 +98,9 @@ export default function Landing() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6 }}
-            className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-1.5 text-xs font-medium text-emerald-300 mb-10 backdrop-blur-sm"
+            className="inline-flex items-center gap-2 rounded-full border border-blue-400/30 bg-blue-500/10 px-4 py-1.5 text-xs font-medium text-blue-300 mb-10 backdrop-blur-sm"
           >
-            <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
+            <span className="flex h-1.5 w-1.5 rounded-full bg-blue-400 animate-pulse" />
             AI-Powered Islamic Education Platform
           </motion.div>
 
@@ -116,9 +115,9 @@ export default function Landing() {
             >
               البيان
             </h1>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif text-white/85 leading-tight mt-2">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white/85 leading-tight mt-2">
               Perfect your recitation.<br className="hidden md:block" />
-              <span className="text-emerald-400">Master your Deen.</span>
+              <span className="bg-gradient-to-r from-blue-400 to-teal-400 bg-clip-text text-transparent">Master your Deen.</span>
             </h2>
           </motion.div>
 
@@ -138,13 +137,13 @@ export default function Landing() {
             className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
           >
             <Link href="/sign-up">
-              <Button size="lg" className="h-13 px-8 text-base bg-emerald-500 hover:bg-emerald-400 text-black font-semibold rounded-full shadow-[0_0_40px_rgba(52,211,153,0.25)] hover:shadow-[0_0_60px_rgba(52,211,153,0.4)] transition-all duration-300">
+              <Button size="lg" className="h-14 px-8 text-base bg-gradient-to-r from-blue-700 to-blue-500 hover:from-blue-600 hover:to-blue-400 text-white font-bold rounded-full shadow-[0_0_40px_rgba(37,99,235,0.30)] hover:shadow-[0_0_60px_rgba(37,99,235,0.50)] transition-all duration-300">
                 Start Learning Free
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
             <Link href="/sign-in">
-              <Button size="lg" variant="ghost" className="h-13 px-8 text-base text-white/70 hover:text-white hover:bg-white/5 rounded-full border border-white/10">
+              <Button size="lg" variant="ghost" className="h-14 px-8 text-base text-white/70 hover:text-white hover:bg-white/5 rounded-full border border-white/10 transition-all duration-300">
                 <Play className="mr-2 h-4 w-4 fill-current" />
                 Watch Demo
               </Button>
@@ -156,11 +155,11 @@ export default function Landing() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.7, duration: 0.8 }}
-            className="mt-14 flex flex-wrap items-center justify-center gap-6 text-xs text-white/30"
+            className="mt-14 flex flex-wrap items-center justify-center gap-6 text-xs text-white/35"
           >
-            <span className="flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5 text-emerald-500" /> Authentic Islamic content</span>
-            <span className="flex items-center gap-1.5"><Zap className="h-3.5 w-3.5 text-emerald-500" /> Real AI — no fake scores</span>
-            <span className="flex items-center gap-1.5"><Globe className="h-3.5 w-3.5 text-emerald-500" /> Available in English, Arabic & Somali</span>
+            <span className="flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5 text-blue-400" /> Authentic Islamic content</span>
+            <span className="flex items-center gap-1.5"><Zap className="h-3.5 w-3.5 text-teal-400" /> Real AI — no fake scores</span>
+            <span className="flex items-center gap-1.5"><Globe className="h-3.5 w-3.5 text-blue-400" /> Available in English, Arabic & Somali</span>
           </motion.div>
         </motion.div>
 
@@ -184,7 +183,7 @@ export default function Landing() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {STATS.map((stat, i) => (
               <FadeIn key={stat.label} delay={i * 0.08} className="text-center">
-                <div className="text-4xl md:text-5xl font-serif text-emerald-400 font-bold">{stat.value}</div>
+                <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-400 to-teal-400 bg-clip-text text-transparent">{stat.value}</div>
                 <div className="text-white/80 font-medium mt-1">{stat.label}</div>
                 <div className="text-white/30 text-xs mt-0.5">{stat.sub}</div>
               </FadeIn>
@@ -197,8 +196,8 @@ export default function Landing() {
       <section className="py-28 px-4">
         <div className="container mx-auto">
           <FadeIn className="text-center max-w-3xl mx-auto mb-16">
-            <div className="text-xs text-emerald-400 tracking-[0.3em] uppercase font-medium mb-4">Complete Islamic Curriculum</div>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif text-white leading-tight">
+            <div className="text-xs text-blue-400 tracking-[0.3em] uppercase font-semibold mb-4">Complete Islamic Curriculum</div>
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight">
               Six programs, one platform.
             </h2>
             <p className="mt-5 text-white/50 text-lg leading-relaxed">
@@ -210,14 +209,14 @@ export default function Landing() {
             {PROGRAMS.map((prog, i) => (
               <FadeIn key={prog.id} delay={i * 0.06}>
                 <Link href="/sign-up">
-                  <div className={`group relative overflow-hidden rounded-2xl border ${prog.border} bg-gradient-to-br ${prog.color} p-6 cursor-pointer hover:scale-[1.02] transition-all duration-300 hover:shadow-2xl hover:shadow-emerald-900/20 min-h-[200px] flex flex-col`}>
+                  <div className={`group relative overflow-hidden rounded-2xl border ${prog.border} bg-gradient-to-br ${prog.color} p-6 cursor-pointer hover:scale-[1.02] transition-all duration-300 hover:shadow-2xl hover:shadow-blue-900/30 min-h-[200px] flex flex-col`}>
                     <div className="absolute inset-0 bg-[url('/images/geometric-pattern.png')] opacity-[0.05] bg-repeat bg-[length:200px]" />
                     <div className="relative z-10 flex-1 flex flex-col">
                       <div className="text-4xl mb-4 font-arabic" style={prog.id === "hingaad" ? { fontFamily: "var(--font-arabic)", fontSize: "2.5rem" } : {}}>{prog.icon}</div>
                       <h3 className="text-xl font-bold text-white mb-1">{prog.title}</h3>
                       <p className="text-sm font-arabic text-white/40 mb-3" style={{ fontFamily: "var(--font-arabic)" }}>{prog.titleAr}</p>
                       <p className="text-sm text-white/60 leading-relaxed flex-1">{prog.desc}</p>
-                      <div className="mt-4 flex items-center text-xs text-white/40 group-hover:text-white/70 transition-colors">
+                      <div className="mt-4 flex items-center text-xs text-white/40 group-hover:text-white/80 transition-colors duration-200">
                         Explore program <ArrowRight className="ml-1.5 h-3 w-3" />
                       </div>
                     </div>
@@ -233,8 +232,8 @@ export default function Landing() {
       <section className="py-28 px-4 bg-white/[0.02] border-y border-white/5">
         <div className="container mx-auto">
           <FadeIn className="text-center max-w-2xl mx-auto mb-16">
-            <div className="text-xs text-emerald-400 tracking-[0.3em] uppercase font-medium mb-4">Real AI, Real Results</div>
-            <h2 className="text-3xl md:text-4xl font-serif text-white">Recite. Hear. Improve.</h2>
+            <div className="text-xs text-blue-400 tracking-[0.3em] uppercase font-semibold mb-4">Real AI, Real Results</div>
+            <h2 className="text-3xl md:text-4xl font-bold text-white">Recite. Hear. Improve.</h2>
             <p className="mt-4 text-white/50">Our AI listens to your recitation, identifies every mistake, and guides you with precision — like having a Sheikh in your pocket.</p>
           </FadeIn>
 
@@ -245,10 +244,10 @@ export default function Landing() {
               { step: "03", icon: <Star className="h-6 w-6" />, title: "Improve", desc: "Act on your personalized improvement tips. Track your progress over time and watch your score climb with each recitation." },
             ].map((step, i) => (
               <FadeIn key={step.step} delay={i * 0.1}>
-                <div className="relative p-8 rounded-2xl border border-white/8 bg-white/[0.03] hover:bg-white/[0.05] transition-colors">
-                  <div className="text-[80px] font-serif text-white/5 absolute top-4 right-6 leading-none select-none">{step.step}</div>
+                <div className="relative p-8 rounded-2xl border border-white/8 bg-white/[0.03] hover:bg-white/[0.055] transition-all duration-300 group">
+                  <div className="text-[80px] font-bold text-white/5 absolute top-4 right-6 leading-none select-none">{step.step}</div>
                   <div className="relative z-10">
-                    <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400 mb-5">
+                    <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/12 text-blue-400 mb-5 group-hover:bg-blue-500/20 transition-colors duration-300">
                       {step.icon}
                     </div>
                     <h3 className="text-xl font-bold text-white mb-3">{step.title}</h3>
@@ -265,20 +264,20 @@ export default function Landing() {
       <section className="py-28 px-4">
         <div className="container mx-auto">
           <FadeIn className="text-center max-w-2xl mx-auto mb-14">
-            <div className="text-xs text-emerald-400 tracking-[0.3em] uppercase font-medium mb-4">Premium Audio</div>
-            <h2 className="text-3xl md:text-4xl font-serif text-white">Learn from the world's greatest reciters.</h2>
+            <div className="text-xs text-blue-400 tracking-[0.3em] uppercase font-semibold mb-4">Premium Audio</div>
+            <h2 className="text-3xl md:text-4xl font-bold text-white">Learn from the world's greatest reciters.</h2>
             <p className="mt-4 text-white/50">Choose your favorite Qari and follow along with authentic, high-quality audio from the greatest voices of our time.</p>
           </FadeIn>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 max-w-5xl mx-auto">
             {QARIS.map((qari, i) => (
               <FadeIn key={qari.name} delay={i * 0.05}>
-                <div className="flex flex-col items-center p-4 rounded-2xl border border-white/8 bg-white/[0.03] hover:bg-white/[0.06] hover:border-emerald-500/20 transition-all text-center group cursor-default">
-                  <div className="h-14 w-14 rounded-full bg-gradient-to-br from-emerald-900 to-emerald-700 flex items-center justify-center text-emerald-300 text-sm font-bold mb-3 group-hover:scale-110 transition-transform">
+                <div className="flex flex-col items-center p-4 rounded-2xl border border-white/8 bg-white/[0.03] hover:bg-white/[0.06] hover:border-blue-500/25 transition-all duration-300 text-center group cursor-default">
+                  <div className="h-14 w-14 rounded-full bg-gradient-to-br from-blue-900 to-blue-700 flex items-center justify-center text-blue-300 text-sm font-bold mb-3 group-hover:scale-110 transition-transform duration-300">
                     {qari.initials}
                   </div>
                   <p className="text-xs font-semibold text-white/80 leading-tight">{qari.name}</p>
                   <p className="text-[10px] text-white/30 mt-0.5">{qari.country}</p>
-                  <p className="text-[10px] text-emerald-500/60 mt-0.5">{qari.style}</p>
+                  <p className="text-[10px] text-blue-400/70 mt-0.5">{qari.style}</p>
                 </div>
               </FadeIn>
             ))}
@@ -290,8 +289,8 @@ export default function Landing() {
       <section className="py-28 px-4 bg-white/[0.02] border-y border-white/5">
         <div className="container mx-auto">
           <FadeIn className="text-center max-w-2xl mx-auto mb-16">
-            <div className="text-xs text-emerald-400 tracking-[0.3em] uppercase font-medium mb-4">Platform Features</div>
-            <h2 className="text-3xl md:text-4xl font-serif text-white">Everything you need to excel.</h2>
+            <div className="text-xs text-blue-400 tracking-[0.3em] uppercase font-semibold mb-4">Platform Features</div>
+            <h2 className="text-3xl md:text-4xl font-bold text-white">Everything you need to excel.</h2>
           </FadeIn>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-6xl mx-auto">
             {[
@@ -305,8 +304,8 @@ export default function Landing() {
               { icon: <Globe />, title: "Multilingual", desc: "Full support for English, Arabic, and Somali — with more languages coming soon." },
             ].map((f, i) => (
               <FadeIn key={f.title} delay={i * 0.04}>
-                <div className="p-6 rounded-2xl border border-white/8 bg-white/[0.02] hover:bg-white/[0.05] hover:border-emerald-500/20 transition-all group">
-                  <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400 mb-4 group-hover:bg-emerald-500/20 transition-colors">
+                <div className="p-6 rounded-2xl border border-white/8 bg-white/[0.02] hover:bg-white/[0.05] hover:border-blue-500/25 transition-all duration-300 group">
+                  <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/12 text-blue-400 mb-4 group-hover:bg-blue-500/22 transition-colors duration-300">
                     {f.icon}
                   </div>
                   <h3 className="font-semibold text-white mb-2 text-sm">{f.title}</h3>
@@ -336,18 +335,18 @@ export default function Landing() {
 
       {/* ── CTA ───────────────────────────────────────────────────────── */}
       <section className="py-28 px-4 relative overflow-hidden">
-        <div className="absolute inset-0 bg-emerald-950/30" />
+        <div className="absolute inset-0 bg-blue-950/35" />
         <div className="absolute inset-0 bg-[url('/images/geometric-pattern.png')] opacity-[0.06] bg-repeat bg-[length:250px]" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-emerald-600/15 rounded-full blur-[100px]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-blue-600/18 rounded-full blur-[100px]" />
         <FadeIn className="relative z-10 text-center max-w-3xl mx-auto">
-          <h2 className="text-4xl md:text-5xl font-serif text-white mb-6 leading-tight">
+          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">
             Your journey with the Quran starts today.
           </h2>
           <p className="text-white/50 text-lg mb-10">
             Join Al Bayaan. Learn at your own pace. Grow with real AI guidance.
           </p>
           <Link href="/sign-up">
-            <Button size="lg" className="h-14 px-10 text-lg bg-emerald-500 hover:bg-emerald-400 text-black font-bold rounded-full shadow-[0_0_50px_rgba(52,211,153,0.3)] hover:shadow-[0_0_70px_rgba(52,211,153,0.5)] transition-all duration-300">
+            <Button size="lg" className="h-14 px-10 text-lg bg-gradient-to-r from-blue-700 to-blue-500 hover:from-blue-600 hover:to-blue-400 text-white font-bold rounded-full shadow-[0_0_50px_rgba(37,99,235,0.35)] hover:shadow-[0_0_70px_rgba(37,99,235,0.55)] transition-all duration-300">
               Begin for Free
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
@@ -376,20 +375,9 @@ export default function Landing() {
             <div>
               <p className="text-white/50 text-xs font-semibold uppercase tracking-widest mb-3">Platform</p>
               <div className="space-y-2">
-                <Link href="/sign-up" className="block text-xs text-white/30 hover:text-white/60 transition-colors">Get Started Free</Link>
-                <Link href="/sign-in" className="block text-xs text-white/30 hover:text-white/60 transition-colors">Sign In</Link>
-                <Link href="/about" className="block text-xs text-white/30 hover:text-white/60 transition-colors">About Us</Link>
-                <Link href="/faq" className="block text-xs text-white/30 hover:text-white/60 transition-colors">FAQ</Link>
-              </div>
-            </div>
-
-            {/* Support */}
-            <div>
-              <p className="text-white/50 text-xs font-semibold uppercase tracking-widest mb-3">Support</p>
-              <div className="space-y-2">
-                <Link href="/help" className="block text-xs text-white/30 hover:text-white/60 transition-colors">Help Center</Link>
-                <Link href="/contact" className="block text-xs text-white/30 hover:text-white/60 transition-colors">Contact Us</Link>
-                <Link href="/faq" className="block text-xs text-white/30 hover:text-white/60 transition-colors">FAQ</Link>
+                <Link href="/sign-up" className="block text-xs text-white/30 hover:text-white/70 transition-colors duration-200">Get Started Free</Link>
+                <Link href="/sign-in" className="block text-xs text-white/30 hover:text-white/70 transition-colors duration-200">Sign In</Link>
+                <Link href="/about" className="block text-xs text-white/30 hover:text-white/70 transition-colors duration-200">About Us</Link>
               </div>
             </div>
 
@@ -397,15 +385,25 @@ export default function Landing() {
             <div>
               <p className="text-white/50 text-xs font-semibold uppercase tracking-widest mb-3">Legal</p>
               <div className="space-y-2">
-                <Link href="/privacy" className="block text-xs text-white/30 hover:text-white/60 transition-colors">Privacy Policy</Link>
-                <Link href="/terms" className="block text-xs text-white/30 hover:text-white/60 transition-colors">Terms of Service</Link>
+                <Link href="/privacy" className="block text-xs text-white/30 hover:text-white/70 transition-colors duration-200">Privacy Policy</Link>
+                <Link href="/terms" className="block text-xs text-white/30 hover:text-white/70 transition-colors duration-200">Terms of Service</Link>
+                <Link href="/faq" className="block text-xs text-white/30 hover:text-white/70 transition-colors duration-200">FAQ</Link>
+              </div>
+            </div>
+
+            {/* Contact */}
+            <div>
+              <p className="text-white/50 text-xs font-semibold uppercase tracking-widest mb-3">Contact</p>
+              <div className="space-y-2">
+                <Link href="/contact" className="block text-xs text-white/30 hover:text-white/70 transition-colors duration-200">Contact Us</Link>
+                <Link href="/help" className="block text-xs text-white/30 hover:text-white/70 transition-colors duration-200">Help Center</Link>
               </div>
             </div>
           </div>
 
-          <div className="border-t border-white/5 pt-6 flex flex-col md:flex-row items-center justify-between gap-3">
-            <p className="text-white/20 text-xs">© 2026 Al Bayaan AI Academy. All rights reserved.</p>
-            <p className="text-white/15 text-xs">Built with ❤️ for the Muslim Ummah</p>
+          <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-4">
+            <p className="text-white/20 text-xs">© 2025 Al Bayaan AI Quran. All rights reserved.</p>
+            <p className="text-white/15 text-xs">Built for the Muslim Ummah · اللّٰهُمَّ بَارِكْ</p>
           </div>
         </div>
       </footer>

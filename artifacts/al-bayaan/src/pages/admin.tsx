@@ -37,7 +37,7 @@ function StatCard({ label, value, icon: Icon, sub, color = "emerald" }: {
   label: string; value: string | number; icon: any; sub?: string; color?: string;
 }) {
   return (
-    <Card className="border-emerald-100">
+    <Card className="border-blue-100">
       <CardContent className="p-5">
         <div className="flex items-center justify-between mb-3">
           <p className="text-sm text-muted-foreground font-medium">{label}</p>
@@ -45,7 +45,7 @@ function StatCard({ label, value, icon: Icon, sub, color = "emerald" }: {
             <Icon className={`h-4 w-4 text-${color}-700`} />
           </div>
         </div>
-        <p className="text-3xl font-bold text-emerald-950">{value}</p>
+        <p className="text-3xl font-bold text-slate-900">{value}</p>
         {sub && <p className="text-xs text-muted-foreground mt-1">{sub}</p>}
       </CardContent>
     </Card>
@@ -102,8 +102,8 @@ export default function Admin() {
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-serif font-bold text-emerald-950 flex items-center gap-2">
-              <Shield className="h-6 w-6 text-emerald-600" />
+            <h1 className="text-2xl font-serif font-bold text-slate-900 flex items-center gap-2">
+              <Shield className="h-6 w-6 text-blue-700" />
               {t("admin.title")}
             </h1>
             <p className="text-sm text-muted-foreground mt-1">{t("admin.subtitle")}</p>
@@ -131,7 +131,7 @@ export default function Admin() {
             </div>
 
             {Object.keys(stats.levelDistribution).length > 0 && (
-              <Card className="border-emerald-100">
+              <Card className="border-blue-100">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium">{t("admin.levelDist")}</CardTitle>
                 </CardHeader>
@@ -139,8 +139,8 @@ export default function Admin() {
                   <div className="flex flex-wrap gap-3">
                     {Object.entries(stats.levelDistribution).map(([level, count]) => (
                       <div key={level} className="flex items-center gap-2">
-                        <Badge variant="outline" className="border-emerald-200 text-emerald-700 capitalize">{level}</Badge>
-                        <span className="font-bold text-emerald-950">{count}</span>
+                        <Badge variant="outline" className="border-blue-200 text-blue-800 capitalize">{level}</Badge>
+                        <span className="font-bold text-slate-900">{count}</span>
                         <span className="text-xs text-muted-foreground">users</span>
                       </div>
                     ))}
@@ -149,10 +149,10 @@ export default function Admin() {
               </Card>
             )}
 
-            <Card className="border-emerald-100">
+            <Card className="border-blue-100">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium flex items-center gap-2">
-                  <Users className="h-4 w-4 text-emerald-600" />
+                  <Users className="h-4 w-4 text-blue-700" />
                   {t("admin.topUsers")}
                 </CardTitle>
               </CardHeader>
@@ -160,7 +160,7 @@ export default function Admin() {
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-emerald-100">
+                      <tr className="border-b border-blue-100">
                         <th className="text-left py-2.5 px-4 text-xs text-muted-foreground font-medium">{t("admin.colUser")}</th>
                         <th className="text-left py-2.5 px-4 text-xs text-muted-foreground font-medium">{t("teacher.colLevel")}</th>
                         <th className="text-right py-2.5 px-4 text-xs text-muted-foreground font-medium">{t("ldr.xp")}</th>
@@ -171,26 +171,26 @@ export default function Admin() {
                     </thead>
                     <tbody>
                       {users.map((u, i) => (
-                        <tr key={u.id} className={`border-b border-emerald-50 hover:bg-emerald-50/50 transition-colors ${i === 0 ? "bg-emerald-50/30" : ""}`}>
+                        <tr key={u.id} className={`border-b border-blue-50 hover:bg-blue-50/50 transition-colors ${i === 0 ? "bg-blue-50/30" : ""}`}>
                           <td className="py-3 px-4">
                             <div className="flex items-center gap-2">
                               {u.avatarUrl ? (
                                 <img src={u.avatarUrl} alt="" className="h-7 w-7 rounded-full" />
                               ) : (
-                                <div className="h-7 w-7 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center text-xs font-bold">
+                                <div className="h-7 w-7 rounded-full bg-blue-100 text-blue-900 flex items-center justify-center text-xs font-bold">
                                   {u.displayName?.[0] ?? "?"}
                                 </div>
                               )}
                               <div>
-                                <p className="font-medium text-emerald-950">{u.displayName || "Student"}</p>
+                                <p className="font-medium text-slate-900">{u.displayName || "Student"}</p>
                                 {!u.onboardingComplete && <p className="text-xs text-amber-600">{t("admin.onboardingIncomplete")}</p>}
                               </div>
                             </div>
                           </td>
                           <td className="py-3 px-4">
-                            <Badge variant="outline" className="border-emerald-200 text-emerald-700 text-xs capitalize">{u.level || "beginner"}</Badge>
+                            <Badge variant="outline" className="border-blue-200 text-blue-800 text-xs capitalize">{u.level || "beginner"}</Badge>
                           </td>
-                          <td className="py-3 px-4 text-right font-semibold text-emerald-950">{u.xp.toLocaleString()}</td>
+                          <td className="py-3 px-4 text-right font-semibold text-slate-900">{u.xp.toLocaleString()}</td>
                           <td className="py-3 px-4 text-right text-muted-foreground">{u.streakDays}d</td>
                           <td className="py-3 px-4 text-right text-muted-foreground">{u.totalRecordings}</td>
                           <td className="py-3 px-4 text-right text-xs text-muted-foreground">

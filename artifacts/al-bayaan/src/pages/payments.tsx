@@ -56,7 +56,7 @@ function PaymentHistory() {
   };
   const STATUS_COLORS: Record<string, string> = {
     pending: "bg-amber-100 text-amber-700",
-    completed: "bg-emerald-100 text-emerald-700",
+    completed: "bg-blue-100 text-blue-800",
     failed: "bg-red-100 text-red-700",
   };
 
@@ -68,8 +68,8 @@ function PaymentHistory() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
-                    <CreditCard className="h-5 w-5 text-emerald-600" />
+                  <div className="h-10 w-10 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+                    <CreditCard className="h-5 w-5 text-blue-700" />
                   </div>
                   <div>
                     <p className="font-medium text-sm">{r.planName} {t("pay.plan")} <span className="text-muted-foreground font-normal">· {r.billing}</span></p>
@@ -199,7 +199,7 @@ function PlanCard({ plan, billing, onSelect, locale }: { plan: Plan; billing: "m
   const price = billing === "annual" ? plan.price.annual : plan.price.monthly;
   const colorMap: Record<string, { card: string; badge: string; btn: string }> = {
     gray: { card: "border-gray-200", badge: "bg-gray-100 text-gray-700", btn: "bg-gray-800 hover:bg-gray-900 text-white" },
-    emerald: { card: "border-emerald-200 ring-2 ring-emerald-500", badge: "bg-emerald-100 text-emerald-700", btn: "bg-emerald-600 hover:bg-emerald-700 text-white" },
+    emerald: { card: "border-blue-200 ring-2 ring-blue-500", badge: "bg-blue-100 text-blue-800", btn: "bg-blue-700 hover:bg-blue-700 text-white" },
     blue: { card: "border-blue-200", badge: "bg-blue-100 text-blue-700", btn: "bg-blue-600 hover:bg-blue-700 text-white" },
     purple: { card: "border-purple-200", badge: "bg-purple-100 text-purple-700", btn: "bg-purple-600 hover:bg-purple-700 text-white" },
   };
@@ -211,7 +211,7 @@ function PlanCard({ plan, billing, onSelect, locale }: { plan: Plan; billing: "m
       <Card className={`relative h-full flex flex-col ${c.card}`}>
         {plan.popular && (
           <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-            <Badge className="bg-emerald-600 text-white border-0 px-3 py-1">{t("pay.mostPopular")}</Badge>
+            <Badge className="bg-blue-700 text-white border-0 px-3 py-1">{t("pay.mostPopular")}</Badge>
           </div>
         )}
         <CardHeader className="pb-4">
@@ -230,7 +230,7 @@ function PlanCard({ plan, billing, onSelect, locale }: { plan: Plan; billing: "m
               </div>
             )}
             {billing === "annual" && price > 0 && (
-              <p className="text-xs text-emerald-600 mt-1">{t("pay.save20Annual")}</p>
+              <p className="text-xs text-blue-700 mt-1">{t("pay.save20Annual")}</p>
             )}
           </div>
         </CardHeader>
@@ -238,7 +238,7 @@ function PlanCard({ plan, billing, onSelect, locale }: { plan: Plan; billing: "m
           <ul className="space-y-2 flex-1 mb-4">
             {plan.featuresKeys.map(f => (
               <li key={f} className="flex items-start gap-2 text-sm">
-                <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
+                <CheckCircle2 className="h-4 w-4 text-blue-600 shrink-0 mt-0.5" />
                 <span className="text-muted-foreground">{f}</span>
               </li>
             ))}
@@ -298,8 +298,8 @@ export default function Payments() {
     <AppLayout>
       <div className="max-w-6xl mx-auto space-y-8">
         <div className="text-center space-y-2">
-          <h1 className="text-3xl font-serif font-bold text-emerald-950 flex items-center justify-center gap-2">
-            <CreditCard className="h-7 w-7 text-emerald-600" />
+          <h1 className="text-3xl font-serif font-bold text-slate-900 flex items-center justify-center gap-2">
+            <CreditCard className="h-7 w-7 text-blue-700" />
             {t("pay.title")}
           </h1>
           <p className="text-muted-foreground">{t("pay.subtitle")}</p>
@@ -310,12 +310,12 @@ export default function Payments() {
           <span className={`text-sm ${billing === "monthly" ? "text-foreground font-medium" : "text-muted-foreground"}`}>{t("pay.monthly")}</span>
           <button
             onClick={() => setBilling(b => b === "monthly" ? "annual" : "monthly")}
-            className={`relative w-12 h-6 rounded-full transition-colors ${billing === "annual" ? "bg-emerald-600" : "bg-gray-300"}`}
+            className={`relative w-12 h-6 rounded-full transition-colors ${billing === "annual" ? "bg-blue-700" : "bg-gray-300"}`}
           >
             <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${billing === "annual" ? "left-6" : "left-0.5"}`} />
           </button>
           <span className={`text-sm ${billing === "annual" ? "text-foreground font-medium" : "text-muted-foreground"}`}>
-            {t("pay.annual")} <Badge className="bg-emerald-100 text-emerald-700 border-0 ml-1">{t("pay.save20")}</Badge>
+            {t("pay.annual")} <Badge className="bg-blue-100 text-blue-800 border-0 ml-1">{t("pay.save20")}</Badge>
           </span>
         </div>
 
@@ -329,10 +329,10 @@ export default function Payments() {
         {/* Payment method selection */}
         {selectedPlan && (
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-            <Card className="border-emerald-200">
+            <Card className="border-blue-200">
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <Smartphone className="h-5 w-5 text-emerald-600" />
+                  <Smartphone className="h-5 w-5 text-blue-700" />
                   {t("pay.payFor")} {locale === "so" ? selectedPlan.nameSo : locale === "ar" ? selectedPlan.nameAr : selectedPlan.nameKey} {t("pay.plan")} — ${billing === "annual" ? selectedPlan.price.annual : selectedPlan.price.monthly}{t("pay.perMonth")}
                 </CardTitle>
                 <CardDescription>{t("pay.chooseMethod")}</CardDescription>
@@ -342,7 +342,7 @@ export default function Payments() {
                   {PAYMENT_METHODS.map(method => (
                     <button key={method.id} onClick={() => setSelectedMethod(method.id)}
                       className={`flex items-start gap-3 p-3 rounded-xl border-2 transition-all text-left ${
-                        selectedMethod === method.id ? "border-emerald-500 bg-emerald-50" : "border-gray-200 hover:border-emerald-300"
+                        selectedMethod === method.id ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-blue-300"
                       }`}>
                       <span className="text-2xl">{method.logo}</span>
                       <div>
@@ -357,7 +357,7 @@ export default function Payments() {
                 <div className="flex gap-3">
                   <Button variant="outline" onClick={() => setSelectedPlan(null)}>{t("general.back")}</Button>
                   <Button onClick={handlePayment} disabled={processing || !selectedMethod}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white flex-1">
+                    className="bg-blue-700 hover:bg-blue-700 text-white flex-1">
                     {processing
                       ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />{t("pay.processing")}</>
                       : `${t("pay.payWith")} ${selectedMethodName}`}
@@ -390,8 +390,8 @@ export default function Payments() {
 
         {/* Payment History */}
         <div>
-          <h2 className="text-lg font-semibold text-emerald-950 flex items-center gap-2 mb-4">
-            <History className="h-5 w-5 text-emerald-600" /> {t("pay.history")}
+          <h2 className="text-lg font-semibold text-slate-900 flex items-center gap-2 mb-4">
+            <History className="h-5 w-5 text-blue-700" /> {t("pay.history")}
           </h2>
           <PaymentHistory />
         </div>

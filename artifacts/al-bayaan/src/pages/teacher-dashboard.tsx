@@ -38,13 +38,13 @@ function LevelBadge({ level }: { level: string }) {
   const colors: Record<string, string> = {
     beginner: "border-blue-200 text-blue-700",
     intermediate: "border-amber-200 text-amber-700",
-    advanced: "border-emerald-200 text-emerald-700",
+    advanced: "border-blue-200 text-blue-800",
   };
   return <Badge variant="outline" className={`text-xs capitalize ${colors[level] ?? "border-gray-200 text-gray-700"}`}>{level}</Badge>;
 }
 
 function ScoreDot({ score }: { score: number }) {
-  const color = score >= 80 ? "bg-emerald-500" : score >= 60 ? "bg-amber-500" : score > 0 ? "bg-red-400" : "bg-gray-200";
+  const color = score >= 80 ? "bg-blue-600" : score >= 60 ? "bg-amber-500" : score > 0 ? "bg-red-400" : "bg-gray-200";
   return <div className={`h-2 w-2 rounded-full ${color}`} title={`${score}%`} />;
 }
 
@@ -103,7 +103,7 @@ export default function TeacherDashboard() {
             <Button variant="ghost" size="sm" onClick={() => setSelectedStudent(null)} className="gap-1">
               <ArrowLeft className="h-4 w-4" /> {t("teacher.back")}
             </Button>
-            <h1 className="text-xl font-semibold text-emerald-950">{selectedStudentName}</h1>
+            <h1 className="text-xl font-semibold text-slate-900">{selectedStudentName}</h1>
           </div>
 
           {detailLoading ? (
@@ -119,13 +119,13 @@ export default function TeacherDashboard() {
                   { label: t("teacher.surahsDone"), value: selectedStudent.stats.surahsCompleted, icon: BookOpen },
                   { label: t("teacher.weekChange"), value: `${selectedStudent.stats.improvement >= 0 ? "+" : ""}${selectedStudent.stats.improvement}%`, icon: TrendingUp },
                 ].map(({ label, value, icon: Icon }) => (
-                  <Card key={label} className="border-emerald-100">
+                  <Card key={label} className="border-blue-100">
                     <CardContent className="p-4">
                       <div className="flex justify-between items-start mb-2">
                         <p className="text-xs text-muted-foreground">{label}</p>
-                        <Icon className="h-4 w-4 text-emerald-600" />
+                        <Icon className="h-4 w-4 text-blue-700" />
                       </div>
-                      <p className="text-2xl font-bold text-emerald-950">{value}</p>
+                      <p className="text-2xl font-bold text-slate-900">{value}</p>
                     </CardContent>
                   </Card>
                 ))}
@@ -155,7 +155,7 @@ export default function TeacherDashboard() {
               )}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Card className="border-emerald-100">
+                <Card className="border-blue-100">
                   <CardHeader className="pb-2 pt-4">
                     <CardTitle className="text-sm font-medium">{t("teacher.recentRecordings")}</CardTitle>
                   </CardHeader>
@@ -168,7 +168,7 @@ export default function TeacherDashboard() {
                           <div key={r.id} className="flex items-center justify-between text-sm">
                             <span className="text-muted-foreground">Surah {r.surahId}:{r.ayahNumber}</span>
                             <div className="flex items-center gap-2">
-                              <Badge variant="outline" className={`text-xs ${r.overallScore >= 80 ? "border-emerald-200 text-emerald-700" : r.overallScore >= 60 ? "border-amber-200 text-amber-700" : "border-red-200 text-red-700"}`}>
+                              <Badge variant="outline" className={`text-xs ${r.overallScore >= 80 ? "border-blue-200 text-blue-800" : r.overallScore >= 60 ? "border-amber-200 text-amber-700" : "border-red-200 text-red-700"}`}>
                                 {r.overallScore}%
                               </Badge>
                               <span className="text-xs text-muted-foreground">{new Date(r.createdAt).toLocaleDateString()}</span>
@@ -180,7 +180,7 @@ export default function TeacherDashboard() {
                   </CardContent>
                 </Card>
 
-                <Card className="border-emerald-100">
+                <Card className="border-blue-100">
                   <CardHeader className="pb-2 pt-4">
                     <CardTitle className="text-sm font-medium">{t("teacher.surahProgress")}</CardTitle>
                   </CardHeader>
@@ -198,7 +198,7 @@ export default function TeacherDashboard() {
                                   <span>{sp.surahName}</span>
                                   <span>{sp.completedAyahs}/{sp.totalAyahs} · {sp.averageScore ? `${sp.averageScore}% avg` : ""}</span>
                                 </div>
-                                <Progress value={pct} className="h-1.5 bg-emerald-100" />
+                                <Progress value={pct} className="h-1.5 bg-blue-100" />
                               </div>
                             );
                           })}
@@ -220,8 +220,8 @@ export default function TeacherDashboard() {
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-serif font-bold text-emerald-950 flex items-center gap-2">
-              <BarChart3 className="h-6 w-6 text-emerald-600" />
+            <h1 className="text-2xl font-serif font-bold text-slate-900 flex items-center gap-2">
+              <BarChart3 className="h-6 w-6 text-blue-700" />
               {t("teacher.title")}
             </h1>
             <p className="text-sm text-muted-foreground mt-1">{t("teacher.subtitle")}</p>
@@ -243,21 +243,21 @@ export default function TeacherDashboard() {
               { label: t("teacher.weeklyRecordings"), value: classReport.totalRecordingsThisWeek, icon: Mic },
               { label: t("teacher.commonWeak"), value: classReport.classWeakAreas[0]?.rule ?? t("gen.none"), icon: AlertTriangle },
             ].map(({ label, value, icon: Icon }) => (
-              <Card key={label} className="border-emerald-100">
+              <Card key={label} className="border-blue-100">
                 <CardContent className="p-4">
-                  <Icon className="h-4 w-4 text-emerald-600 mb-2" />
+                  <Icon className="h-4 w-4 text-blue-700 mb-2" />
                   <p className="text-xs text-muted-foreground">{label}</p>
-                  <p className="font-bold text-emerald-950 mt-0.5 text-sm truncate">{value}</p>
+                  <p className="font-bold text-slate-900 mt-0.5 text-sm truncate">{value}</p>
                 </CardContent>
               </Card>
             ))}
           </div>
         )}
 
-        <Card className="border-emerald-100">
+        <Card className="border-blue-100">
           <CardHeader className="pb-3 flex-row items-center justify-between gap-4">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Users className="h-4 w-4 text-emerald-600" />
+              <Users className="h-4 w-4 text-blue-700" />
               {t("teacher.students")} ({filtered.length})
             </CardTitle>
             <div className="relative w-60">
@@ -274,7 +274,7 @@ export default function TeacherDashboard() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-emerald-100 bg-emerald-50/50">
+                    <tr className="border-b border-blue-100 bg-blue-50/50">
                       {[t("teacher.colStudent"), t("teacher.colLevel"), t("teacher.colScore"), t("teacher.colTajweed"), t("teacher.colSurahs"), t("teacher.colHifdh"), t("teacher.colActivity"), ""].map(h => (
                         <th key={h} className={`py-2.5 px-4 text-xs text-muted-foreground font-medium ${h === "" || h === "Student" ? "text-left" : "text-center"}`}>{h}</th>
                       ))}
@@ -284,20 +284,20 @@ export default function TeacherDashboard() {
                     <AnimatePresence>
                       {filtered.map((s, i) => (
                         <motion.tr key={s.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.02 }}
-                          className="border-b border-emerald-50 hover:bg-emerald-50/50 transition-colors cursor-pointer"
+                          className="border-b border-blue-50 hover:bg-blue-50/50 transition-colors cursor-pointer"
                           onClick={() => viewStudent(s)}>
                           <td className="py-3 px-4">
                             <div className="flex items-center gap-2">
                               {s.avatarUrl ? (
                                 <img src={s.avatarUrl} alt="" className="h-7 w-7 rounded-full" />
                               ) : (
-                                <div className="h-7 w-7 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center text-xs font-bold shrink-0">
+                                <div className="h-7 w-7 rounded-full bg-blue-100 text-blue-900 flex items-center justify-center text-xs font-bold shrink-0">
                                   {s.displayName?.[0] ?? "?"}
                                 </div>
                               )}
                               <div>
-                                <p className="font-medium text-emerald-950 text-xs">{s.displayName}</p>
-                                {s.isActiveToday && <p className="text-[10px] text-emerald-600">{t("teacher.activeToday")}</p>}
+                                <p className="font-medium text-slate-900 text-xs">{s.displayName}</p>
+                                {s.isActiveToday && <p className="text-[10px] text-blue-700">{t("teacher.activeToday")}</p>}
                               </div>
                             </div>
                           </td>

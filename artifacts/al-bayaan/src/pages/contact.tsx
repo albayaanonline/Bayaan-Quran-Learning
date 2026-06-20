@@ -19,7 +19,7 @@ const CONTACT_METHODS = [
     desc: "Chat with us directly on WhatsApp",
     detail: "+252 656 042 512",
     href: "https://wa.me/252656042512?text=Assalamu%20Alaikum%2C%20I%27m%20interested%20in%20Al%20Bayaan.",
-    color: "from-green-500 to-emerald-600",
+    color: "from-green-500 to-blue-700",
   },
   {
     icon: BookOpen,
@@ -27,7 +27,7 @@ const CONTACT_METHODS = [
     desc: "Browse articles, guides, and tutorials",
     detail: "View Help Center →",
     href: "/help",
-    color: "from-emerald-500 to-teal-500",
+    color: "from-blue-600 to-teal-500",
   },
   {
     icon: Users,
@@ -135,8 +135,8 @@ export default function Contact() {
 
               {sent ? (
                 <div className="text-center py-12">
-                  <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-950 mb-4">
-                    <CheckCircle2 className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
+                  <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-950 mb-4">
+                    <CheckCircle2 className="h-8 w-8 text-blue-700 dark:text-blue-400" />
                   </div>
                   <h3 className="text-lg font-bold mb-2">Message Sent!</h3>
                   <p className="text-muted-foreground text-sm">We'll get back to you within 24 hours, insha'Allah.</p>
@@ -215,13 +215,13 @@ export default function Contact() {
                 ].map((item) => (
                   <div key={item.label} className="flex justify-between items-center text-sm">
                     <span className="text-muted-foreground">{item.label}</span>
-                    <span className="font-medium text-xs bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-full">{item.time}</span>
+                    <span className="font-medium text-xs bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300 px-2 py-0.5 rounded-full">{item.time}</span>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="rounded-2xl bg-gradient-to-br from-emerald-950 to-slate-900 text-white p-5">
+            <div className="rounded-2xl bg-gradient-to-br from-blue-950 to-slate-900 text-white p-5">
               <p className="text-sm font-arabic text-center mb-2 opacity-70" style={{ fontFamily: "var(--font-arabic)", lineHeight: 2 }}>
                 وَإِذَا سَأَلَكَ عِبَادِي عَنِّي فَإِنِّي قَرِيبٌ
               </p>
