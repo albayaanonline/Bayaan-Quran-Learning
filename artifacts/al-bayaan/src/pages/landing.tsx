@@ -6,6 +6,7 @@ import {
   BookOpen, Mic, Trophy, ArrowRight, Star, Users, Zap, Brain,
   ShieldCheck, Globe, Play, ChevronDown,
 } from "lucide-react";
+import { InstallButtons } from "@/components/InstallPrompt";
 
 const PROGRAMS = [
   { id: "quran", icon: "📖", title: "Quran", titleAr: "القرآن الكريم", desc: "Master recitation and Tajweed with real-time AI feedback", color: "from-blue-950 to-blue-900", border: "border-blue-800/40" },
@@ -148,6 +149,17 @@ export default function Landing() {
                 Watch Demo
               </Button>
             </Link>
+          </motion.div>
+
+          {/* ── App Install Buttons ────────────────────────────────────── */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.65 }}
+            className="mt-6 flex flex-col items-center gap-2"
+          >
+            <p className="text-white/30 text-xs tracking-wide uppercase mb-1">Also available as</p>
+            <InstallButtons variant="dark" />
           </motion.div>
 
           {/* Trust indicators */}

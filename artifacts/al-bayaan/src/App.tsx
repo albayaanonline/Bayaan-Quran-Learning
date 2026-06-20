@@ -8,6 +8,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { I18nProvider } from "@/lib/i18n";
 import WhatsAppButton from "@/components/WhatsAppButton";
+import { InstallBanner } from "@/components/InstallPrompt";
 
 import Landing from "./pages/landing";
 import Dashboard from "./pages/dashboard";
@@ -270,6 +271,7 @@ function App() {
         </WouterRouter>
         <Toaster />
         <WhatsAppButton />
+        <InstallBanner />
       </TooltipProvider>
     </I18nProvider>
   );
