@@ -41,6 +41,11 @@ import Mushaf from "./pages/mushaf";
 import Muraajacah from "./pages/muraajacah";
 import BookCourse from "./pages/book-course";
 import BookLesson from "./pages/book-lesson";
+import Privacy from "./pages/privacy";
+import Terms from "./pages/terms";
+import FAQ from "./pages/faq";
+import Contact from "./pages/contact";
+import Help from "./pages/help";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient();
@@ -56,9 +61,6 @@ function stripBase(path: string): string {
   return basePath && path.startsWith(basePath) ? path.slice(basePath.length) || "/" : path;
 }
 
-// NOTE: If clerkPubKey is missing, ClerkProviderWithRoutes will render a
-// configuration error UI. We do NOT throw here to prevent white screen.
-
 const clerkAppearance = {
   theme: shadcn,
   cssLayerName: "clerk",
@@ -68,14 +70,14 @@ const clerkAppearance = {
     logoImageUrl: `${window.location.origin}${basePath}/logo.svg`,
   },
   variables: {
-    colorPrimary: "hsl(161 94% 30%)",
-    colorForeground: "hsl(164 86% 16%)",
-    colorMutedForeground: "hsl(164 30% 40%)",
-    colorDanger: "hsl(0 84% 60%)",
+    colorPrimary: "hsl(161 90% 28%)",
+    colorForeground: "hsl(164 86% 14%)",
+    colorMutedForeground: "hsl(164 28% 42%)",
+    colorDanger: "hsl(0 84% 58%)",
     colorBackground: "hsl(0 0% 100%)",
     colorInput: "hsl(0 0% 100%)",
-    colorInputForeground: "hsl(164 86% 16%)",
-    colorNeutral: "hsl(161 20% 85%)",
+    colorInputForeground: "hsl(164 86% 14%)",
+    colorNeutral: "hsl(161 18% 86%)",
     fontFamily: "'Inter', sans-serif",
     borderRadius: "0.75rem",
   },
@@ -229,7 +231,13 @@ function ClerkProviderWithRoutes() {
           <Route path="/muraajacah" component={() => <ProtectedRoute component={Muraajacah} />} />
           <Route path="/library/:bookId" component={() => <ProtectedRoute component={BookCourse} />} />
           <Route path="/library/:bookId/lesson/:lessonNum" component={() => <ProtectedRoute component={BookLesson} />} />
+          {/* Public pages */}
           <Route path="/about" component={Marketing} />
+          <Route path="/privacy" component={Privacy} />
+          <Route path="/terms" component={Terms} />
+          <Route path="/faq" component={FAQ} />
+          <Route path="/contact" component={Contact} />
+          <Route path="/help" component={Help} />
           <Route component={NotFound} />
         </Switch>
       </QueryClientProvider>

@@ -39,10 +39,10 @@ export default function Learn() {
 
   return (
     <AppLayout>
-      <div className="max-w-6xl mx-auto space-y-8">
+      <div className="max-w-6xl mx-auto space-y-8 page-enter">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-serif font-bold text-emerald-950 dark:text-emerald-50">{t("learn.title")}</h1>
+            <h1 className="text-2xl md:text-3xl font-serif font-bold">{t("learn.title")}</h1>
             <p className="text-muted-foreground mt-2">
               {progress ? `${progress.totalSurahsStarted} ${t("learn.started")} · ${progress.totalSurahsCompleted} ${t("learn.completed")}` : t("learn.subtitle")}
             </p>
@@ -60,7 +60,7 @@ export default function Learn() {
 
         {surahsLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {Array.from({ length: 12 }).map((_, i) => <Skeleton key={i} className="h-32 rounded-xl" />)}
+            {Array.from({ length: 12 }).map((_, i) => <Skeleton key={i} className="h-32 rounded-xl shimmer" />)}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -75,30 +75,38 @@ export default function Learn() {
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: Math.min(index * 0.05, 0.5) }}
+                    transition={{ delay: Math.min(index * 0.04, 0.4) }}
+                    className="h-full"
                   >
-                    <Card className={`hover:border-emerald-500 hover:shadow-md transition-all cursor-pointer h-full border-emerald-100 group ${isCompleted ? "border-emerald-400 bg-emerald-50/50" : ""}`}>
+                    <Card className={`card-premium cursor-pointer h-full transition-all duration-200 group ${
+                      isCompleted
+                        ? "border-emerald-300 dark:border-emerald-700 bg-gradient-to-br from-emerald-50/80 to-teal-50/40 dark:from-emerald-950/60 dark:to-teal-950/30"
+                        : "hover:border-primary/40"
+                    }`}>
                       <CardContent className="p-5 flex flex-col justify-between h-full">
                         <div className="flex justify-between items-start mb-4">
                           <div className="flex items-center gap-3">
-                            <div className={`h-10 w-10 rounded-full flex items-center justify-center font-medium text-sm transition-colors
-                              ${isCompleted ? "bg-emerald-600 text-white" : "bg-emerald-50 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 group-hover:bg-emerald-600 group-hover:text-white"}`}>
+                            <div className={`h-10 w-10 rounded-xl flex items-center justify-center font-bold text-sm transition-all duration-200 ${
+                              isCompleted
+                                ? "bg-emerald-500 text-white shadow-sm shadow-emerald-200 dark:shadow-emerald-900"
+                                : "bg-muted text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground"
+                            }`}>
                               {isCompleted ? <CheckCircle2 className="h-5 w-5" /> : surah.number}
                             </div>
                             <div>
-                              <h3 className="font-semibold text-emerald-950 dark:text-emerald-50 group-hover:text-emerald-700 transition-colors">
+                              <h3 className="font-semibold group-hover:text-primary transition-colors">
                                 {surah.name}
                               </h3>
                               <p className="text-xs text-muted-foreground">{surah.nameTranslation}</p>
                             </div>
                           </div>
-                          <div className="flex flex-col items-end gap-1">
-                            <span className="font-arabic text-xl text-emerald-800 dark:text-emerald-300" style={{ fontFamily: "var(--font-arabic)" }}>
+                          <div className="flex flex-col items-end gap-1 shrink-0 ml-2">
+                            <span className="font-arabic text-xl text-foreground/70" style={{ fontFamily: "var(--font-arabic)" }}>
                               {surah.nameArabic}
                             </span>
                             {sp?.averageScore && (
-                              <Badge variant="outline" className="text-xs border-emerald-200 text-emerald-700">
-                                {sp.averageScore}% avg
+                              <Badge variant="outline" className="text-[10px] border-primary/20 text-primary">
+                                {sp.averageScore}%
                               </Badge>
                             )}
                           </div>
@@ -106,17 +114,19 @@ export default function Learn() {
 
                         <div className="mt-auto">
                           <div className="flex justify-between text-xs text-muted-foreground mb-2">
-                            <span>{surah.revelationType}</span>
+                            <span className="px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground/70 text-[10px]">
+                              {surah.revelationType}
+                            </span>
                             <span>
-                              {hasStarted ? `${sp!.completedAyahs}/${surah.ayahCount} ayahs` : `${surah.ayahCount} Ayahs`}
+                              {hasStarted ? `${sp!.completedAyahs}/${surah.ayahCount} ayahs` : `${surah.ayahCount} ayahs`}
                             </span>
                           </div>
-                          {hasStarted && (
-                            <Progress
-                              value={progressPercent}
-                              className={`h-1.5 ${isCompleted ? "bg-emerald-200" : "bg-emerald-100 dark:bg-emerald-900"}`}
+                          <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all duration-700 ${isCompleted ? "bg-emerald-500" : "bg-primary/60"}`}
+                              style={{ width: `${progressPercent}%` }}
                             />
-                          )}
+                          </div>
                         </div>
                       </CardContent>
                     </Card>

@@ -357,16 +357,55 @@ export default function Landing() {
       </section>
 
       {/* ── FOOTER ────────────────────────────────────────────────────── */}
-      <footer className="py-10 px-4 border-t border-white/5">
-        <div className="container mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2.5">
-            <img src="/logo.svg" alt="Al Bayaan" className="h-6 w-auto brightness-0 invert opacity-50" />
-            <span className="text-white/30 text-sm">Al Bayaan AI Quran</span>
+      <footer className="py-14 px-4 border-t border-white/5">
+        <div className="container mx-auto max-w-6xl">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
+            {/* Brand */}
+            <div className="col-span-2 md:col-span-1">
+              <div className="flex items-center gap-2.5 mb-4">
+                <img src="/logo.svg" alt="Al Bayaan" className="h-7 w-auto brightness-0 invert opacity-60" />
+                <span className="text-white/60 font-semibold">Al Bayaan</span>
+              </div>
+              <p className="text-white/30 text-xs leading-relaxed">
+                AI-powered Islamic learning platform. Built with love for the Muslim Ummah.
+              </p>
+              <p className="text-white/20 text-xs mt-3">بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ</p>
+            </div>
+
+            {/* Platform */}
+            <div>
+              <p className="text-white/50 text-xs font-semibold uppercase tracking-widest mb-3">Platform</p>
+              <div className="space-y-2">
+                <Link href="/sign-up" className="block text-xs text-white/30 hover:text-white/60 transition-colors">Get Started Free</Link>
+                <Link href="/sign-in" className="block text-xs text-white/30 hover:text-white/60 transition-colors">Sign In</Link>
+                <Link href="/about" className="block text-xs text-white/30 hover:text-white/60 transition-colors">About Us</Link>
+                <Link href="/faq" className="block text-xs text-white/30 hover:text-white/60 transition-colors">FAQ</Link>
+              </div>
+            </div>
+
+            {/* Support */}
+            <div>
+              <p className="text-white/50 text-xs font-semibold uppercase tracking-widest mb-3">Support</p>
+              <div className="space-y-2">
+                <Link href="/help" className="block text-xs text-white/30 hover:text-white/60 transition-colors">Help Center</Link>
+                <Link href="/contact" className="block text-xs text-white/30 hover:text-white/60 transition-colors">Contact Us</Link>
+                <Link href="/faq" className="block text-xs text-white/30 hover:text-white/60 transition-colors">FAQ</Link>
+              </div>
+            </div>
+
+            {/* Legal */}
+            <div>
+              <p className="text-white/50 text-xs font-semibold uppercase tracking-widest mb-3">Legal</p>
+              <div className="space-y-2">
+                <Link href="/privacy" className="block text-xs text-white/30 hover:text-white/60 transition-colors">Privacy Policy</Link>
+                <Link href="/terms" className="block text-xs text-white/30 hover:text-white/60 transition-colors">Terms of Service</Link>
+              </div>
+            </div>
           </div>
-          <p className="text-white/20 text-xs">Built with ❤️ for the Muslim Ummah</p>
-          <div className="flex items-center gap-4 text-xs text-white/25">
-            <Link href="/sign-in" className="hover:text-white/50 transition-colors">Sign In</Link>
-            <Link href="/sign-up" className="hover:text-white/50 transition-colors">Get Started</Link>
+
+          <div className="border-t border-white/5 pt-6 flex flex-col md:flex-row items-center justify-between gap-3">
+            <p className="text-white/20 text-xs">© 2026 Al Bayaan AI Academy. All rights reserved.</p>
+            <p className="text-white/15 text-xs">Built with ❤️ for the Muslim Ummah</p>
           </div>
         </div>
       </footer>
