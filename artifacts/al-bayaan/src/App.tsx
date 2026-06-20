@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/reac
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { I18nProvider } from "@/lib/i18n";
+import WhatsAppButton from "@/components/WhatsAppButton";
 
 import Landing from "./pages/landing";
 import Dashboard from "./pages/dashboard";
@@ -47,6 +48,7 @@ import FAQ from "./pages/faq";
 import Contact from "./pages/contact";
 import Help from "./pages/help";
 import NotFound from "@/pages/not-found";
+import AIAssistant from "./pages/ai-assistant";
 
 const queryClient = new QueryClient();
 
@@ -238,6 +240,7 @@ function ClerkProviderWithRoutes() {
           <Route path="/faq" component={FAQ} />
           <Route path="/contact" component={Contact} />
           <Route path="/help" component={Help} />
+          <Route path="/ai-assistant" component={() => <ProtectedRoute component={AIAssistant} />} />
           <Route component={NotFound} />
         </Switch>
       </QueryClientProvider>
@@ -253,6 +256,7 @@ function App() {
           <ClerkProviderWithRoutes />
         </WouterRouter>
         <Toaster />
+        <WhatsAppButton />
       </TooltipProvider>
     </I18nProvider>
   );

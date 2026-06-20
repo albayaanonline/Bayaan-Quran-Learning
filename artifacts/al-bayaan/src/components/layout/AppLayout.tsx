@@ -60,6 +60,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       label: t("nav.group.aiTeachers"),
       items: [
         { href: "/teacher",         label: t("nav.aiTeacher"),    icon: BotMessageSquare },
+        { href: "/ai-assistant",    label: "AI Assistant",        icon: Sparkles, badge: "AI" },
         { href: "/tajweed-teacher", label: t("nav.tajweedTutor"), icon: BookMarked },
         { href: "/voice-teacher",   label: t("nav.voiceTeacher"), icon: Mic,   badge: "AI" },
         { href: "/video-teacher",   label: t("nav.videoTeacher"), icon: Video, badge: "NEW" },

@@ -9,15 +9,17 @@ const CONTACT_METHODS = [
     icon: Mail,
     title: "Email Support",
     desc: "For account, billing, or general enquiries",
-    detail: "support@albayaan.app",
+    detail: "Albayaan1college@gmail.com",
+    href: "mailto:Albayaan1college@gmail.com",
     color: "from-blue-500 to-indigo-500",
   },
   {
     icon: MessageCircle,
-    title: "AI Teacher",
-    desc: "Get instant answers from our AI — 24/7",
-    detail: "Available inside the app",
-    color: "from-violet-500 to-purple-500",
+    title: "WhatsApp",
+    desc: "Chat with us directly on WhatsApp",
+    detail: "+252 656 042 512",
+    href: "https://wa.me/252656042512?text=Assalamu%20Alaikum%2C%20I%27m%20interested%20in%20Al%20Bayaan.",
+    color: "from-green-500 to-emerald-600",
   },
   {
     icon: BookOpen,
@@ -31,7 +33,8 @@ const CONTACT_METHODS = [
     icon: Users,
     title: "Islamic Scholars",
     desc: "Questions about Islamic content & rulings",
-    detail: "scholars@albayaan.app",
+    detail: "Albayaan1college@gmail.com",
+    href: "mailto:Albayaan1college@gmail.com",
     color: "from-amber-500 to-orange-500",
   },
 ];
@@ -89,33 +92,34 @@ export default function Contact() {
 
         {/* Contact Methods */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
-          {CONTACT_METHODS.map((method, i) => (
-            <motion.div
-              key={method.title}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.07 }}
-            >
-              {method.href ? (
-                <Link href={method.href}>
-                  <div className={`group relative overflow-hidden rounded-2xl p-5 bg-gradient-to-br ${method.color} text-white h-full cursor-pointer transition-all hover:scale-[1.02] hover:shadow-lg`}>
-                    <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    <method.icon className="h-7 w-7 mb-3 opacity-90" />
-                    <h3 className="font-bold mb-1">{method.title}</h3>
-                    <p className="text-xs text-white/70 mb-2 leading-relaxed">{method.desc}</p>
-                    <p className="text-xs font-medium text-white/90">{method.detail}</p>
-                  </div>
-                </Link>
-              ) : (
-                <div className={`relative overflow-hidden rounded-2xl p-5 bg-gradient-to-br ${method.color} text-white h-full`}>
-                  <method.icon className="h-7 w-7 mb-3 opacity-90" />
-                  <h3 className="font-bold mb-1">{method.title}</h3>
-                  <p className="text-xs text-white/70 mb-2 leading-relaxed">{method.desc}</p>
-                  <p className="text-xs font-medium text-white/90">{method.detail}</p>
-                </div>
-              )}
-            </motion.div>
-          ))}
+          {CONTACT_METHODS.map((method, i) => {
+            const isExternal = method.href?.startsWith("http") || method.href?.startsWith("mailto:");
+            const inner = (
+              <div className={`group relative overflow-hidden rounded-2xl p-5 bg-gradient-to-br ${method.color} text-white h-full cursor-pointer transition-all hover:scale-[1.02] hover:shadow-lg`}>
+                <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <method.icon className="h-7 w-7 mb-3 opacity-90" />
+                <h3 className="font-bold mb-1">{method.title}</h3>
+                <p className="text-xs text-white/70 mb-2 leading-relaxed">{method.desc}</p>
+                <p className="text-xs font-medium text-white/90">{method.detail}</p>
+              </div>
+            );
+            return (
+              <motion.div
+                key={method.title}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.07 }}
+              >
+                {method.href ? (
+                  isExternal ? (
+                    <a href={method.href} target="_blank" rel="noopener noreferrer">{inner}</a>
+                  ) : (
+                    <Link href={method.href}>{inner}</Link>
+                  )
+                ) : inner}
+              </motion.div>
+            );
+          })}
         </div>
 
         {/* Contact Form */}
@@ -222,6 +226,33 @@ export default function Contact() {
                 وَإِذَا سَأَلَكَ عِبَادِي عَنِّي فَإِنِّي قَرِيبٌ
               </p>
               <p className="text-xs text-white/50 text-center italic">"And when My servants ask you about Me — indeed I am near." — Quran 2:186</p>
+            </div>
+
+            <div className="rounded-2xl border bg-card p-5">
+              <h3 className="font-bold mb-3 text-sm">Contact Details</h3>
+              <div className="space-y-3">
+                <div className="flex items-start gap-2.5">
+                  <span className="text-base mt-0.5">📧</span>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Email</p>
+                    <a href="mailto:Albayaan1college@gmail.com" className="text-sm font-medium text-primary hover:underline break-all">Albayaan1college@gmail.com</a>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2.5">
+                  <span className="text-base mt-0.5">💬</span>
+                  <div>
+                    <p className="text-xs text-muted-foreground">WhatsApp</p>
+                    <a href="https://wa.me/252656042512" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-primary hover:underline">+252 656 042 512</a>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2.5">
+                  <span className="text-base mt-0.5">📍</span>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Location</p>
+                    <p className="text-sm font-medium">Location not specified</p>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div className="rounded-2xl border bg-card p-5">

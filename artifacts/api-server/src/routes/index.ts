@@ -34,6 +34,7 @@ import ttsRouter from "./tts";
 import mushafRecitationRouter from "./mushaf-recitation";
 import arabicLessonsRouter from "./arabic-lessons";
 import lessonsRouter from "./lessons";
+import aiChatRouter from "./ai-chat";
 
 const router = Router();
 
@@ -72,5 +73,6 @@ router.use(ttsRouter);
 router.use(mushafRecitationRouter);
 router.use(arabicLessonsRouter);
 router.use(lessonsRouter);
+router.use(aiChatRouter);
 
 export default router;
