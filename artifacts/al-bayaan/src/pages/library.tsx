@@ -37,6 +37,7 @@ const CATEGORIES = [
   { id: "aqeedah", label: "Aqeedah", icon: "🌙" },
   { id: "hadith", label: "Hadith", icon: "📜" },
   { id: "tafsir", label: "Tafsir", icon: "✨" },
+  { id: "seerah", label: "Seerah", icon: "🕌" },
 ];
 
 const DIFFICULTY_COLORS = {

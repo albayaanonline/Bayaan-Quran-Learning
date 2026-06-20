@@ -9,7 +9,7 @@ import { motion } from "framer-motion";
 
 export default function Leaderboard() {
   const [period, setPeriod] = useState<GetLeaderboardPeriod>("weekly");
-  const { data: leaderboard, isLoading } = useGetLeaderboard();
+  const { data: leaderboard, isLoading } = useGetLeaderboard({ period });
 
   // In Orval, query params might need to be passed differently based on generated code,
   // For the sake of UI we assume the hook takes params or we just use it directly

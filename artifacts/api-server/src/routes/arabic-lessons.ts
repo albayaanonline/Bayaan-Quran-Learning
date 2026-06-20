@@ -1748,6 +1748,240 @@ const LESSONS: Record<string, LessonContent[]> = {
       exercises: ["Identify the three main articulation zones", "Practice isolated letters aloud", "Record yourself and compare to a teacher"],
       culturalNote: "The Noorania Method is widely used across East Africa and South Asia for Quran memorization.",
       nextLesson: 2
+    },
+    {
+      bookId: "hingaad-noorania", lessonNum: 2,
+      title: "Single Letters — Group One", titleArabic: "الحُرُوفُ المُفْرَدَة — المَجْمُوعَة الأُولى",
+      description: "Learn the first group of Arabic letters with their correct articulation points using the Noorania method.",
+      pages: [
+        { id: 1, arabic: "أ — بَ — تَ — ثَ", translation: "Alif — Ba — Ta — Tha", transliteration: "Alif, Ba, Ta, Tha", notes: "First four letters. Focus on the lips for Ba and the tip of the tongue for Ta and Tha." },
+        { id: 2, arabic: "جَ — حَ — خَ — دَ", translation: "Jeem — Ha — Kha — Dal", transliteration: "Jeem, Ha, Kha, Dal", notes: "Throat and tongue letters. Ha comes from the chest; Kha from the back of the throat." },
+        { id: 3, arabic: "ذَ — رَ — زَ — سَ", translation: "Thal — Ra — Za — Seen", transliteration: "Thal, Ra, Za, Seen", notes: "Tongue-tip letters. Ra is rolled gently; Seen is like English S but with no hiss." }
+      ],
+      vocabulary: [
+        { arabic: "أَلِف", translation: "Alif (first letter)", transliteration: "alif" },
+        { arabic: "بَاء", translation: "Ba (second letter)", transliteration: "ba'" },
+        { arabic: "مَخْرَج", translation: "articulation point", transliteration: "makhraj" }
+      ],
+      grammar: "Each Arabic letter has a single fixed articulation point (makhraj). Mastering these from the beginning prevents lifelong pronunciation errors.",
+      exercises: ["Repeat each letter 10 times listening to the audio", "Record yourself and compare", "Write each letter in its isolated form"],
+      culturalNote: "The Noorania Method groups letters by articulation zone, making it easier for non-Arabs to achieve accurate Quranic pronunciation.",
+      nextLesson: 3
+    }
+  ],
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // SEERAH — COMPANIONS
+  // ══════════════════════════════════════════════════════════════════════════
+  "seerah-companions": [
+    {
+      bookId: "seerah-companions", lessonNum: 1,
+      title: "Abu Bakr As-Siddiq RA — The Truthful", titleArabic: "أَبُو بَكْرٍ الصِّدِّيق رَضِيَ اللهُ عَنْه",
+      description: "The life of Abu Bakr, the Prophet's closest companion, first Caliph, and embodiment of sincerity in faith.",
+      pages: [
+        { id: 1, arabic: "أَبُو بَكْرٍ الصِّدِّيق", translation: "Abu Bakr As-Siddiq — The Truthful", transliteration: "Abu Bakr as-Siddiq", notes: "He was named 'As-Siddiq' (the truthful) by the Prophet ﷺ because he immediately believed in the Night Journey (Isra & Mi'raj) when others doubted." },
+        { id: 2, arabic: "وَإِذِ اثْنَانِ إِذْ هُمَا فِي الغَارِ إِذْ يَقُولُ لِصَاحِبِهِ لَا تَحْزَنْ إِنَّ اللهَ مَعَنَا", translation: "...when the two were in the cave, when he said to his companion: Do not grieve — indeed Allah is with us.", transliteration: "Wa-idhi thnani idh humaa fil-ghari idh yaqoolu li-saahibihi laa tahzan inna Allaaha ma'anaa", notes: "Quran 9:40 — Allah describes Abu Bakr as the Prophet's companion in the cave during the Hijrah. A verse of supreme honour." },
+        { id: 3, arabic: "لَوْ كُنْتُ مُتَّخِذًا خَلِيلًا لَاتَّخَذْتُ أَبَا بَكْرٍ خَلِيلًا", translation: "If I were to take a close friend (khalil), I would take Abu Bakr as my khalil", transliteration: "Law kuntu muttakhidhan khaleelaan, lattakhadhtu Aba Bakrin khaleelaa", notes: "Hadith of the Prophet ﷺ (Bukhari & Muslim). Khalil is a deeper bond than friendship — it means the beloved, the intimate companion." }
+      ],
+      vocabulary: [
+        { arabic: "الصِّدِّيق", translation: "the extremely truthful one", transliteration: "as-siddeeq" },
+        { arabic: "الخَلِيل", translation: "the intimate friend / beloved", transliteration: "al-khaleel" },
+        { arabic: "الغَار", translation: "the cave", transliteration: "al-ghaar" }
+      ],
+      grammar: "The phrase لَا تَحْزَنْ uses the jussive mood (لا النهية) — 'do not grieve'. The Quranic verse uses إِذْ (when) repeatedly to bring the listener into the present moment of the event.",
+      exercises: ["What title did the Prophet ﷺ give Abu Bakr and why?", "What is the difference between a khalil and an ordinary friend?", "Memorize the Quranic verse about Abu Bakr in the cave (9:40)", "What were Abu Bakr's most important contributions as First Caliph?"],
+      culturalNote: "Abu Bakr's caliphate lasted only 2 years (632–634 CE), yet he united the Muslim community, compiled the Quran, and defeated the apostasy (riddah) wars — achievements that shaped Islam's future.",
+      nextLesson: 2
+    },
+    {
+      bookId: "seerah-companions", lessonNum: 2,
+      title: "Umar ibn Al-Khattab RA — Al-Farouq", titleArabic: "عُمَرُ بْنُ الخَطَّاب رَضِيَ اللهُ عَنْه — الفَارُوق",
+      description: "The dramatic conversion of Umar, his transformative leadership as Second Caliph, and his legendary justice.",
+      pages: [
+        { id: 1, arabic: "اللَّهُمَّ أَعِزَّ الإِسْلَامَ بِأَحَبِّ الرَّجُلَيْنِ إِلَيْكَ: بِأَبِي جَهْلٍ أَوْ بِعُمَرَ بْنِ الخَطَّاب", translation: "O Allah! Honour Islam through the one more beloved to You of the two men: Abu Jahl or Umar ibn al-Khattab", transliteration: "Allahumma a'izzal-Islama bi-ahabbar-rajulayni ilayk: bi-Abi Jahlin aw bi-Umara ibnil-Khattab", notes: "Du'a of the Prophet ﷺ before Umar's conversion. Allah answered: Umar accepted Islam the very next day." },
+        { id: 2, arabic: "كَانَ عُمَرُ إِذَا سَلَكَ فَجًّا سَلَكَ الشَّيْطَانُ فَجًّا غَيْرَ فَجِّه", translation: "Whenever Umar walked a path, Satan would take a different path", transliteration: "Kaana 'Umaru idha salaka fajjan salakas-shaytaanu fajjan ghayra fajjih", notes: "Hadith (Bukhari). The Prophet ﷺ acknowledged Umar's exceptional moral authority that even made the devil fear his presence." },
+        { id: 3, arabic: "الفَارُوق — الَّذِي فَرَّقَ بَيْنَ الحَقِّ والبَاطِل", translation: "Al-Farouq — the one who distinguishes between truth and falsehood", transliteration: "Al-Farooq — alladhi farraqa baynal-haqqi wal-baatil", notes: "The title 'Al-Farouq' was given to Umar RA. It refers to his decisive character in standing for truth regardless of consequences." }
+      ],
+      vocabulary: [
+        { arabic: "الفَارُوق", translation: "the distinguisher (between truth and falsehood)", transliteration: "al-farooq" },
+        { arabic: "أَعَزَّ", translation: "to honour / strengthen", transliteration: "a'azza" },
+        { arabic: "الفَجّ", translation: "mountain pass / path", transliteration: "al-fajj" }
+      ],
+      grammar: "اللَّهُمَّ is a contracted form of يَا أَللَّه. The conditional إِذَا... سَلَكَ uses the past tense for habitual actions in the past ('whenever he used to walk...').",
+      exercises: ["How did Umar's conversion strengthen the Muslim community?", "What does 'Al-Farouq' mean and what event gave rise to this title?", "List three major achievements of Umar's caliphate", "What is the significance of the Prophet's du'a for Umar?"],
+      culturalNote: "Under Umar's 10-year caliphate (634–644 CE), the Islamic state expanded to include Persia, Syria, Egypt, and Iraq. He established the Islamic calendar, organized the state, and his justice became legendary even among non-Muslims.",
+      nextLesson: 3
+    }
+  ],
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // SEERAH — ISLAMIC HISTORY
+  // ══════════════════════════════════════════════════════════════════════════
+  "seerah-islamic-history": [
+    {
+      bookId: "seerah-islamic-history", lessonNum: 1,
+      title: "The Rightly-Guided Caliphs (Khulafa Rashidun)", titleArabic: "الخُلَفَاءُ الرَّاشِدُون",
+      description: "The first four caliphs — Abu Bakr, Umar, Uthman, and Ali — and the rapid expansion of Islam after the Prophet ﷺ.",
+      pages: [
+        { id: 1, arabic: "عَلَيْكُمْ بِسُنَّتِي وَسُنَّةِ الخُلَفَاءِ الرَّاشِدِينَ المَهْدِيِّين", translation: "Hold fast to my Sunnah and the Sunnah of the Rightly-Guided Caliphs after me", transliteration: "Alaykum bi-sunnati wa-sunnati l-khulafaa'ir-raashideena l-mahdiyyeen", notes: "Hadith of the Prophet ﷺ (Abu Dawud, Tirmidhi). This Hadith designates the four caliphs as the model of Islamic governance after the Prophet." },
+        { id: 2, arabic: "الخِلَافَةُ ثَلَاثُونَ سَنَة", translation: "The caliphate (of guidance) will be thirty years", transliteration: "Al-khilaafatu thalaathoona sanah", notes: "Hadith (Abu Dawud). The four Rightly-Guided Caliphs ruled from 632–661 CE — exactly 30 years. Then came monarchy (mulk)." },
+        { id: 3, arabic: "فُتِحَتْ مِصْرُ، والشَّامُ، والعِرَاق، وفَارِس في زَمَنِ الخُلَفَاءِ الرَّاشِدِين", translation: "Egypt, Syria, Iraq, and Persia were opened in the era of the Rightly-Guided Caliphs", transliteration: "Futihat Misr wash-Shamu wal-Iraaq wa-Faaris fi zamani l-khulafaa'ir-raashideen", notes: "Historical summary. The speed of these 'futuhat' (openings) was unprecedented in human history — driven by just governance and sincere da'wah." }
+      ],
+      vocabulary: [
+        { arabic: "الخُلَفَاء الرَّاشِدُون", translation: "the Rightly-Guided Caliphs", transliteration: "al-khulafaa' ar-raashidoon" },
+        { arabic: "الفُتُوحَات", translation: "the openings / conquests", transliteration: "al-futuuhaat" },
+        { arabic: "الخِلَافَة", translation: "the caliphate / successorship", transliteration: "al-khilaafah" }
+      ],
+      grammar: "فُتِحَتْ is a passive past verb (مبني للمجهول) — 'was opened'. The subject (مِصْرُ) comes after the passive verb. Note مِصْرُ is diptote (ممنوع من الصرف) — no tanwin.",
+      exercises: ["List the four Rightly-Guided Caliphs in order with their dates", "What territories were added to the Islamic state during this period?", "What does 'Rightly-Guided' (Rashid) mean and what characterises their rule?", "Why did the Prophet's hadith say 'thirty years' of caliphate?"],
+      culturalNote: "The era of the Rightly-Guided Caliphs is considered the golden model of Islamic governance. Scholars of all generations have studied this period to understand just leadership, consultation (shura), and rights of citizens.",
+      nextLesson: 2
+    }
+  ],
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // ARABIC BAYNA YADAYK — BOOK 3 (ADVANCED)
+  // ══════════════════════════════════════════════════════════════════════════
+  "arabic-bayna-yadayk-3": [
+    {
+      bookId: "arabic-bayna-yadayk-3", lessonNum: 1,
+      title: "Complex Sentence Structures", titleArabic: "التَّرَاكِيبُ المُعَقَّدَة",
+      description: "Master advanced Arabic sentence construction: conditional sentences (الجملة الشرطية), relative clauses, and subordinate structures.",
+      pages: [
+        { id: 1, arabic: "إِنْ تَجْتَهِدْ تَنْجَحْ", translation: "If you strive, you will succeed", transliteration: "In tajtahid, tanjah", notes: "The basic conditional: إِنْ (if) + jussive verb + jussive result. Both verbs take the jussive (مجزوم) mood." },
+        { id: 2, arabic: "لَوْ كَانَ مَعِي وَقْتٌ لَزُرْتُكَ", translation: "If I had time, I would have visited you", transliteration: "Law kaana ma'i waqtun la-zurtuuka", notes: "Hypothetical conditional with لَوْ: used for impossible or unlikely conditions. Result takes لَ + past verb." },
+        { id: 3, arabic: "الكِتَابُ الَّذِي قَرَأْتُهُ مُفِيدٌ", translation: "The book which I read is beneficial", transliteration: "Al-kitaabu alladhi qara'tuhu mufiidun", notes: "Relative clause with الَّذِي (which/who, masculine). The pronoun هُ refers back to the noun الكِتَاب." },
+        { id: 4, arabic: "رَأَيْتُ طَالِبَةً تَدْرُسُ في المَكْتَبَة", translation: "I saw a student studying in the library", transliteration: "Ra'aytu taalibatan tadrusu fil-maktaba", notes: "Nominal sentence used as a subordinate clause after رَأَيْتُ." },
+        { id: 5, arabic: "كُلَّمَا اجْتَهَدْتَ، ازْدَدْتَ نَجَاحًا", translation: "The more you strive, the more you increase in success", transliteration: "Kullamaa ijtahadta, izdadta najaahan", notes: "كُلَّمَا (every time / the more) is a correlative conjunction introducing repeated conditionals." }
+      ],
+      vocabulary: [
+        { arabic: "إِنْ", translation: "if (real conditional)", transliteration: "in" },
+        { arabic: "لَوْ", translation: "if (hypothetical)", transliteration: "law" },
+        { arabic: "الَّذِي", translation: "which / who (m.s.)", transliteration: "alladhi" },
+        { arabic: "كُلَّمَا", translation: "every time / whenever", transliteration: "kullama" },
+        { arabic: "ازْدَادَ", translation: "to increase", transliteration: "izdaada" }
+      ],
+      grammar: "Advanced sentence types: (1) Real conditional (إِنْ + jussive), (2) Hypothetical conditional (لَوْ + past), (3) Relative clauses with الَّذِي/الَّتِي/الَّذِينَ, (4) Verbal sentences as subordinate clauses.",
+      exercises: [
+        "Form five real conditional sentences using إِنْ about daily activities",
+        "Transform three real conditionals into hypothetical conditionals with لَوْ",
+        "Write a paragraph of 5 sentences, each containing a relative clause",
+        "Translate: 'If she studies hard, she will become a doctor. The doctor who treats the sick is respected.'"
+      ],
+      culturalNote: "Advanced Arabic syntax is essential for understanding classical Islamic texts, the Quran, and hadith literature. Many scholarly works use complex conditional and relative constructions.",
+      nextLesson: 2
+    },
+    {
+      bookId: "arabic-bayna-yadayk-3", lessonNum: 2,
+      title: "Arabic Essay Writing & Discourse", titleArabic: "الكِتَابَةُ المَقَالِيَّة والخِطَاب",
+      description: "Learn to structure formal Arabic essays, write academic paragraphs, and use discourse markers for sophisticated written expression.",
+      pages: [
+        { id: 1, arabic: "أَوَّلًا، ثَانِيًا، ثَالِثًا، وَأَخِيرًا", translation: "First, second, third, and finally", transliteration: "Awwalan, thaaniyan, thaalithan, wa-akhiiran", notes: "Ordinal discourse markers used to structure formal Arabic writing and presentations." },
+        { id: 2, arabic: "مِنْ جِهَةٍ... وَمِنْ جِهَةٍ أُخْرَى", translation: "On one hand... and on the other hand", transliteration: "Min jihatin... wa-min jihatin ukhra", notes: "Contrast structure essential for academic and argumentative writing." },
+        { id: 3, arabic: "بِالإِضَافَةِ إِلَى ذَلِكَ، فَإِنَّ...", translation: "In addition to that, indeed...", transliteration: "Bil-idaafati ila dhaalik, fa-inna...", notes: "Additive connective. فَإِنَّ strengthens the statement with emphasis and formality." },
+        { id: 4, arabic: "وَخُلَاصَةُ القَوْلِ أَنَّ...", translation: "In summary, it can be said that...", transliteration: "Wa-khulaasat ul-qawli anna...", notes: "Used to introduce a conclusion in formal Arabic writing, essays, and khutbahs." },
+        { id: 5, arabic: "عَلَى الرَّغْمِ مِنْ ذَلِكَ، إِلَّا أَنَّ...", translation: "Despite that, however...", transliteration: "'Alar-raghmi min dhaalik, illaa anna...", notes: "Concessive construction — acknowledges an opposing point before presenting the main argument." }
+      ],
+      vocabulary: [
+        { arabic: "المَقَال", translation: "essay / article", transliteration: "al-maqaal" },
+        { arabic: "الخِطَاب", translation: "discourse / speech", transliteration: "al-khitaab" },
+        { arabic: "خُلَاصَة", translation: "summary / conclusion", transliteration: "khulaasah" },
+        { arabic: "بِالإِضَافَة", translation: "in addition", transliteration: "bil-idaafa" },
+        { arabic: "عَلَى الرَّغْمِ", translation: "despite / in spite of", transliteration: "'alar-raghm" }
+      ],
+      grammar: "Formal Arabic discourse markers: additive (بِالإِضَافَة), contrastive (عَلَى الرَّغْمِ), sequential (أَوَّلًا/ثَانِيًا), and conclusive (خُلَاصَة). These are essential for writing formal essays, reports, and academic Arabic.",
+      exercises: [
+        "Write a 5-sentence paragraph about the importance of education using at least 3 discourse markers",
+        "Write a short opinion essay (two paragraphs) about a topic of your choice",
+        "Translate a given English argumentative paragraph into formal Arabic",
+        "Identify discourse markers in a provided Arabic newspaper excerpt"
+      ],
+      culturalNote: "Formal written Arabic (فُصْحَى) is used in newspapers, books, official speeches, and religious texts across all Arabic-speaking countries, even when spoken dialects differ widely.",
+      nextLesson: 3
+    },
+    {
+      bookId: "arabic-bayna-yadayk-3", lessonNum: 3,
+      title: "Classical Arabic Literature & Poetry", titleArabic: "الأَدَبُ العَرَبِيُّ الكلاسيكي والشِّعْر",
+      description: "An introduction to classical Arabic literary forms: the qasidah, the maqamah, and prose style of Arab literary masters.",
+      pages: [
+        { id: 1, arabic: "قِفَا نَبْكِ مِنْ ذِكْرَى حَبِيبٍ وَمَنْزِلِ", translation: "Halt — let us weep at the memory of a beloved and a dwelling", transliteration: "Qifaa nabki min dhikraa habibin wa-manzili", notes: "Opening verse of Imru' al-Qays' mu'allaqah. One of the most famous verses in Arabic poetry. قِفَا (halt, dual command) sets the elegiac tone." },
+        { id: 2, arabic: "مَنْ لَمْ يَذُقْ مُرَّ التَّعَلُّمِ سَاعَةً، تَجَرَّعَ ذُلَّ الجَهْلِ طُولَ حَيَاتِهِ", translation: "Whoever has not tasted the bitterness of learning for an hour will swallow the humiliation of ignorance all his life", transliteration: "Man lam yadhug murra t-ta'allumi saa'atan, tajarra'a dhulla l-jahli tuula hayaatih", notes: "Attributed to Imam Al-Shafi'i. A motivational couplet on the value of education — universally memorized in the Islamic world." },
+        { id: 3, arabic: "الشِّعْرُ دِيوَانُ العَرَب", translation: "Poetry is the register of the Arabs", transliteration: "Ash-shi'ru diwaanu l-'Arab", notes: "A famous Arabic proverb. The diwan (دِيوَان) was the official record — Arabic poetry was considered the repository of language, history, and values." }
+      ],
+      vocabulary: [
+        { arabic: "القَصِيدَة", translation: "the ode / formal poem", transliteration: "al-qaseedah" },
+        { arabic: "البَيْت", translation: "verse / line of poetry", transliteration: "al-bayt" },
+        { arabic: "الدِّيوَان", translation: "collected poems / official register", transliteration: "ad-diwaan" },
+        { arabic: "الأَدَب", translation: "literature / etiquette", transliteration: "al-adab" },
+        { arabic: "البَلَاغَة", translation: "rhetoric / eloquence", transliteration: "al-balagha" }
+      ],
+      grammar: "Classical Arabic poetry uses metrical patterns (بُحُور الشِّعْر) and case endings (إِعْرَاب) strictly. The qaafiyah (rhyme) and the wazan (meter) together define the form. Understanding classical poetry deepens mastery of Arabic grammar.",
+      exercises: [
+        "Memorize and recite the Shafi'i couplet on knowledge",
+        "Identify the subject and predicate in the poetry examples",
+        "Research one Arab poet: al-Mutanabbi, Rumi (Arabic), or Ibn Hazm — write a 5-sentence Arabic biography",
+        "Write two lines of rhyming Arabic prose (saj') on a topic of your choice"
+      ],
+      culturalNote: "The Arabic literary tradition stretches over 1,500 years. Classical poets like Imru' al-Qays, al-Mutanabbi, and Abu Nuwas are studied across the Arab world. Quranic eloquence (i'jaaz) set the highest standard — no human poetry has been considered its equal.",
+      nextLesson: 4
+    }
+  ],
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // HINGAAD — ADVANCED FLUENCY
+  // ══════════════════════════════════════════════════════════════════════════
+  "hingaad-advanced-fluency": [
+    {
+      bookId: "hingaad-advanced-fluency", lessonNum: 1,
+      title: "Connected Letter Forms & Long Vowels", titleArabic: "الأَشْكَالُ المُتَّصِلَة والحَرَكَاتُ الطَّوِيلَة",
+      description: "Master how Arabic letters connect and how long vowels (Alif, Waw, Ya) change word reading speed and meaning.",
+      pages: [
+        { id: 1, arabic: "كَتَبَ — كَاتِبٌ — مَكْتُوبٌ", translation: "He wrote — a writer — something written", transliteration: "Kataba — kaatibun — maktuubun", notes: "Same root ك-ت-ب produces three different words via vowel and pattern changes. This is the root system (جُذُور) of Arabic." },
+        { id: 2, arabic: "الأَلِفُ المَدِيَّة: قَالَ — كَانَ — بَابٌ", translation: "Long alif: he said — he was — a door", transliteration: "Qaala — kaana — baabun", notes: "Long alif extends the vowel sound to approximately 2 counts (maddah = lengthening). Never shorten these in formal reading." },
+        { id: 3, arabic: "الوَاوُ المَدِيَّة: نُورٌ — رَسُولٌ — يَقُولُ", translation: "Light — messenger — he says", transliteration: "Nuurun — rasuulun — yaquulu", notes: "Long Waw creates the 'oo' sound. Note how يَقُولُ (yaquulu) has both present tense prefix يَـ and long Waw." },
+        { id: 4, arabic: "اليَاءُ المَدِيَّة: كَبِيرٌ — يَرِيدُ — قِيلَ", translation: "Great — he wants — it was said", transliteration: "Kabiirun — yurreedu — qiila", notes: "Long Ya creates the 'ee' sound. قِيلَ is a passive verb — 'it was said' — note the Kasrah before the long Ya." }
+      ],
+      vocabulary: [
+        { arabic: "المَدّ", translation: "lengthening / extension of a vowel", transliteration: "al-madd" },
+        { arabic: "الجَذْر", translation: "the root (of a word)", transliteration: "al-jadhr" },
+        { arabic: "الحَرَكَة الطَّوِيلَة", translation: "long vowel", transliteration: "al-haraka at-taweela" },
+        { arabic: "الشَّدَّة", translation: "shaddah (doubling sign)", transliteration: "ash-shaddah" }
+      ],
+      grammar: "The three long vowels (Alif/Waw/Ya) correspond to three short vowels (Fatha/Damma/Kasra) but hold for 2 counts instead of 1. Shaddah (ّ) doubles the consonant — both counts must be pronounced.",
+      exercises: [
+        "Read each word with long vowels twice: qaala, kaana, nuurun, kabiirun",
+        "Identify which long vowel (Alif/Waw/Ya) appears in each word: مَدِينَة، رَسُول، قُرْآن، كِتَاب",
+        "Write 5 Arabic words containing the long vowel Waw",
+        "Clap once for short vowels, twice for long vowels while reading a practice text"
+      ],
+      culturalNote: "Correct pronunciation of long vowels is a condition (shart) for correct Quran recitation. In Tajweed, the science of Madd (lengthening) has its own detailed rules — this lesson builds the foundation for Madd study.",
+      nextLesson: 2
+    },
+    {
+      bookId: "hingaad-advanced-fluency", lessonNum: 2,
+      title: "Shaddah, Sukun & Reading Speed", titleArabic: "الشَّدَّة والسُّكُون وسُرْعَة القِرَاءَة",
+      description: "Master Shaddah (consonant doubling) and Sukun (no vowel), and develop the reading fluency needed for unvocalised Arabic texts.",
+      pages: [
+        { id: 1, arabic: "الشَّدَّة: مَدَّ — سَبَّحَ — عَلَّمَ", translation: "He extended — he glorified — he taught", transliteration: "Madda — sabbaha — 'allama", notes: "Shaddah (ّ) = two letters merged into one. مَدَّ = Meem + Daal + Daal. Hold the doubled consonant for 2 counts." },
+        { id: 2, arabic: "السُّكُون: بَيْتٌ — عِلْمٌ — قَلْبٌ", translation: "A house — knowledge — a heart", transliteration: "Baytun — 'ilmun — qalbun", notes: "Sukun (ْ) means the letter has NO vowel. It creates a cluster: بَيْت = Ba + sukoon-Ya + Ta. Say the Y briefly without a vowel." },
+        { id: 3, arabic: "قِرَاءَةُ النَّصِّ غَيْرِ المُشَكَّلِ", translation: "Reading unvocalised text", transliteration: "Qiraa'atu n-nassi ghayri l-mushakkali", notes: "Mature Arabic reading requires knowing vowels from context. بيت = bayt (house) or bayyit (make someone stay). Context decides." },
+        { id: 4, arabic: "كُلُّ نَفْسٍ ذَائِقَةُ المَوْتِ", translation: "Every soul shall taste death", transliteration: "Kullu nafsin dhaa'iqatu l-mawt", notes: "A Quranic verse (3:185). Notice: ذَائِقَة has a long alif after the dhaal, and كُلُّ has Shaddah on the Lam." }
+      ],
+      vocabulary: [
+        { arabic: "غَيْرُ مُشَكَّل", translation: "unvocalised (no diacritics)", transliteration: "ghayru mushakkal" },
+        { arabic: "السِّيَاق", translation: "context", transliteration: "as-siyaaq" },
+        { arabic: "الطَّلَاقَة", translation: "fluency", transliteration: "at-talaaqah" },
+        { arabic: "النَّصّ", translation: "text / passage", transliteration: "an-nass" }
+      ],
+      grammar: "Two key signs: (1) Shaddah (ّ) — doubles the consonant, hold 2 counts. (2) Sukun (ْ) — no vowel on this letter, creates consonant clusters. Together they account for most advanced reading challenges in Arabic.",
+      exercises: [
+        "Read aloud: بَيْتٌ، عِلْمٌ، حُبٌّ، صَبْرٌ، رَبِّ",
+        "Spot all Shaddahs in: الرَّحِيمِ، النَّاسِ، اللَّهُ",
+        "Try reading this without vowels: كتب الطلاب دروسهم في الفصل",
+        "Time yourself reading a paragraph — aim for 60 words per minute"
+      ],
+      culturalNote: "Most published Arabic books, newspapers, and websites are written without vowel marks (unvocalised). Achieving fluency with unvocalised text is the final milestone of Arabic reading mastery.",
+      nextLesson: 3
     }
   ]
 };
