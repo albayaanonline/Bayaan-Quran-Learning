@@ -14,11 +14,31 @@ function requireAuth(req: any, res: any, next: any) {
   next();
 }
 
+function buildTrialDates() {
+  const now = new Date();
+  const end = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000); // 2 days
+  return { trialStartDate: now, trialEndDate: end, trialStatus: "active" };
+}
+
 async function getOrCreateProfile(userId: string) {
   let rows = await db.select().from(profilesTable).where(eq(profilesTable.clerkId, userId)).limit(1);
   if (rows.length === 0) {
-    const inserted = await db.insert(profilesTable).values({ clerkId: userId, displayName: "Student" }).returning();
+    const trial = buildTrialDates();
+    const inserted = await db.insert(profilesTable).values({
+      clerkId: userId,
+      displayName: "Student",
+      ...trial,
+    }).returning();
     rows = inserted;
+  } else if (!rows[0].trialStartDate) {
+    // Existing profile without trial — backfill
+    const trial = buildTrialDates();
+    const updated = await db
+      .update(profilesTable)
+      .set(trial)
+      .where(eq(profilesTable.clerkId, userId))
+      .returning();
+    rows = updated;
   }
   return rows[0];
 }
@@ -42,6 +62,16 @@ function formatProfile(p: any) {
     xp: p.xp,
     streakDays: p.streakDays,
     createdAt: p.createdAt,
+    // Trial fields
+    trialStartDate: p.trialStartDate ?? null,
+    trialEndDate: p.trialEndDate ?? null,
+    trialStatus: p.trialStatus ?? "active",
+    // Subscription fields
+    subscriptionPlan: p.subscriptionPlan ?? null,
+    subscriptionStatus: p.subscriptionStatus ?? null,
+    subscriptionStartDate: p.subscriptionStartDate ?? null,
+    subscriptionEndDate: p.subscriptionEndDate ?? null,
+    subscriptionBilling: p.subscriptionBilling ?? null,
   };
 }
 
@@ -83,6 +113,7 @@ router.post("/profile/onboarding", requireAuth, async (req: any, res) => {
     const existing = await db.select().from(profilesTable).where(eq(profilesTable.clerkId, req.userId)).limit(1);
     let row;
     if (existing.length === 0) {
+      const trial = buildTrialDates();
       const inserted = await db.insert(profilesTable).values({
         clerkId: req.userId,
         displayName: displayName ?? "Student",
@@ -94,9 +125,15 @@ router.post("/profile/onboarding", requireAuth, async (req: any, res) => {
         language: language ?? "en",
         teacherPreference: teacherPreference ?? "any",
         onboardingComplete: true,
+        ...trial,
       }).returning();
       row = inserted[0];
     } else {
+      // Preserve trial dates if they exist
+      const trialUpdates: any = {};
+      if (!existing[0].trialStartDate) {
+        Object.assign(trialUpdates, buildTrialDates());
+      }
       const updated = await db.update(profilesTable).set({
         displayName: displayName ?? existing[0].displayName,
         learningGoals: JSON.stringify(learningGoals ?? []),
@@ -107,6 +144,7 @@ router.post("/profile/onboarding", requireAuth, async (req: any, res) => {
         language: language ?? "en",
         teacherPreference: teacherPreference ?? "any",
         onboardingComplete: true,
+        ...trialUpdates,
       }).where(eq(profilesTable.clerkId, req.userId)).returning();
       row = updated[0];
     }

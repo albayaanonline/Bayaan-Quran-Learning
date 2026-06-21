@@ -35,6 +35,7 @@ import mushafRecitationRouter from "./mushaf-recitation";
 import arabicLessonsRouter from "./arabic-lessons";
 import lessonsRouter from "./lessons";
 import aiChatRouter from "./ai-chat";
+import subscriptionRouter from "./subscription";
 
 const router = Router();
 
@@ -74,5 +75,6 @@ router.use(mushafRecitationRouter);
 router.use(arabicLessonsRouter);
 router.use(lessonsRouter);
 router.use(aiChatRouter);
+router.use(subscriptionRouter);
 
 export default router;

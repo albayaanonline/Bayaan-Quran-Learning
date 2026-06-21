@@ -19,6 +19,23 @@ export const profilesTable = pgTable("profiles", {
   xp: integer("xp").notNull().default(0),
   streakDays: integer("streak_days").notNull().default(0),
   lastStudyDate: text("last_study_date"),
+
+  // ── Trial system ───────────────────────────────────────────────────────────
+  trialStartDate: timestamp("trial_start_date", { withTimezone: true }),
+  trialEndDate: timestamp("trial_end_date", { withTimezone: true }),
+  trialStatus: text("trial_status").notNull().default("active"),
+  // trialStatus: 'active' | 'expired' | 'converted'
+
+  // ── Subscription ───────────────────────────────────────────────────────────
+  subscriptionPlan: text("subscription_plan"),
+  // subscriptionPlan: null | 'starter' | 'standard' | 'premium'
+  subscriptionStatus: text("subscription_status"),
+  // subscriptionStatus: null | 'active' | 'cancelled' | 'expired'
+  subscriptionStartDate: timestamp("subscription_start_date", { withTimezone: true }),
+  subscriptionEndDate: timestamp("subscription_end_date", { withTimezone: true }),
+  subscriptionBilling: text("subscription_billing"),
+  // subscriptionBilling: null | 'monthly' | 'annual'
+
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });

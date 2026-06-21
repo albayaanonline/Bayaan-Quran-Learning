@@ -9,6 +9,7 @@ import { useI18n } from "@/lib/i18n";
 import { Link } from "wouter";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import TrialCountdown from "@/components/TrialCountdown";
 
 const MOTIVATIONAL_HADITHS = [
   { text: "Whoever recites a letter from Allah's Book, then he receives the reward from it, and the reward of ten the like of it.", source: "Tirmidhi 2910" },
@@ -102,6 +103,15 @@ export default function Dashboard() {
             </Badge>
           </motion.div>
         </div>
+
+        {/* Trial / Subscription Status */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.08 }}
+        >
+          <TrialCountdown />
+        </motion.div>
 
         {/* Daily Goal + Streak */}
         <div className="grid gap-4 md:grid-cols-3">

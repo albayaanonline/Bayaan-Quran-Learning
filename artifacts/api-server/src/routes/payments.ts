@@ -4,6 +4,31 @@ import { eq, desc } from "drizzle-orm";
 import { logger } from "../lib/logger";
 import { requireAuth } from "../middlewares/auth";
 
+// Activate subscription on profile after payment approval
+async function activateSubscription(userId: string, planId: string, billing: string) {
+  try {
+    const now = new Date();
+    const isAnnual = billing === "annual";
+    const endDate = new Date(now);
+    if (isAnnual) {
+      endDate.setFullYear(endDate.getFullYear() + 1);
+    } else {
+      endDate.setMonth(endDate.getMonth() + 1);
+    }
+    await db.update(profilesTable).set({
+      subscriptionPlan: planId,
+      subscriptionStatus: "active",
+      subscriptionStartDate: now,
+      subscriptionEndDate: endDate,
+      subscriptionBilling: billing,
+      trialStatus: "converted",
+    }).where(eq(profilesTable.clerkId, userId));
+    logger.info({ userId, planId, billing }, "Subscription activated");
+  } catch (err) {
+    logger.error({ err, userId, planId }, "Failed to activate subscription");
+  }
+}
+
 const router = Router();
 
 const ADMIN_IDS = (process.env.ADMIN_USER_IDS || "").split(",").map(s => s.trim()).filter(Boolean);
@@ -403,6 +428,11 @@ router.post("/payments/submit-proof", requireAuth, async (req: any, res) => {
       ...(finalStatus === "approved" ? { approvedBy: "AI-OCR", approvedAt: new Date() } : {}),
     }).returning();
 
+    // Auto-activate subscription if payment was auto-approved
+    if (finalStatus === "approved") {
+      await activateSubscription(req.userId, planId, billing);
+    }
+
     logger.info({ userId: req.userId, planId, method, reference, status: finalStatus, recommendation: report.recommendation }, "Payment proof submitted");
 
     res.status(201).json({
@@ -486,6 +516,8 @@ router.patch("/admin/payments/:id/approve", requireAuth, requireAdmin, async (re
       .returning();
     if (!updated) { res.status(404).json({ error: "Record not found" }); return; }
     logger.info({ id, adminId: req.userId }, "Payment approved by admin");
+    // Activate the user's subscription
+    await activateSubscription(updated.userId, updated.planId, updated.billing);
     res.json({ success: true, record: updated });
   } catch (err) {
     logger.error({ err }, "Failed to approve payment");

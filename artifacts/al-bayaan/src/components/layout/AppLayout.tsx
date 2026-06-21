@@ -17,6 +17,7 @@ import NotificationBell from "@/components/NotificationBell";
 import { useI18n, type Locale } from "@/lib/i18n";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import TrialCountdown from "@/components/TrialCountdown";
 
 function useDarkMode() {
   const [dark, setDark] = useState(() => {
@@ -225,6 +226,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <p className="text-sm font-semibold truncate">{profile?.displayName ?? "Student"}</p>
             <p className="text-[11px] text-muted-foreground">{xp.toLocaleString()} XP total</p>
           </div>
+        </div>
+
+        {/* Trial / Subscription compact status */}
+        <div className="px-0.5">
+          <TrialCountdown compact />
         </div>
 
         <Button

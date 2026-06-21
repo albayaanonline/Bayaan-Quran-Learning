@@ -9,6 +9,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { I18nProvider } from "@/lib/i18n";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import { InstallBanner } from "@/components/InstallPrompt";
+import SubscriptionGate from "@/components/SubscriptionGate";
 
 import Landing from "./pages/landing";
 import Dashboard from "./pages/dashboard";
@@ -159,6 +160,25 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
   );
 }
 
+// PremiumRoute — requires both auth AND active trial/subscription
+function PremiumRoute({ component: Component, feature }: { component: React.ComponentType; feature?: string }) {
+  return (
+    <>
+      <ClerkLoading>
+        <div className="flex min-h-[100dvh] items-center justify-center bg-slate-50">
+          <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+        </div>
+      </ClerkLoading>
+      <Show when="signed-in">
+        <SubscriptionGate feature={feature}>
+          <Component />
+        </SubscriptionGate>
+      </Show>
+      <Show when="signed-out"><Redirect to="/sign-in" /></Show>
+    </>
+  );
+}
+
 function ClerkQueryClientCacheInvalidator() {
   const { addListener } = useClerk();
   const qc = useQueryClient();
@@ -219,35 +239,36 @@ function ClerkProviderWithRoutes() {
           <Route path="/sign-up/*?" component={() => <AuthPage type="sign-up" />} />
           <Route path="/onboarding" component={() => <ProtectedRoute component={Onboarding} />} />
           <Route path="/dashboard" component={() => <ProtectedRoute component={Dashboard} />} />
-          <Route path="/learn" component={() => <ProtectedRoute component={Learn} />} />
-          <Route path="/learn/:surahId" component={() => <ProtectedRoute component={SurahDetail} />} />
-          <Route path="/library" component={() => <ProtectedRoute component={Library} />} />
+          {/* Premium routes — require active trial OR subscription */}
+          <Route path="/learn" component={() => <PremiumRoute component={Learn} feature="learn" />} />
+          <Route path="/learn/:surahId" component={() => <PremiumRoute component={SurahDetail} feature="learn" />} />
+          <Route path="/library" component={() => <PremiumRoute component={Library} feature="library" />} />
           <Route path="/progress" component={() => <ProtectedRoute component={Progress} />} />
           <Route path="/bookmarks" component={() => <ProtectedRoute component={Bookmarks} />} />
           <Route path="/achievements" component={() => <ProtectedRoute component={Achievements} />} />
           <Route path="/leaderboard" component={() => <ProtectedRoute component={Leaderboard} />} />
-          <Route path="/teacher" component={() => <ProtectedRoute component={Teacher} />} />
-          <Route path="/hifdh" component={() => <ProtectedRoute component={Hifdh} />} />
-          <Route path="/tajweed-teacher" component={() => <ProtectedRoute component={TajweedTeacher} />} />
-          <Route path="/study-planner" component={() => <ProtectedRoute component={StudyPlanner} />} />
-          <Route path="/voice-teacher" component={() => <ProtectedRoute component={VoiceTeacher} />} />
-          <Route path="/exams" component={() => <ProtectedRoute component={Exams} />} />
-          <Route path="/certificates" component={() => <ProtectedRoute component={Certificates} />} />
-          <Route path="/analytics" component={() => <ProtectedRoute component={Analytics} />} />
+          <Route path="/teacher" component={() => <PremiumRoute component={Teacher} feature="teacher" />} />
+          <Route path="/hifdh" component={() => <PremiumRoute component={Hifdh} feature="hifdh" />} />
+          <Route path="/tajweed-teacher" component={() => <PremiumRoute component={TajweedTeacher} feature="tajweed-teacher" />} />
+          <Route path="/study-planner" component={() => <PremiumRoute component={StudyPlanner} feature="study-planner" />} />
+          <Route path="/voice-teacher" component={() => <PremiumRoute component={VoiceTeacher} feature="voice-teacher" />} />
+          <Route path="/exams" component={() => <PremiumRoute component={Exams} feature="exams" />} />
+          <Route path="/certificates" component={() => <PremiumRoute component={Certificates} feature="certificates" />} />
+          <Route path="/analytics" component={() => <PremiumRoute component={Analytics} feature="analytics" />} />
           <Route path="/cms" component={() => <ProtectedRoute component={CMS} />} />
           <Route path="/parent" component={() => <ProtectedRoute component={ParentDashboard} />} />
           <Route path="/admin" component={() => <ProtectedRoute component={Admin} />} />
           <Route path="/teacher-dashboard" component={() => <ProtectedRoute component={TeacherDashboard} />} />
           <Route path="/exam-builder" component={() => <ProtectedRoute component={ExamBuilder} />} />
-          <Route path="/video-teacher" component={() => <ProtectedRoute component={VideoTeacher} />} />
-          <Route path="/content-generator" component={() => <ProtectedRoute component={ContentGenerator} />} />
+          <Route path="/video-teacher" component={() => <PremiumRoute component={VideoTeacher} feature="video-teacher" />} />
+          <Route path="/content-generator" component={() => <PremiumRoute component={ContentGenerator} feature="content-generator" />} />
           <Route path="/messages" component={() => <ProtectedRoute component={Messages} />} />
           <Route path="/payments" component={() => <ProtectedRoute component={Payments} />} />
-          <Route path="/live-classroom" component={() => <ProtectedRoute component={LiveClassroom} />} />
-          <Route path="/mushaf" component={() => <ProtectedRoute component={Mushaf} />} />
-          <Route path="/muraajacah" component={() => <ProtectedRoute component={Muraajacah} />} />
-          <Route path="/library/:bookId" component={() => <ProtectedRoute component={BookCourse} />} />
-          <Route path="/library/:bookId/lesson/:lessonNum" component={() => <ProtectedRoute component={BookLesson} />} />
+          <Route path="/live-classroom" component={() => <PremiumRoute component={LiveClassroom} feature="live-classroom" />} />
+          <Route path="/mushaf" component={() => <PremiumRoute component={Mushaf} feature="mushaf" />} />
+          <Route path="/muraajacah" component={() => <PremiumRoute component={Muraajacah} feature="muraajacah" />} />
+          <Route path="/library/:bookId" component={() => <PremiumRoute component={BookCourse} feature="library" />} />
+          <Route path="/library/:bookId/lesson/:lessonNum" component={() => <PremiumRoute component={BookLesson} feature="library" />} />
           {/* Public pages */}
           <Route path="/pricing" component={Pricing} />
           <Route path="/about" component={Marketing} />
@@ -256,7 +277,7 @@ function ClerkProviderWithRoutes() {
           <Route path="/faq" component={FAQ} />
           <Route path="/contact" component={Contact} />
           <Route path="/help" component={Help} />
-          <Route path="/ai-assistant" component={() => <ProtectedRoute component={AIAssistant} />} />
+          <Route path="/ai-assistant" component={() => <PremiumRoute component={AIAssistant} feature="ai-assistant" />} />
           <Route component={NotFound} />
         </Switch>
       </QueryClientProvider>
