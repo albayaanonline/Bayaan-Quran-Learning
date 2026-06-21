@@ -2,5 +2,11 @@
   "buildCommand": "cd ../.. && pnpm --filter @workspace/al-bayaan run build",
   "outputDirectory": "dist/public",
   "installCommand": "cd ../.. && pnpm install",
-  "framework": null
+  "framework": null,
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://cadb33fb-b58f-4cec-8f02-9487c6d03663-00-cdt0iu5aw8qn.riker.replit.dev/api/:path*"
+    }
+  ]
 }
