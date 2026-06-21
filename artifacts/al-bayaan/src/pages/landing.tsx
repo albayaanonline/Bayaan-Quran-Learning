@@ -2,6 +2,7 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { motion, useScroll, useTransform, useInView } from "framer-motion";
 import { useRef } from "react";
+import AILearningAssistant from "@/components/AILearningAssistant";
 import {
   BookOpen, Mic, Trophy, ArrowRight, Star, Users, Zap, Brain,
   ShieldCheck, Globe, Play, ChevronDown,
@@ -502,6 +503,9 @@ export default function Landing() {
           </div>
         </div>
       </footer>
+
+      {/* AI Learning Assistant floating button — homepage only */}
+      <AILearningAssistant />
     </div>
   );
 }
