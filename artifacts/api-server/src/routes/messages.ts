@@ -38,7 +38,10 @@ router.get("/messages", requireAuth, async (req: any, res) => {
 
 router.post("/messages", requireAuth, async (req: any, res) => {
   try {
-    const { receiverId, subject, body, messageType = "student" } = req.body;
+    const {
+      receiverId, subject, body, messageType = "student",
+      attachmentUrl, attachmentName, attachmentType,
+    } = req.body;
     if (!receiverId || !body?.trim() || !subject?.trim()) {
       res.status(400).json({ error: "receiverId, subject and body are required" });
       return;
@@ -50,6 +53,9 @@ router.post("/messages", requireAuth, async (req: any, res) => {
       subject: subject.trim(),
       body: body.trim(),
       messageType,
+      attachmentUrl: attachmentUrl || null,
+      attachmentName: attachmentName || null,
+      attachmentType: attachmentType || null,
     }).returning();
     res.status(201).json(msg);
   } catch (err) {
@@ -73,7 +79,7 @@ router.patch("/messages/:id/read", requireAuth, async (req: any, res) => {
 
 router.post("/messages/broadcast", requireAuth, async (req: any, res) => {
   try {
-    const { subject, body, messageType = "announcement" } = req.body;
+    const { subject, body, messageType = "announcement", attachmentUrl, attachmentName, attachmentType } = req.body;
     if (!body?.trim() || !subject?.trim()) {
       res.status(400).json({ error: "subject and body are required" });
       return;
@@ -85,6 +91,9 @@ router.post("/messages/broadcast", requireAuth, async (req: any, res) => {
       subject: subject.trim(),
       body: body.trim(),
       messageType,
+      attachmentUrl: attachmentUrl || null,
+      attachmentName: attachmentName || null,
+      attachmentType: attachmentType || null,
     }).returning();
     res.status(201).json(msg);
   } catch (err) {

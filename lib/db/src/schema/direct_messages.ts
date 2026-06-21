@@ -12,6 +12,9 @@ export const directMessagesTable = pgTable("direct_messages", {
   isRead: boolean("is_read").notNull().default(false),
   messageType: text("message_type").notNull().default("student"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  attachmentUrl: text("attachment_url"),
+  attachmentName: text("attachment_name"),
+  attachmentType: text("attachment_type"),
 });
 
 export const insertDirectMessageSchema = createInsertSchema(directMessagesTable).omit({ id: true, createdAt: true });

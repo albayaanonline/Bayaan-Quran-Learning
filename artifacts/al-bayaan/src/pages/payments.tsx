@@ -1,17 +1,166 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import AppLayout from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CheckCircle2, CreditCard, Smartphone, Star, Zap, Crown, BookOpen, Loader2, History, Clock } from "lucide-react";
-import { motion } from "framer-motion";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  CheckCircle2, CreditCard, Star, Crown, BookOpen, Loader2, History,
+  Clock, Upload, FileImage, ChevronRight, Shield, AlertCircle,
+  CheckCheck, X, ArrowLeft, MessageSquare, ExternalLink, Zap,
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
-import { useI18n } from "@/lib/i18n";
+import { formatDistanceToNow } from "date-fns";
+
+const BASE = (import.meta.env.BASE_URL || "").replace(/\/$/, "");
+
+const WA_NUMBER = "252656042512";
+const WA_URL = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent("Assalamu Alaikum! I need help with Sahal/M-Pesa payment for Al Bayaan AI Academy.")}`;
+
+interface Plan {
+  id: string;
+  name: string;
+  price: { monthly: number; annual: number };
+  icon: React.ReactNode;
+  color: string;
+  ring: string;
+  popular?: boolean;
+  features: string[];
+  badge?: string;
+}
+
+const PLANS: Plan[] = [
+  {
+    id: "starter",
+    name: "Starter",
+    price: { monthly: 5, annual: 50 },
+    icon: <BookOpen className="h-5 w-5" />,
+    color: "from-slate-600 to-slate-800",
+    ring: "ring-slate-300",
+    features: [
+      "Full Quran access (114 Surahs)",
+      "Basic Tajweed feedback",
+      "AI Teacher (20 messages/day)",
+      "Progress tracking",
+      "Community leaderboard",
+    ],
+  },
+  {
+    id: "standard",
+    name: "Standard",
+    price: { monthly: 10, annual: 100 },
+    icon: <Star className="h-5 w-5" />,
+    color: "from-blue-700 to-blue-900",
+    ring: "ring-blue-400",
+    popular: true,
+    badge: "Most Popular",
+    features: [
+      "Everything in Starter",
+      "Unlimited AI Teacher",
+      "Voice Teacher access",
+      "Hifdh tracking",
+      "Advanced Tajweed analytics",
+      "Download certificates",
+      "Priority support",
+    ],
+  },
+  {
+    id: "premium",
+    name: "Premium",
+    price: { monthly: 15, annual: 150 },
+    icon: <Crown className="h-5 w-5" />,
+    color: "from-amber-600 to-amber-800",
+    ring: "ring-amber-400",
+    badge: "Best Value",
+    features: [
+      "Everything in Standard",
+      "Video Teacher access",
+      "Live Classroom access",
+      "Parent dashboard (5 members)",
+      "AI Content Generator",
+      "Custom study plans",
+      "Teacher messaging",
+      "Dedicated support",
+    ],
+  },
+];
+
+interface PaymentMethod {
+  id: string;
+  name: string;
+  logo: string;
+  number?: string;
+  country: string;
+  desc: string;
+  contact?: boolean;
+}
+
+const PAYMENT_METHODS: PaymentMethod[] = [
+  {
+    id: "zaad",
+    name: "Zaad",
+    logo: "/logos/zaad.png",
+    number: "+252 63 6042512",
+    country: "🇸🇴 Somalia (Telesom)",
+    desc: "Zaad Mobile Money",
+  },
+  {
+    id: "edahab",
+    name: "eDahab",
+    logo: "/logos/edahab.png",
+    number: "+252 65 6042512",
+    country: "🇸🇴 Somalia (Dahabshiil)",
+    desc: "eDahab Digital Wallet",
+  },
+  {
+    id: "evc",
+    name: "EVC Plus",
+    logo: "/logos/evc-plus.png",
+    number: "+252 612035767",
+    country: "🇸🇴 Somalia (Hormuud)",
+    desc: "EVC Plus Mobile Payment",
+  },
+  {
+    id: "epirr",
+    name: "E-Pirr",
+    logo: "/logos/ethio-telecom.jpeg",
+    number: "+251 0979695586",
+    country: "🇪🇹 Ethiopia (Ethio Telecom)",
+    desc: "E-Pirr Ethiopia",
+  },
+  {
+    id: "sahal",
+    name: "Sahal",
+    logo: "/logos/golis.png",
+    country: "🇸🇴 Somalia (Golis)",
+    desc: "Contact admin via WhatsApp",
+    contact: true,
+  },
+  {
+    id: "mpesa",
+    name: "M-Pesa",
+    logo: "/logos/mastercard.jpeg",
+    country: "🇰🇪 Kenya (Safaricom)",
+    desc: "Contact admin via WhatsApp",
+    contact: true,
+  },
+];
+
+const STEPS = [
+  { n: 1, title: "Choose your plan", desc: "Select Starter, Standard, or Premium" },
+  { n: 2, title: "Send payment", desc: "Transfer to the number shown below" },
+  { n: 3, title: "Take a screenshot", desc: "Capture your payment confirmation" },
+  { n: 4, title: "Upload screenshot", desc: "Submit your proof here" },
+  { n: 5, title: "Wait for review", desc: "Admin verifies your payment" },
+  { n: 6, title: "Access activated", desc: "Your course access is unlocked" },
+];
 
 interface PaymentRecord {
   id: number;
-  planId: string;
   planName: string;
   billing: string;
   method: string;
@@ -20,381 +169,706 @@ interface PaymentRecord {
   reference: string;
   status: string;
   createdAt: string;
+  adminNotes?: string;
+  courseName?: string;
+  proofAnalysis?: any;
 }
 
+const STATUS_MAP: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
+  pending:        { label: "Pending",        color: "bg-amber-100 text-amber-700",   icon: <Clock className="h-3 w-3" /> },
+  pending_review: { label: "Under Review",   color: "bg-blue-100 text-blue-700",     icon: <Shield className="h-3 w-3" /> },
+  approved:       { label: "Approved ✓",     color: "bg-emerald-100 text-emerald-700", icon: <CheckCheck className="h-3 w-3" /> },
+  completed:      { label: "Completed ✓",    color: "bg-emerald-100 text-emerald-700", icon: <CheckCheck className="h-3 w-3" /> },
+  rejected:       { label: "Rejected",       color: "bg-red-100 text-red-700",       icon: <X className="h-3 w-3" /> },
+};
+
+const METHOD_LABELS: Record<string, string> = {
+  zaad: "Zaad", edahab: "eDahab", evc: "EVC Plus",
+  epirr: "E-Pirr", sahal: "Sahal", mpesa: "M-Pesa",
+  stripe: "Card (Stripe)", paypal: "PayPal",
+};
+
 function PaymentHistory() {
-  const { t } = useI18n();
   const [records, setRecords] = useState<PaymentRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const basePath = (import.meta.env.BASE_URL || "").replace(/\/$/, "");
-    fetch(`${basePath}/api/payments/history`, { credentials: "include" })
+    fetch(`${BASE}/api/payments/history`, { credentials: "include" })
       .then(r => r.ok ? r.json() : [])
       .then(data => setRecords(Array.isArray(data) ? data : []))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="space-y-2">{[0,1,2].map(i => <Skeleton key={i} className="h-16" />)}</div>;
-
+  if (loading) return <div className="space-y-2">{[0,1,2].map(i => <Skeleton key={i} className="h-20 rounded-xl" />)}</div>;
   if (records.length === 0) {
     return (
-      <Card className="border-dashed">
-        <CardContent className="p-10 text-center">
-          <History className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-          <p className="font-medium">{t("pay.noHistory")}</p>
-          <p className="text-sm text-muted-foreground mt-1">{t("pay.noHistorySub")}</p>
+      <Card className="border-dashed border-blue-200">
+        <CardContent className="p-12 text-center">
+          <History className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3" />
+          <p className="font-medium text-slate-700">No payment history yet</p>
+          <p className="text-sm text-muted-foreground mt-1">Your submissions will appear here after you pay</p>
         </CardContent>
       </Card>
     );
   }
 
-  const METHOD_LABELS: Record<string, string> = {
-    zaad: "Zaad", evc: "EVC Plus", edahab: "eDahab",
-    stripe: "Card (Stripe)", paypal: "PayPal",
-  };
-  const STATUS_COLORS: Record<string, string> = {
-    pending: "bg-amber-100 text-amber-700",
-    completed: "bg-blue-100 text-blue-800",
-    failed: "bg-red-100 text-red-700",
-  };
-
   return (
     <div className="space-y-3">
-      {records.map(r => (
-        <motion.div key={r.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
-                    <CreditCard className="h-5 w-5 text-blue-700" />
+      {records.map((r, i) => {
+        const s = STATUS_MAP[r.status] ?? STATUS_MAP.pending;
+        return (
+          <motion.div key={r.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
+            <Card className="border-blue-100 hover:border-blue-300 transition-colors">
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start gap-3">
+                    <div className="h-10 w-10 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+                      <CreditCard className="h-5 w-5 text-blue-700" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-sm text-slate-900">{r.planName} Plan <span className="text-muted-foreground font-normal">· {r.billing}</span></p>
+                      <p className="text-xs text-muted-foreground">{METHOD_LABELS[r.method] ?? r.method} · Ref: <span className="font-mono">{r.reference}</span></p>
+                      {r.courseName && <p className="text-xs text-blue-700 mt-0.5">{r.courseName}</p>}
+                      {r.adminNotes && r.status === "rejected" && (
+                        <p className="text-xs text-red-600 mt-1 flex items-center gap-1"><AlertCircle className="h-3 w-3" /> {r.adminNotes}</p>
+                      )}
+                      {r.adminNotes && r.status === "approved" && (
+                        <p className="text-xs text-emerald-600 mt-1 flex items-center gap-1"><CheckCheck className="h-3 w-3" /> {r.adminNotes}</p>
+                      )}
+                      <p className="text-[10px] text-muted-foreground mt-0.5 flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        {r.createdAt ? formatDistanceToNow(new Date(r.createdAt), { addSuffix: true }) : ""}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium text-sm">{r.planName} {t("pay.plan")} <span className="text-muted-foreground font-normal">· {r.billing}</span></p>
-                    <p className="text-xs text-muted-foreground">{METHOD_LABELS[r.method] ?? r.method} · Ref: <span className="font-mono">{r.reference}</span></p>
-                    <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-                      <Clock className="h-3 w-3" />
-                      {new Date(r.createdAt).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
-                    </p>
+                  <div className="text-right shrink-0">
+                    <p className="font-bold text-sm text-slate-900">${r.amount} <span className="text-muted-foreground font-normal text-xs">{r.currency}</span></p>
+                    <Badge className={`text-[10px] mt-1 border-0 flex items-center gap-1 ${s.color}`}>
+                      {s.icon} {s.label}
+                    </Badge>
                   </div>
                 </div>
-                <div className="text-right shrink-0">
-                  <p className="font-semibold text-sm">${r.amount} <span className="text-muted-foreground font-normal text-xs">{r.currency}</span></p>
-                  <Badge className={`text-xs mt-1 border-0 ${STATUS_COLORS[r.status] ?? "bg-gray-100 text-gray-600"}`}>{r.status}</Badge>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      ))}
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
+      })}
     </div>
   );
 }
 
-interface Plan {
-  id: string;
-  nameKey: string;
-  nameAr: string;
-  nameSo: string;
-  price: { monthly: number; annual: number };
-  currency: string;
-  featuresKeys: string[];
-  icon: React.ReactNode;
-  color: string;
-  popular?: boolean;
-}
-
-const PLANS: Plan[] = [
-  {
-    id: "free",
-    nameKey: "Free",
-    nameAr: "مجاني",
-    nameSo: "Bilaash",
-    price: { monthly: 0, annual: 0 },
-    currency: "USD",
-    icon: <BookOpen className="h-5 w-5" />,
-    color: "gray",
-    featuresKeys: [
-      "Helitaanka tilmaamida Quraanka / Access to Quran recitation",
-      "Jawaab-celin Tajwiid aasaasiga / Basic Tajweed feedback",
-      "5 farriimo AI macalinka/maalin / 5 AI Teacher messages/day",
-      "La socod horumarkaaga / Progress tracking",
-      "Liiska tartanka / Community leaderboard",
-    ],
-  },
-  {
-    id: "student",
-    nameKey: "Student",
-    nameAr: "طالب",
-    nameSo: "Arday",
-    price: { monthly: 9.99, annual: 7.99 },
-    currency: "USD",
-    icon: <Star className="h-5 w-5" />,
-    color: "emerald",
-    popular: true,
-    featuresKeys: [
-      "Wax kasta oo Bilaash / Everything in Free",
-      "AI Macalinka aan xaddidnayn / Unlimited AI Teacher",
-      "Macalinka Codka / Voice Teacher access",
-      "Macalinka Muuqaalka / Video Teacher access",
-      "La socod Xafidka / Hifdh tracking",
-      "Falanqaynta Tajwiid / Tajweed analytics",
-      "Soo deji shahaadooyinka / Download certificates",
-      "Taageerada mudnaanta / Priority support",
-    ],
-  },
-  {
-    id: "family",
-    nameKey: "Family",
-    nameAr: "عائلي",
-    nameSo: "Qoyska",
-    price: { monthly: 19.99, annual: 15.99 },
-    currency: "USD",
-    icon: <Zap className="h-5 w-5" />,
-    color: "blue",
-    featuresKeys: [
-      "Wax kasta oo Arday / Everything in Student",
-      "Ilaa 5 xubnood qoyska / Up to 5 family members",
-      "Guddiga waalidka / Parent dashboard",
-      "Wax soo saarka machadka AI / AI Content Generator",
-      "Falanqayn horumarsan / Advanced analytics",
-      "Xiriirka macalinka-waalidka / Teacher-parent messaging",
-      "Qorshayaasha barashada gaarka ah / Custom study plans",
-    ],
-  },
-  {
-    id: "institute",
-    nameKey: "Institute",
-    nameAr: "مؤسسة",
-    nameSo: "Machadka",
-    price: { monthly: 99, annual: 79 },
-    currency: "USD",
-    icon: <Crown className="h-5 w-5" />,
-    color: "purple",
-    featuresKeys: [
-      "Wax kasta oo Qoyska / Everything in Family",
-      "Ardayda aan xaddidnayn / Unlimited students",
-      "Guddiga macalinka / Teacher dashboard",
-      "Dhisaha imtixaanka / Exam builder",
-      "Astaan gaarka ah / Custom branding",
-      "Shahaadooyinka badan / Bulk certificates",
-      "Gelitaanka API / API access",
-      "Taageero go'an / Dedicated support",
-    ],
-  },
-];
-
-const PAYMENT_METHODS = [
-  { id: "zaad", name: "Zaad", country: "🇸🇴 Soomaaliya", logo: "📱", desc: "Lacagta mobilka Hormuud Telesom" },
-  { id: "evc", name: "EVC Plus", country: "🇸🇴 Soomaaliya", logo: "📲", desc: "Lacag bixinta mobilka Hormuud EVC" },
-  { id: "edahab", name: "eDahab", country: "🇸🇴 Soomaaliya", logo: "💳", desc: "Xafiilad dhijitaalka Dahabshiil" },
-  { id: "stripe", name: "Card (Stripe)", country: "🌍 Caalamiga", logo: "💳", desc: "Visa, Mastercard, AMEX" },
-  { id: "paypal", name: "PayPal", country: "🌍 Caalamiga", logo: "🔵", desc: "Xisaabta PayPal ama kaarka" },
-];
-
-function PlanCard({ plan, billing, onSelect, locale }: { plan: Plan; billing: "monthly" | "annual"; onSelect: () => void; locale: string }) {
-  const { t } = useI18n();
-  const price = billing === "annual" ? plan.price.annual : plan.price.monthly;
-  const colorMap: Record<string, { card: string; badge: string; btn: string }> = {
-    gray: { card: "border-gray-200", badge: "bg-gray-100 text-gray-700", btn: "bg-gray-800 hover:bg-gray-900 text-white" },
-    emerald: { card: "border-blue-200 ring-2 ring-blue-500", badge: "bg-blue-100 text-blue-800", btn: "bg-blue-700 hover:bg-blue-700 text-white" },
-    blue: { card: "border-blue-200", badge: "bg-blue-100 text-blue-700", btn: "bg-blue-600 hover:bg-blue-700 text-white" },
-    purple: { card: "border-purple-200", badge: "bg-purple-100 text-purple-700", btn: "bg-purple-600 hover:bg-purple-700 text-white" },
-  };
-  const c = colorMap[plan.color];
-  const displayName = locale === "so" ? plan.nameSo : locale === "ar" ? plan.nameAr : plan.nameKey;
-
-  return (
-    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-      <Card className={`relative h-full flex flex-col ${c.card}`}>
-        {plan.popular && (
-          <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-            <Badge className="bg-blue-700 text-white border-0 px-3 py-1">{t("pay.mostPopular")}</Badge>
-          </div>
-        )}
-        <CardHeader className="pb-4">
-          <div className={`h-10 w-10 rounded-xl ${c.badge} flex items-center justify-center mb-3`}>
-            {plan.icon}
-          </div>
-          <CardTitle className="text-lg">{displayName}</CardTitle>
-          <CardDescription className="text-sm">{plan.nameAr}</CardDescription>
-          <div className="mt-2">
-            {price === 0 ? (
-              <span className="text-3xl font-bold">{t("pay.free")}</span>
-            ) : (
-              <div className="flex items-end gap-1">
-                <span className="text-3xl font-bold">${price}</span>
-                <span className="text-sm text-muted-foreground mb-1">{t("pay.perMonth")}</span>
-              </div>
-            )}
-            {billing === "annual" && price > 0 && (
-              <p className="text-xs text-blue-700 mt-1">{t("pay.save20Annual")}</p>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent className="flex-1 flex flex-col">
-          <ul className="space-y-2 flex-1 mb-4">
-            {plan.featuresKeys.map(f => (
-              <li key={f} className="flex items-start gap-2 text-sm">
-                <CheckCircle2 className="h-4 w-4 text-blue-600 shrink-0 mt-0.5" />
-                <span className="text-muted-foreground">{f}</span>
-              </li>
-            ))}
-          </ul>
-          <Button onClick={onSelect} className={`w-full ${c.btn}`} disabled={plan.id === "free"}>
-            {plan.id === "free" ? t("pay.currentPlan") : `${t("pay.getPlan")} ${displayName}`}
-          </Button>
-        </CardContent>
-      </Card>
-    </motion.div>
-  );
-}
+type Step = "plans" | "method" | "instructions" | "upload" | "done";
 
 export default function Payments() {
-  const { t, locale } = useI18n();
   const { toast } = useToast();
   const [billing, setBilling] = useState<"monthly" | "annual">("monthly");
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
-  const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
+  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
+  const [step, setStep] = useState<Step>("plans");
   const [processing, setProcessing] = useState(false);
+  const [activeTab, setActiveTab] = useState<"pay" | "history">("pay");
 
-  const handleSelectPlan = (plan: Plan) => {
-    if (plan.id === "free") return;
-    setSelectedPlan(plan);
-  };
+  const [studentName, setStudentName] = useState("");
+  const [studentEmail, setStudentEmail] = useState("");
+  const [courseName, setCourseName] = useState("");
+  const [transactionNumber, setTransactionNumber] = useState("");
+  const [paymentDate, setPaymentDate] = useState("");
+  const [senderNumber, setSenderNumber] = useState("");
+  const [proofImage, setProofImage] = useState<string | null>(null);
+  const [proofFileName, setProofFileName] = useState<string>("");
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [aiReport, setAiReport] = useState<any>(null);
+  const [submittedRef, setSubmittedRef] = useState("");
 
-  const handlePayment = async () => {
-    if (!selectedPlan || !selectedMethod) {
-      toast({ title: t("pay.selectMethod"), description: t("pay.selectMethodSub"), variant: "destructive" });
+  const handleFileSelect = useCallback((file: File) => {
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Images only", description: "Please upload an image file (PNG, JPG, etc.)", variant: "destructive" });
       return;
     }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "File too large", description: "Max 5MB allowed", variant: "destructive" });
+      return;
+    }
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setProofImage(reader.result as string);
+      setProofFileName(file.name);
+    };
+    reader.readAsDataURL(file);
+  }, [toast]);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (file) handleFileSelect(file);
+  }, [handleFileSelect]);
+
+  const submitProof = async () => {
+    if (!selectedPlan || !selectedMethod) return;
+    if (!proofImage) {
+      toast({ title: "Screenshot required", description: "Please upload your payment screenshot", variant: "destructive" });
+      return;
+    }
+    if (!transactionNumber.trim()) {
+      toast({ title: "Transaction number required", description: "Please enter the transaction/reference number from your payment", variant: "destructive" });
+      return;
+    }
+
     setProcessing(true);
     try {
-      const basePath = (import.meta.env.BASE_URL || "").replace(/\/$/, "");
-      const r = await fetch(`${basePath}/api/payments/initiate`, {
+      const r = await fetch(`${BASE}/api/payments/submit-proof`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ planId: selectedPlan.id, billing, method: selectedMethod }),
+        body: JSON.stringify({
+          planId: selectedPlan.id,
+          billing,
+          method: selectedMethod.id,
+          amount: billing === "annual" ? selectedPlan.price.annual : selectedPlan.price.monthly,
+          transactionNumber,
+          paymentDate,
+          senderNumber,
+          proofImage,
+          studentName,
+          studentEmail,
+          courseName,
+        }),
       });
       const data = await r.json();
-      if (data.redirectUrl) {
-        window.location.href = data.redirectUrl;
-      } else {
-        toast({ title: t("pay.initiated"), description: data.instructions || "" });
-      }
-    } catch {
-      toast({ title: t("general.error"), description: t("pay.error"), variant: "destructive" });
+      if (!r.ok) throw new Error(data.error || "Failed to submit");
+      setAiReport(data.aiReport);
+      setSubmittedRef(data.reference);
+      setStep("done");
+    } catch (err: any) {
+      toast({ title: "Submission failed", description: err.message, variant: "destructive" });
     } finally {
       setProcessing(false);
     }
   };
 
-  const selectedMethodName = PAYMENT_METHODS.find(m => m.id === selectedMethod)?.name || "";
+  const planPrice = selectedPlan ? (billing === "annual" ? selectedPlan.price.annual : selectedPlan.price.monthly) : 0;
 
   return (
     <AppLayout>
-      <div className="max-w-6xl mx-auto space-y-8">
-        <div className="text-center space-y-2">
-          <h1 className="text-3xl font-serif font-bold text-slate-900 flex items-center justify-center gap-2">
-            <CreditCard className="h-7 w-7 text-blue-700" />
-            {t("pay.title")}
-          </h1>
-          <p className="text-muted-foreground">{t("pay.subtitle")}</p>
+      <div className="max-w-5xl mx-auto space-y-6">
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-xl bg-blue-100 flex items-center justify-center">
+            <CreditCard className="h-5 w-5 text-blue-700" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-serif font-bold text-slate-900">Payment Center</h1>
+            <p className="text-sm text-muted-foreground">Choose a plan · Pay · Upload proof · Get access</p>
+          </div>
         </div>
 
-        {/* Billing toggle */}
-        <div className="flex items-center justify-center gap-3">
-          <span className={`text-sm ${billing === "monthly" ? "text-foreground font-medium" : "text-muted-foreground"}`}>{t("pay.monthly")}</span>
-          <button
-            onClick={() => setBilling(b => b === "monthly" ? "annual" : "monthly")}
-            className={`relative w-12 h-6 rounded-full transition-colors ${billing === "annual" ? "bg-blue-700" : "bg-gray-300"}`}
-          >
-            <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${billing === "annual" ? "left-6" : "left-0.5"}`} />
-          </button>
-          <span className={`text-sm ${billing === "annual" ? "text-foreground font-medium" : "text-muted-foreground"}`}>
-            {t("pay.annual")} <Badge className="bg-blue-100 text-blue-800 border-0 ml-1">{t("pay.save20")}</Badge>
-          </span>
-        </div>
-
-        {/* Plans grid */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {PLANS.map(plan => (
-            <PlanCard key={plan.id} plan={plan} billing={billing} onSelect={() => handleSelectPlan(plan)} locale={locale} />
+        {/* Tabs */}
+        <div className="flex gap-1 border-b border-blue-100">
+          {(["pay", "history"] as const).map(t => (
+            <button key={t} onClick={() => setActiveTab(t)}
+              className={`px-5 py-2.5 text-sm font-medium border-b-2 transition-colors capitalize ${
+                activeTab === t ? "border-blue-700 text-blue-700" : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}>
+              {t === "pay" ? "Make a Payment" : "Payment History"}
+            </button>
           ))}
         </div>
 
-        {/* Payment method selection */}
-        {selectedPlan && (
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-            <Card className="border-blue-200">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Smartphone className="h-5 w-5 text-blue-700" />
-                  {t("pay.payFor")} {locale === "so" ? selectedPlan.nameSo : locale === "ar" ? selectedPlan.nameAr : selectedPlan.nameKey} {t("pay.plan")} — ${billing === "annual" ? selectedPlan.price.annual : selectedPlan.price.monthly}{t("pay.perMonth")}
-                </CardTitle>
-                <CardDescription>{t("pay.chooseMethod")}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {PAYMENT_METHODS.map(method => (
-                    <button key={method.id} onClick={() => setSelectedMethod(method.id)}
-                      className={`flex items-start gap-3 p-3 rounded-xl border-2 transition-all text-left ${
-                        selectedMethod === method.id ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-blue-300"
-                      }`}>
-                      <span className="text-2xl">{method.logo}</span>
-                      <div>
-                        <p className="font-semibold text-sm">{method.name}</p>
-                        <p className="text-xs text-muted-foreground">{method.country}</p>
-                        <p className="text-xs text-muted-foreground">{method.desc}</p>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-
-                <div className="flex gap-3">
-                  <Button variant="outline" onClick={() => setSelectedPlan(null)}>{t("general.back")}</Button>
-                  <Button onClick={handlePayment} disabled={processing || !selectedMethod}
-                    className="bg-blue-700 hover:bg-blue-700 text-white flex-1">
-                    {processing
-                      ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />{t("pay.processing")}</>
-                      : `${t("pay.payWith")} ${selectedMethodName}`}
-                  </Button>
-                </div>
-
-                <p className="text-xs text-muted-foreground text-center">{t("pay.secure")}</p>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
-
-        {/* Accepted payment methods */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">{t("pay.acceptedMethods")}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 text-center">
-              {PAYMENT_METHODS.map(m => (
-                <div key={m.id} className="flex flex-col items-center gap-1">
-                  <span className="text-2xl">{m.logo}</span>
-                  <span className="text-xs font-medium">{m.name}</span>
-                  <span className="text-[10px] text-muted-foreground">{m.country}</span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Payment History */}
-        <div>
-          <h2 className="text-lg font-semibold text-slate-900 flex items-center gap-2 mb-4">
-            <History className="h-5 w-5 text-blue-700" /> {t("pay.history")}
-          </h2>
+        {activeTab === "history" ? (
           <PaymentHistory />
-        </div>
+        ) : (
+          <div className="space-y-8">
+
+            {/* Step indicator */}
+            <div className="hidden md:grid grid-cols-6 gap-2">
+              {STEPS.map((s, i) => {
+                const stepOrder: Step[] = ["plans", "method", "instructions", "upload", "upload", "done"];
+                const done = (
+                  (step === "method" && i < 1) ||
+                  (step === "instructions" && i < 2) ||
+                  (step === "upload" && i < 3) ||
+                  (step === "done" && i < 6)
+                );
+                const active = stepOrder[i] === step;
+                return (
+                  <div key={s.n} className={`flex flex-col items-center text-center gap-1 ${done ? "opacity-60" : active ? "" : "opacity-30"}`}>
+                    <div className={`h-8 w-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${
+                      done ? "bg-emerald-500 text-white" : active ? "bg-blue-700 text-white" : "bg-blue-100 text-blue-700"
+                    }`}>
+                      {done ? <CheckCircle2 className="h-4 w-4" /> : s.n}
+                    </div>
+                    <p className="text-[10px] font-semibold text-slate-700">{s.title}</p>
+                    <p className="text-[9px] text-muted-foreground">{s.desc}</p>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* STEP: Plan selection */}
+            <AnimatePresence mode="wait">
+              {step === "plans" && (
+                <motion.div key="plans" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} className="space-y-6">
+                  {/* Billing toggle */}
+                  <div className="flex items-center justify-center gap-3">
+                    <span className={`text-sm font-medium ${billing === "monthly" ? "text-slate-900" : "text-muted-foreground"}`}>Monthly</span>
+                    <button onClick={() => setBilling(b => b === "monthly" ? "annual" : "monthly")}
+                      className={`relative w-12 h-6 rounded-full transition-colors ${billing === "annual" ? "bg-blue-700" : "bg-gray-300"}`}>
+                      <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${billing === "annual" ? "left-6" : "left-0.5"}`} />
+                    </button>
+                    <span className={`text-sm font-medium flex items-center gap-2 ${billing === "annual" ? "text-slate-900" : "text-muted-foreground"}`}>
+                      Annual <Badge className="bg-emerald-100 text-emerald-700 border-0">Save ~17%</Badge>
+                    </span>
+                  </div>
+
+                  <div className="grid md:grid-cols-3 gap-4">
+                    {PLANS.map((plan, i) => {
+                      const price = billing === "annual" ? plan.price.annual : plan.price.monthly;
+                      return (
+                        <motion.div key={plan.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}>
+                          <Card className={`relative h-full flex flex-col cursor-pointer hover:shadow-lg transition-all border-2 ${
+                            plan.popular ? `ring-2 ${plan.ring} border-blue-200` : "border-blue-100"
+                          }`}
+                            onClick={() => { setSelectedPlan(plan); setStep("method"); }}>
+                            {plan.badge && (
+                              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                                <Badge className={`border-0 px-3 py-1 text-white bg-gradient-to-r ${plan.color}`}>{plan.badge}</Badge>
+                              </div>
+                            )}
+                            <CardHeader className="pb-3 pt-6">
+                              <div className={`h-11 w-11 rounded-xl bg-gradient-to-br ${plan.color} text-white flex items-center justify-center mb-3`}>
+                                {plan.icon}
+                              </div>
+                              <CardTitle className="text-lg">{plan.name}</CardTitle>
+                              <div className="mt-2">
+                                <div className="flex items-end gap-1">
+                                  <span className="text-3xl font-bold text-slate-900">${price}</span>
+                                  <span className="text-sm text-muted-foreground mb-1">/{billing === "annual" ? "year" : "month"}</span>
+                                </div>
+                                {billing === "annual" && (
+                                  <p className="text-xs text-emerald-600 mt-0.5">${plan.price.monthly}/mo if monthly</p>
+                                )}
+                              </div>
+                            </CardHeader>
+                            <CardContent className="flex-1 flex flex-col">
+                              <ul className="space-y-2 flex-1 mb-4">
+                                {plan.features.map(f => (
+                                  <li key={f} className="flex items-start gap-2 text-sm">
+                                    <CheckCircle2 className="h-4 w-4 text-blue-600 shrink-0 mt-0.5" />
+                                    <span className="text-muted-foreground">{f}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                              <Button className={`w-full bg-gradient-to-r ${plan.color} text-white border-0 hover:opacity-90`}>
+                                Choose {plan.name} <ChevronRight className="h-4 w-4 ml-1" />
+                              </Button>
+                            </CardContent>
+                          </Card>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              )}
+
+              {/* STEP: Payment method */}
+              {step === "method" && selectedPlan && (
+                <motion.div key="method" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} className="space-y-5">
+                  <div className="flex items-center gap-3">
+                    <Button variant="ghost" size="sm" onClick={() => setStep("plans")} className="gap-1">
+                      <ArrowLeft className="h-4 w-4" /> Back
+                    </Button>
+                    <div>
+                      <p className="font-semibold text-slate-900">
+                        {selectedPlan.name} Plan — ${planPrice}/{billing === "annual" ? "year" : "month"}
+                      </p>
+                      <p className="text-sm text-muted-foreground">Choose your payment method</p>
+                    </div>
+                  </div>
+
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {PAYMENT_METHODS.map(method => (
+                      <motion.button key={method.id} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                        onClick={() => { setSelectedMethod(method); setStep("instructions"); }}
+                        className="flex items-center gap-4 p-4 rounded-2xl border-2 border-blue-100 hover:border-blue-400 hover:bg-blue-50/50 transition-all text-left group">
+                        <div className="h-14 w-20 rounded-xl bg-white border border-blue-100 flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
+                          <img src={method.logo} alt={method.name} className="h-12 w-full object-contain p-1" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-semibold text-slate-900">{method.name}</p>
+                          <p className="text-xs text-muted-foreground">{method.country}</p>
+                          {method.contact ? (
+                            <p className="text-xs text-amber-600 mt-0.5">WhatsApp required</p>
+                          ) : (
+                            <p className="text-xs text-blue-700 font-mono mt-0.5">{method.number}</p>
+                          )}
+                        </div>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-blue-700 ml-auto shrink-0 transition-colors" />
+                      </motion.button>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+
+              {/* STEP: Instructions */}
+              {step === "instructions" && selectedPlan && selectedMethod && (
+                <motion.div key="instructions" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} className="space-y-5">
+                  <div className="flex items-center gap-3">
+                    <Button variant="ghost" size="sm" onClick={() => setStep("method")} className="gap-1">
+                      <ArrowLeft className="h-4 w-4" /> Back
+                    </Button>
+                    <div>
+                      <p className="font-semibold text-slate-900">Pay via {selectedMethod.name}</p>
+                      <p className="text-sm text-muted-foreground">{selectedMethod.country}</p>
+                    </div>
+                  </div>
+
+                  {selectedMethod.contact ? (
+                    /* WhatsApp contact flow for Sahal/M-Pesa */
+                    <Card className="border-amber-200 bg-amber-50/50">
+                      <CardContent className="p-6 space-y-5">
+                        <div className="flex items-start gap-4">
+                          <div className="h-14 w-20 rounded-xl bg-white border border-amber-200 flex items-center justify-center overflow-hidden shrink-0">
+                            <img src={selectedMethod.logo} alt={selectedMethod.name} className="h-12 w-full object-contain p-1" />
+                          </div>
+                          <div>
+                            <h3 className="font-bold text-lg text-slate-900">{selectedMethod.name} Payment</h3>
+                            <p className="text-sm text-slate-600 mt-1">
+                              For {selectedMethod.name} payments, please contact administration through WhatsApp before sending payment.
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="bg-white rounded-xl p-4 border border-amber-200 space-y-2">
+                          <p className="text-sm font-semibold text-slate-700">Your selected plan:</p>
+                          <p className="text-blue-700 font-bold">{selectedPlan.name} Plan — ${planPrice}/{billing === "annual" ? "year" : "month"}</p>
+                        </div>
+
+                        <a href={WA_URL} target="_blank" rel="noopener noreferrer">
+                          <Button className="w-full bg-[#25D366] hover:bg-[#1da855] text-white gap-2">
+                            <MessageSquare className="h-5 w-5" />
+                            Contact Admin on WhatsApp
+                            <ExternalLink className="h-4 w-4" />
+                          </Button>
+                        </a>
+
+                        <p className="text-xs text-center text-muted-foreground">
+                          After confirming with admin, upload your payment proof below
+                        </p>
+
+                        <Button variant="outline" className="w-full" onClick={() => setStep("upload")}>
+                          I've paid — Upload Proof <ChevronRight className="h-4 w-4 ml-1" />
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    /* Direct payment flow */
+                    <div className="space-y-4">
+                      <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-white">
+                        <CardContent className="p-6">
+                          <div className="flex items-start gap-5">
+                            <div className="h-16 w-24 rounded-xl bg-white border border-blue-200 flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
+                              <img src={selectedMethod.logo} alt={selectedMethod.name} className="h-14 w-full object-contain p-1" />
+                            </div>
+                            <div className="space-y-3 flex-1">
+                              <div>
+                                <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Send To</p>
+                                <p className="text-2xl font-bold text-slate-900 font-mono">{selectedMethod.number}</p>
+                                <p className="text-sm text-blue-700">{selectedMethod.name} · {selectedMethod.country}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Amount</p>
+                                <p className="text-2xl font-bold text-emerald-700">${planPrice} USD</p>
+                                <p className="text-xs text-muted-foreground">{selectedPlan.name} Plan · {billing === "annual" ? "Annual" : "Monthly"}</p>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <Card className="border-blue-100">
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-sm">Payment Instructions</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                          {[
+                            `Open your ${selectedMethod.name} app or dial the USSD code`,
+                            `Send $${planPrice} USD to ${selectedMethod.number}`,
+                            "Add a note with your name and 'Al Bayaan Academy'",
+                            "Take a screenshot of the confirmation",
+                            "Click the button below to upload your proof",
+                          ].map((instruction, i) => (
+                            <div key={i} className="flex items-start gap-3">
+                              <div className="h-6 w-6 rounded-full bg-blue-700 text-white flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">
+                                {i + 1}
+                              </div>
+                              <p className="text-sm text-slate-700">{instruction}</p>
+                            </div>
+                          ))}
+                        </CardContent>
+                      </Card>
+
+                      <Button className="w-full bg-blue-700 hover:bg-blue-800 text-white h-12 gap-2 text-base" onClick={() => setStep("upload")}>
+                        I've Paid — Upload Screenshot <ChevronRight className="h-5 w-5" />
+                      </Button>
+                    </div>
+                  )}
+                </motion.div>
+              )}
+
+              {/* STEP: Upload proof */}
+              {step === "upload" && selectedPlan && selectedMethod && (
+                <motion.div key="upload" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} className="space-y-5">
+                  <div className="flex items-center gap-3">
+                    <Button variant="ghost" size="sm" onClick={() => setStep("instructions")} className="gap-1">
+                      <ArrowLeft className="h-4 w-4" /> Back
+                    </Button>
+                    <div>
+                      <p className="font-semibold text-slate-900">Upload Payment Proof</p>
+                      <p className="text-sm text-muted-foreground">Fill in the details and attach your screenshot</p>
+                    </div>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-5">
+                    <div className="space-y-4">
+                      <Card className="border-blue-100">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-sm flex items-center gap-2">
+                            <Shield className="h-4 w-4 text-blue-700" /> Payment Details
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                          <div>
+                            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Transaction / Reference Number *</Label>
+                            <Input className="mt-1" placeholder="e.g. TXN123456789" value={transactionNumber} onChange={e => setTransactionNumber(e.target.value)} />
+                          </div>
+                          <div>
+                            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Payment Date *</Label>
+                            <Input type="date" className="mt-1" value={paymentDate} onChange={e => setPaymentDate(e.target.value)} />
+                          </div>
+                          <div>
+                            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Your Phone/Sender Number</Label>
+                            <Input className="mt-1" placeholder="e.g. +252 61 1234567" value={senderNumber} onChange={e => setSenderNumber(e.target.value)} />
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <Card className="border-blue-100">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-sm">Your Details (Optional)</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                          <div>
+                            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Full Name</Label>
+                            <Input className="mt-1" placeholder="Your full name" value={studentName} onChange={e => setStudentName(e.target.value)} />
+                          </div>
+                          <div>
+                            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Email</Label>
+                            <Input type="email" className="mt-1" placeholder="your@email.com" value={studentEmail} onChange={e => setStudentEmail(e.target.value)} />
+                          </div>
+                          <div>
+                            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Course / Note (Optional)</Label>
+                            <Input className="mt-1" placeholder="e.g. Quran + Tajweed, for my child…" value={courseName} onChange={e => setCourseName(e.target.value)} />
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    <div className="space-y-4">
+                      <Card className="border-blue-100">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-sm flex items-center gap-2">
+                            <FileImage className="h-4 w-4 text-blue-700" /> Payment Screenshot *
+                          </CardTitle>
+                          <CardDescription className="text-xs">Upload your payment confirmation screenshot (PNG, JPG — max 5MB)</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <input ref={fileRef} type="file" accept="image/*" className="hidden"
+                            onChange={e => { const f = e.target.files?.[0]; if (f) handleFileSelect(f); }} />
+                          {proofImage ? (
+                            <div className="space-y-3">
+                              <div className="relative rounded-xl overflow-hidden border-2 border-emerald-300 bg-emerald-50">
+                                <img src={proofImage} alt="Payment proof" className="w-full max-h-52 object-contain" />
+                                <button onClick={() => { setProofImage(null); setProofFileName(""); }}
+                                  className="absolute top-2 right-2 h-7 w-7 rounded-full bg-white/90 border shadow flex items-center justify-center hover:bg-red-50">
+                                  <X className="h-3.5 w-3.5 text-red-600" />
+                                </button>
+                              </div>
+                              <div className="flex items-center gap-2 text-emerald-700 text-sm">
+                                <CheckCircle2 className="h-4 w-4" /> {proofFileName}
+                              </div>
+                            </div>
+                          ) : (
+                            <div
+                              onDrop={handleDrop}
+                              onDragOver={e => e.preventDefault()}
+                              onClick={() => fileRef.current?.click()}
+                              className="border-2 border-dashed border-blue-200 rounded-xl p-8 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 transition-all group">
+                              <Upload className="h-10 w-10 text-blue-300 mx-auto mb-3 group-hover:text-blue-500 transition-colors" />
+                              <p className="font-medium text-slate-700">Click or drag to upload</p>
+                              <p className="text-xs text-muted-foreground mt-1">PNG, JPG, JPEG up to 5MB</p>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+
+                      <Card className="border-blue-100 bg-blue-50/50">
+                        <CardContent className="p-4">
+                          <div className="flex items-start gap-3">
+                            <Zap className="h-5 w-5 text-blue-700 shrink-0 mt-0.5" />
+                            <div className="text-sm">
+                              <p className="font-semibold text-slate-900">AI Payment Assistant</p>
+                              <p className="text-muted-foreground text-xs mt-0.5">
+                                Our AI will analyze your payment details and generate a verification report for the admin to review. Only the admin can approve access.
+                              </p>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800 flex items-start gap-2">
+                        <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                        <p>Course access is only activated after <strong>admin approval</strong>. AI analysis assists but never grants access automatically.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Button
+                    onClick={submitProof}
+                    disabled={processing || !proofImage || !transactionNumber.trim()}
+                    className="w-full bg-blue-700 hover:bg-blue-800 text-white h-12 gap-2 text-base"
+                  >
+                    {processing ? (
+                      <><Loader2 className="h-5 w-5 animate-spin" /> Submitting & Analyzing…</>
+                    ) : (
+                      <><Upload className="h-5 w-5" /> Submit Payment Proof</>
+                    )}
+                  </Button>
+                </motion.div>
+              )}
+
+              {/* STEP: Done */}
+              {step === "done" && aiReport && (
+                <motion.div key="done" initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} className="space-y-6">
+                  <div className="text-center py-4">
+                    <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", delay: 0.2 }}
+                      className="h-20 w-20 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
+                      <CheckCheck className="h-10 w-10 text-emerald-600" />
+                    </motion.div>
+                    <h2 className="text-2xl font-bold text-slate-900">Proof Submitted!</h2>
+                    <p className="text-muted-foreground mt-2">Your payment is now <strong>pending admin review</strong></p>
+                    <p className="text-sm text-blue-700 mt-1 font-mono">Reference: {submittedRef}</p>
+                  </div>
+
+                  <Card className="border-blue-200">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <Zap className="h-5 w-5 text-blue-700" /> AI Payment Analysis Report
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-2 gap-3">
+                        {[
+                          { label: "Amount Detected", value: aiReport.amountDetected },
+                          { label: "Transaction Number", value: aiReport.transactionNumber },
+                          { label: "Payment Date", value: aiReport.paymentDate },
+                          { label: "Sender Number", value: aiReport.senderNumber },
+                          { label: "Payment Method", value: aiReport.paymentMethod },
+                          { label: "Plan Requested", value: aiReport.planRequested },
+                        ].map(({ label, value }) => (
+                          <div key={label} className="bg-slate-50 rounded-lg p-3">
+                            <p className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">{label}</p>
+                            <p className="text-sm font-medium text-slate-900 mt-0.5 break-words">{value}</p>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-semibold">Confidence Score</span>
+                          <span className={`text-sm font-bold ${aiReport.confidenceScore >= 65 ? "text-emerald-600" : aiReport.confidenceScore >= 40 ? "text-amber-600" : "text-red-600"}`}>
+                            {aiReport.confidenceScore}%
+                          </span>
+                        </div>
+                        <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                          <div className={`h-full rounded-full transition-all duration-1000 ${aiReport.confidenceScore >= 65 ? "bg-emerald-500" : aiReport.confidenceScore >= 40 ? "bg-amber-500" : "bg-red-500"}`}
+                            style={{ width: `${aiReport.confidenceScore}%` }} />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        {aiReport.checks?.map((c: string, i: number) => (
+                          <p key={i} className="text-xs flex items-center gap-2">
+                            <span>{c.startsWith("✅") ? "✅" : "⚠️"}</span>
+                            <span className={c.startsWith("✅") ? "text-slate-700" : "text-amber-700"}>{c.slice(2)}</span>
+                          </p>
+                        ))}
+                      </div>
+
+                      <div className={`rounded-xl p-4 ${
+                        aiReport.recommendation === "APPROVE" ? "bg-emerald-50 border border-emerald-200" :
+                        aiReport.recommendation === "REVIEW_REQUIRED" ? "bg-amber-50 border border-amber-200" :
+                        "bg-red-50 border border-red-200"
+                      }`}>
+                        <p className={`text-sm font-semibold ${
+                          aiReport.recommendation === "APPROVE" ? "text-emerald-800" :
+                          aiReport.recommendation === "REVIEW_REQUIRED" ? "text-amber-800" : "text-red-800"
+                        }`}>
+                          AI Recommendation: {aiReport.recommendation.replace(/_/g, " ")}
+                        </p>
+                        <p className={`text-xs mt-1 ${
+                          aiReport.recommendation === "APPROVE" ? "text-emerald-700" :
+                          aiReport.recommendation === "REVIEW_REQUIRED" ? "text-amber-700" : "text-red-700"
+                        }`}>{aiReport.aiNote}</p>
+                      </div>
+
+                      <div className="bg-blue-50 rounded-xl p-4 border border-blue-200 text-sm text-blue-800 flex items-start gap-2">
+                        <Shield className="h-4 w-4 shrink-0 mt-0.5" />
+                        <p>This is an AI analysis report. <strong>Course access will only be activated after admin approval.</strong></p>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <div className="flex gap-3">
+                    <Button variant="outline" className="flex-1" onClick={() => setActiveTab("history")}>
+                      <History className="h-4 w-4 mr-2" /> View History
+                    </Button>
+                    <Button className="flex-1 bg-blue-700 hover:bg-blue-800 text-white" onClick={() => {
+                      setStep("plans"); setSelectedPlan(null); setSelectedMethod(null);
+                      setProofImage(null); setProofFileName(""); setTransactionNumber("");
+                      setPaymentDate(""); setSenderNumber(""); setStudentName("");
+                      setStudentEmail(""); setCourseName(""); setAiReport(null);
+                    }}>
+                      Make Another Payment
+                    </Button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Accepted Payment Methods display */}
+            {step === "plans" && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
+                <Card className="border-blue-100">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-semibold text-slate-700">Accepted Payment Methods</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-3 sm:grid-cols-6 gap-4">
+                      {PAYMENT_METHODS.map(m => (
+                        <div key={m.id} className="flex flex-col items-center gap-2">
+                          <div className="h-12 w-16 rounded-lg border border-blue-100 bg-white flex items-center justify-center overflow-hidden shadow-sm">
+                            <img src={m.logo} alt={m.name} className="h-10 w-full object-contain p-1" />
+                          </div>
+                          <span className="text-[10px] font-medium text-center leading-tight">{m.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+          </div>
+        )}
       </div>
     </AppLayout>
   );

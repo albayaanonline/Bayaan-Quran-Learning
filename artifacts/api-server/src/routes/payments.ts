@@ -1,71 +1,94 @@
 import { Router } from "express";
-import { db, paymentRecordsTable } from "@workspace/db";
+import { db, paymentRecordsTable, profilesTable } from "@workspace/db";
 import { eq, desc } from "drizzle-orm";
 import { logger } from "../lib/logger";
 import { requireAuth } from "../middlewares/auth";
 
 const router = Router();
 
+const ADMIN_IDS = (process.env.ADMIN_USER_IDS || "").split(",").map(s => s.trim()).filter(Boolean);
+function requireAdmin(req: any, res: any, next: any) {
+  if (ADMIN_IDS.length > 0 && !ADMIN_IDS.includes(req.userId)) {
+    res.status(403).json({ error: "Forbidden: admin access required" });
+    return;
+  }
+  next();
+}
+
 const PLAN_PRICES: Record<string, { monthly: number; annual: number; name: string }> = {
-  student:   { monthly: 9.99,  annual: 7.99,  name: "Student" },
-  family:    { monthly: 19.99, annual: 15.99, name: "Family" },
-  institute: { monthly: 99,    annual: 79,    name: "Institute" },
+  starter:  { monthly: 5,   annual: 50,  name: "Starter" },
+  standard: { monthly: 10,  annual: 100, name: "Standard" },
+  premium:  { monthly: 15,  annual: 150, name: "Premium" },
+  student:  { monthly: 9.99,  annual: 7.99,  name: "Student" },
+  family:   { monthly: 19.99, annual: 15.99, name: "Family" },
+  institute:{ monthly: 99,    annual: 79,    name: "Institute" },
 };
 
-// ── Stripe real checkout session ─────────────────────────────────────────────
-async function createStripeCheckoutSession(params: {
-  planId: string;
+const PAYMENT_NUMBERS: Record<string, string> = {
+  zaad:   "+252 63 6042512",
+  edahab: "+252 65 6042512",
+  evc:    "+252 612035767",
+  epirr:  "+251 0979695586",
+};
+
+function generateAIReport(data: {
+  amount: string;
+  transactionNumber: string;
+  paymentDate: string;
+  senderNumber: string;
+  method: string;
   planName: string;
-  amount: number;
   billing: string;
-  userId: string;
   reference: string;
-}): Promise<{ url: string } | null> {
-  const stripeKey = process.env.STRIPE_SECRET_KEY;
-  if (!stripeKey) return null;
+}) {
+  const amountNum = parseFloat(data.amount) || 0;
+  const hasTransNum = data.transactionNumber && data.transactionNumber.length >= 4;
+  const hasDate = data.paymentDate && data.paymentDate.length > 0;
+  const hasPhone = data.senderNumber && data.senderNumber.length >= 6;
 
-  try {
-    const appUrl = process.env.APP_URL ?? "https://albayaan.replit.app";
-    const unitAmount = Math.round(params.amount * 100);
-    const interval = params.billing === "annual" ? "year" : "month";
+  let confidence = 0;
+  const checks: string[] = [];
 
-    const body = new URLSearchParams({
-      "mode": "subscription",
-      "payment_method_types[0]": "card",
-      "line_items[0][price_data][currency]": "usd",
-      "line_items[0][price_data][unit_amount]": String(unitAmount),
-      "line_items[0][price_data][product_data][name]": `Al Bayaan ${params.planName} Plan`,
-      "line_items[0][price_data][product_data][description]": `${params.billing === "annual" ? "Annual" : "Monthly"} subscription to Al Bayaan AI Academy`,
-      "line_items[0][price_data][recurring][interval]": interval,
-      "line_items[0][quantity]": "1",
-      "success_url": `${appUrl}/payments?status=success&ref=${params.reference}`,
-      "cancel_url": `${appUrl}/payments?status=cancelled`,
-      "metadata[userId]": params.userId,
-      "metadata[planId]": params.planId,
-      "metadata[reference]": params.reference,
-    });
+  if (amountNum > 0) { confidence += 35; checks.push("✅ Amount detected and validated"); }
+  else { checks.push("⚠️ Amount could not be confirmed"); }
 
-    const resp = await fetch("https://api.stripe.com/v1/checkout/sessions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${stripeKey}`,
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: body.toString(),
-    });
+  if (hasTransNum) { confidence += 30; checks.push("✅ Transaction reference number provided"); }
+  else { checks.push("⚠️ Transaction reference not provided"); }
 
-    if (!resp.ok) {
-      const err = await resp.text();
-      logger.error({ err }, "Stripe session creation failed");
-      return null;
-    }
+  if (hasDate) { confidence += 20; checks.push("✅ Payment date recorded"); }
+  else { checks.push("⚠️ Payment date not specified"); }
 
-    const session = await resp.json() as any;
-    return { url: session.url };
-  } catch (err) {
-    logger.error({ err }, "Stripe checkout error");
-    return null;
-  }
+  if (hasPhone) { confidence += 15; checks.push("✅ Sender number verified"); }
+  else { checks.push("⚠️ Sender phone number not provided"); }
+
+  let recommendation = "APPROVE";
+  if (confidence < 50) recommendation = "REVIEW_REQUIRED";
+  if (confidence < 30) recommendation = "NEEDS_MORE_INFO";
+
+  const methodNames: Record<string, string> = {
+    zaad: "Zaad (Telesom)", edahab: "eDahab (Dahabshiil)",
+    evc: "EVC Plus (Hormuud)", epirr: "E-Pirr (Ethio Telecom)",
+    sahal: "Sahal (Golis)", mpesa: "M-Pesa (Safaricom)",
+  };
+
+  return {
+    reportGeneratedAt: new Date().toISOString(),
+    planRequested: `${data.planName} — ${data.billing === "annual" ? "Annual" : "Monthly"}`,
+    paymentMethod: methodNames[data.method] || data.method,
+    amountDetected: amountNum > 0 ? `$${data.amount} USD` : "Not provided",
+    transactionNumber: data.transactionNumber || "Not provided",
+    paymentDate: data.paymentDate || "Not provided",
+    senderNumber: data.senderNumber || "Not provided",
+    internalReference: data.reference,
+    confidenceScore: confidence,
+    checks,
+    recommendation,
+    aiNote: confidence >= 65
+      ? "All key payment details are present. Payment appears complete."
+      : confidence >= 40
+      ? "Some payment details are missing. Admin should verify the proof screenshot."
+      : "Insufficient payment details. Please contact the student for more information.",
+  };
 }
 
 router.post("/payments/initiate", requireAuth, async (req: any, res) => {
@@ -86,88 +109,6 @@ router.post("/payments/initiate", requireAuth, async (req: any, res) => {
   const currency = "USD";
   const reference = `ALB-${req.userId.slice(-6).toUpperCase()}-${Date.now().toString(36).toUpperCase()}`;
 
-  logger.info({ userId: req.userId, planId, billing, method, amount }, "Payment initiated");
-
-  let responseData: any;
-
-  if (method === "zaad") {
-    responseData = {
-      success: true,
-      instructions: `To pay via Zaad:\n1. Open your Zaad app or dial *712#\n2. Choose "Send Money"\n3. Enter merchant number: 615-ALBAYAAN\n4. Amount: $${amount} USD\n5. Reference: ${reference}\n6. Send the confirmation SMS to support@albayaan.com`,
-      reference,
-      amount,
-      currency,
-    };
-  } else if (method === "evc") {
-    responseData = {
-      success: true,
-      instructions: `To pay via EVC Plus:\n1. Dial *799#\n2. Choose "Pay Bill"\n3. Enter Al Bayaan merchant code: 85432\n4. Amount: $${amount}\n5. Your reference: ${reference}\n6. Confirm with your PIN`,
-      reference,
-      amount,
-      currency,
-    };
-  } else if (method === "edahab") {
-    responseData = {
-      success: true,
-      instructions: `To pay via eDahab:\n1. Open eDahab app\n2. Select "Pay to Business"\n3. Business name: Al Bayaan Academy\n4. Account: albayaan@edahab.so\n5. Amount: $${amount}\n6. Note: ${reference} ${plan.name}`,
-      reference,
-      amount,
-      currency,
-    };
-  } else if (method === "stripe") {
-    if (!process.env.STRIPE_SECRET_KEY) {
-      res.json({
-        success: false,
-        method: "stripe",
-        instructions: "Stripe card payments are not yet configured for this deployment. Please use Zaad, EVC Plus, or eDahab, or contact support@albayaan.com to set up card payments.",
-      });
-      return;
-    }
-
-    const session = await createStripeCheckoutSession({
-      planId, planName: plan.name, amount, billing, userId: req.userId, reference,
-    });
-
-    if (!session) {
-      res.json({
-        success: false,
-        method: "stripe",
-        instructions: "Stripe checkout could not be initiated. Please try again or use Zaad/EVC/eDahab.",
-      });
-      return;
-    }
-
-    try {
-      await db.insert(paymentRecordsTable).values({
-        userId: req.userId,
-        planId,
-        planName: plan.name,
-        billing,
-        method,
-        amount: String(amount),
-        currency,
-        reference,
-        status: "pending",
-        metadata: { stripeCheckoutUrl: session.url },
-      });
-    } catch (dbErr) {
-      logger.error({ dbErr }, "Failed to save Stripe payment record");
-    }
-
-    res.json({ success: true, redirectUrl: session.url, reference });
-    return;
-  } else if (method === "paypal") {
-    res.json({
-      success: false,
-      method: "paypal",
-      instructions: "PayPal payments are coming soon. Please use Zaad, EVC Plus, or eDahab for now, or contact support@albayaan.com.",
-    });
-    return;
-  } else {
-    res.status(400).json({ error: "Unknown payment method" });
-    return;
-  }
-
   try {
     await db.insert(paymentRecordsTable).values({
       userId: req.userId,
@@ -179,19 +120,120 @@ router.post("/payments/initiate", requireAuth, async (req: any, res) => {
       currency,
       reference,
       status: "pending",
-      metadata: { instructions: responseData.instructions },
+      metadata: { initiated: true },
     });
   } catch (dbErr) {
-    logger.error({ dbErr }, "Failed to save payment record — returning instructions anyway");
+    logger.error({ dbErr }, "Failed to save payment record");
   }
 
-  res.json(responseData);
+  const paymentNum = PAYMENT_NUMBERS[method];
+  if (paymentNum) {
+    res.json({
+      success: true,
+      reference,
+      amount,
+      currency,
+      paymentNumber: paymentNum,
+      instructions: `Send $${amount} USD to ${paymentNum} via ${method.toUpperCase()}.\nUse reference: ${reference}\nThen upload your payment screenshot below.`,
+    });
+  } else {
+    res.json({
+      success: true,
+      reference,
+      amount,
+      currency,
+      instructions: `Please contact administration via WhatsApp before sending payment.\nYour reference: ${reference}`,
+    });
+  }
+});
+
+router.post("/payments/submit-proof", requireAuth, async (req: any, res) => {
+  try {
+    const {
+      planId, billing = "monthly", method,
+      amount, transactionNumber, paymentDate, senderNumber,
+      proofImage, studentName = "", studentEmail = "", courseName = "",
+    } = req.body;
+
+    if (!planId || !method) {
+      res.status(400).json({ error: "planId and method are required" });
+      return;
+    }
+
+    const plan = PLAN_PRICES[planId];
+    if (!plan) {
+      res.status(404).json({ error: "Plan not found" });
+      return;
+    }
+
+    const finalAmount = amount || (billing === "annual" ? plan.annual : plan.monthly);
+    const reference = `ALB-${req.userId.slice(-6).toUpperCase()}-${Date.now().toString(36).toUpperCase()}`;
+
+    const aiReport = generateAIReport({
+      amount: String(finalAmount),
+      transactionNumber: transactionNumber || "",
+      paymentDate: paymentDate || "",
+      senderNumber: senderNumber || "",
+      method,
+      planName: plan.name,
+      billing,
+      reference,
+    });
+
+    const [record] = await db.insert(paymentRecordsTable).values({
+      userId: req.userId,
+      planId,
+      planName: plan.name,
+      billing,
+      method,
+      amount: String(finalAmount),
+      currency: "USD",
+      reference,
+      status: "pending_review",
+      studentName,
+      studentEmail,
+      courseName,
+      proofImage: proofImage || null,
+      proofAnalysis: aiReport,
+      transactionNumber: transactionNumber || "",
+      paymentDate: paymentDate || "",
+      senderNumber: senderNumber || "",
+      metadata: { submittedAt: new Date().toISOString() },
+    }).returning();
+
+    logger.info({ userId: req.userId, planId, method, reference }, "Payment proof submitted");
+
+    res.status(201).json({
+      success: true,
+      id: record.id,
+      reference,
+      status: "pending_review",
+      aiReport,
+    });
+  } catch (err) {
+    logger.error({ err }, "Failed to submit payment proof");
+    res.status(500).json({ error: "Internal server error" });
+  }
 });
 
 router.get("/payments/history", requireAuth, async (req: any, res) => {
   try {
     const rows = await db
-      .select()
+      .select({
+        id: paymentRecordsTable.id,
+        planId: paymentRecordsTable.planId,
+        planName: paymentRecordsTable.planName,
+        billing: paymentRecordsTable.billing,
+        method: paymentRecordsTable.method,
+        amount: paymentRecordsTable.amount,
+        currency: paymentRecordsTable.currency,
+        reference: paymentRecordsTable.reference,
+        status: paymentRecordsTable.status,
+        createdAt: paymentRecordsTable.createdAt,
+        proofAnalysis: paymentRecordsTable.proofAnalysis,
+        adminNotes: paymentRecordsTable.adminNotes,
+        courseName: paymentRecordsTable.courseName,
+      })
       .from(paymentRecordsTable)
       .where(eq(paymentRecordsTable.userId, req.userId))
       .orderBy(desc(paymentRecordsTable.createdAt))
@@ -199,6 +241,67 @@ router.get("/payments/history", requireAuth, async (req: any, res) => {
     res.json(rows);
   } catch (err) {
     logger.error({ err }, "Failed to get payment history");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.get("/admin/payments", requireAuth, requireAdmin, async (req: any, res) => {
+  try {
+    const { status } = req.query;
+    let rows = await db
+      .select()
+      .from(paymentRecordsTable)
+      .orderBy(desc(paymentRecordsTable.createdAt))
+      .limit(200);
+
+    if (status && status !== "all") {
+      rows = rows.filter(r => r.status === status);
+    }
+
+    res.json(rows);
+  } catch (err) {
+    logger.error({ err }, "Failed to get admin payments");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.patch("/admin/payments/:id/approve", requireAuth, requireAdmin, async (req: any, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const { adminNotes = "" } = req.body;
+    const [updated] = await db
+      .update(paymentRecordsTable)
+      .set({
+        status: "approved",
+        adminNotes,
+        approvedBy: req.userId,
+        approvedAt: new Date(),
+      })
+      .where(eq(paymentRecordsTable.id, id))
+      .returning();
+    if (!updated) { res.status(404).json({ error: "Record not found" }); return; }
+    logger.info({ id, adminId: req.userId }, "Payment approved by admin");
+    res.json({ success: true, record: updated });
+  } catch (err) {
+    logger.error({ err }, "Failed to approve payment");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.patch("/admin/payments/:id/reject", requireAuth, requireAdmin, async (req: any, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const { adminNotes = "" } = req.body;
+    const [updated] = await db
+      .update(paymentRecordsTable)
+      .set({ status: "rejected", adminNotes })
+      .where(eq(paymentRecordsTable.id, id))
+      .returning();
+    if (!updated) { res.status(404).json({ error: "Record not found" }); return; }
+    logger.info({ id, adminId: req.userId }, "Payment rejected by admin");
+    res.json({ success: true, record: updated });
+  } catch (err) {
+    logger.error({ err }, "Failed to reject payment");
     res.status(500).json({ error: "Internal server error" });
   }
 });
@@ -219,25 +322,21 @@ router.patch("/payments/:id/confirm", requireAuth, async (req: any, res) => {
   }
 });
 
-// ── Stripe webhook — marks payment as completed when Stripe confirms ─────────
 router.post("/payments/stripe-webhook", async (req, res) => {
   const stripeKey = process.env.STRIPE_SECRET_KEY;
   if (!stripeKey) { res.status(400).end(); return; }
-
   try {
     const event = req.body;
-
     if (event.type === "checkout.session.completed") {
       const session = event.data?.object;
       const reference = session?.metadata?.reference;
       if (reference) {
         await db.update(paymentRecordsTable)
-          .set({ status: "completed", metadata: { stripeSessionId: session.id } })
+          .set({ status: "approved", metadata: { stripeSessionId: session.id } })
           .where(eq(paymentRecordsTable.reference, reference));
         logger.info({ reference }, "Stripe payment completed via webhook");
       }
     }
-
     res.json({ received: true });
   } catch (err) {
     logger.error({ err }, "Stripe webhook error");
