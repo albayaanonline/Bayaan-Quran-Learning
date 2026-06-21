@@ -31,24 +31,215 @@ const PAYMENT_NUMBERS: Record<string, string> = {
   epirr:  "+251 0979695586",
 };
 
-const OFFICIAL_NUMBERS_DIGITS: Record<string, string> = {
+// ─────────────────────────────────────────────────────────────────────────────
+// STRICT PAYMENT PROOF VALIDATOR
+// OCR library: Tesseract.js (client-side, free/open-source)
+// Validation is multi-stage and binary — no fake confidence points.
+// A random, blank, or unrelated image will always be REJECTED.
+// ─────────────────────────────────────────────────────────────────────────────
+
+const OFFICIAL_RECEIVER_NUMBERS: Record<string, string> = {
   zaad:   "252636042512",
   edahab: "252656042512",
   evc:    "252612035767",
   epirr:  "2510979695586",
 };
 
+// Minimum payment-related keywords that must appear for an image to qualify
+// as a payment screenshot. At least 2 required.
+const PAYMENT_KEYWORDS = [
+  // Provider names
+  "zaad", "edahab", "evc", "epirr", "sahal", "mpesa", "m-pesa",
+  "hormuud", "telesom", "golis", "somtel", "dahabshiil", "ethio telecom",
+  "et-birr", "ethio",
+  // Universal payment action words
+  "received", "transfer", "payment", "transaction", "paid", "confirmed",
+  "success", "receipt", "debit", "credit", "balance", "mobile money",
+  "sent", "amount", "completed", "approved", "processed", "airtime",
+  // Reference terms
+  "txn", "ref#", "trans id", "transaction id", "reference",
+  // Somali payment terms
+  "lacag", "deeq",
+  // Currency indicators
+  "ksh", "birr", "shilling",
+];
+
+const PROVIDER_KEYWORDS: Record<string, string[]> = {
+  zaad:   ["zaad", "telesom"],
+  edahab: ["edahab", "dahabshiil"],
+  evc:    ["evc", "hormuud", "evc plus"],
+  epirr:  ["epirr", "e-pirr", "ethio", "et-birr"],
+  sahal:  ["sahal", "golis"],
+  mpesa:  ["mpesa", "m-pesa", "safaricom"],
+};
+
 function extractDigits(str: string): string {
   return str.replace(/\D/g, "");
 }
 
-function checkNumberInOcr(ocrDigits: string, officialDigits: string): boolean {
-  if (ocrDigits.includes(officialDigits)) return true;
-  const last8 = officialDigits.slice(-8);
-  return ocrDigits.includes(last8);
+interface ValidationResult {
+  finalStatus: "approved" | "rejected" | "review_required";
+  recommendation: "AUTO_VERIFIED" | "REJECTED" | "REVIEW_REQUIRED";
+  rejectionReason: string | null;
+  checks: string[];
+  // Extracted fields
+  detectedProvider: string | null;
+  detectedAmount: string | null;
+  detectedTransactionId: string | null;
+  detectedDate: string | null;
+  detectedSender: string | null;
+  receiverVerified: boolean;
+  amountVerified: boolean;
 }
 
-function generateAIReport(data: {
+function validatePaymentProof(data: {
+  ocrText: string;
+  amount: string;
+  method: string;
+}): ValidationResult {
+  const raw = (data.ocrText || "").trim();
+  const lower = raw.toLowerCase();
+  const digits = extractDigits(raw);
+  const expectedAmount = parseFloat(data.amount) || 0;
+
+  const result: ValidationResult = {
+    finalStatus: "rejected",
+    recommendation: "REJECTED",
+    rejectionReason: null,
+    checks: [],
+    detectedProvider: null,
+    detectedAmount: null,
+    detectedTransactionId: null,
+    detectedDate: null,
+    detectedSender: null,
+    receiverVerified: false,
+    amountVerified: false,
+  };
+
+  // ── STAGE 0: OCR Readability ─────────────────────────────────────────────
+  if (raw.length < 40) {
+    result.finalStatus = "review_required";
+    result.recommendation = "REVIEW_REQUIRED";
+    result.rejectionReason = "Screenshot is unreadable. Please upload a clear, high-quality image of your payment confirmation.";
+    result.checks.push("❌ Image text is unreadable or screenshot is blank/too small");
+    return result;
+  }
+  result.checks.push("✅ Screenshot text extracted successfully via Tesseract OCR");
+
+  // ── STAGE 1: Payment Screenshot Detection ────────────────────────────────
+  // Count matching payment keywords — need at least 2 to qualify as a payment screen.
+  const foundKeywords = PAYMENT_KEYWORDS.filter(kw => lower.includes(kw));
+  if (foundKeywords.length < 2) {
+    result.finalStatus = "rejected";
+    result.recommendation = "REJECTED";
+    result.rejectionReason = "This does not appear to be a mobile money payment screenshot. Upload the actual payment confirmation screen from your mobile money app.";
+    result.checks.push(`❌ Not a payment screenshot — only ${foundKeywords.length} of 2 required payment keywords found`);
+    result.checks.push(`   (Found: ${foundKeywords.length > 0 ? foundKeywords.join(", ") : "none"})`);
+    return result;
+  }
+  result.checks.push(`✅ Payment screenshot confirmed (${foundKeywords.slice(0, 4).join(", ")})`);
+
+  // ── STAGE 2: Provider Detection ──────────────────────────────────────────
+  for (const [pid, keywords] of Object.entries(PROVIDER_KEYWORDS)) {
+    if (keywords.some(kw => lower.includes(kw))) {
+      result.detectedProvider = pid;
+      break;
+    }
+  }
+  if (result.detectedProvider) {
+    result.checks.push(`✅ Provider detected: ${result.detectedProvider.toUpperCase()}`);
+  } else {
+    result.checks.push("⚠️ Provider name not clearly visible in screenshot");
+  }
+
+  // ── STAGE 3: Official Receiver Number Check (CRITICAL — mandatory) ───────
+  // Any of the 4 official Al Bayaan numbers must appear in the screenshot.
+  let receiverFoundFor: string | null = null;
+  for (const [method, officialDigits] of Object.entries(OFFICIAL_RECEIVER_NUMBERS)) {
+    const last8 = officialDigits.slice(-8);
+    if (digits.includes(officialDigits) || digits.includes(last8)) {
+      receiverFoundFor = method;
+      result.receiverVerified = true;
+      break;
+    }
+  }
+
+  if (!result.receiverVerified) {
+    result.finalStatus = "rejected";
+    result.recommendation = "REJECTED";
+    result.rejectionReason = "None of the official Al Bayaan receiver numbers were found in your screenshot. Ensure payment was sent to the correct number before submitting proof.";
+    result.checks.push("❌ Official receiver number not found in screenshot (required: ZAAD 252636042512 / EDAHAB 252656042512 / EVC 252612035767 / EPIRR 2510979695586)");
+    return result;
+  }
+  result.checks.push(`✅ Official receiver number verified — matches ${receiverFoundFor?.toUpperCase()}`);
+
+  // ── STAGE 4: Amount Match Check (CRITICAL — mandatory) ───────────────────
+  // The expected plan amount must appear in the screenshot text.
+  const numTokens = raw.match(/\b(\d{1,6}(?:[.,]\d{1,2})?)\b/g) || [];
+  for (const tok of numTokens) {
+    const val = parseFloat(tok.replace(",", "."));
+    if (val > 0 && Math.abs(val - expectedAmount) <= 0.5) {
+      result.amountVerified = true;
+      result.detectedAmount = tok;
+      break;
+    }
+  }
+
+  if (!result.amountVerified) {
+    result.finalStatus = "rejected";
+    result.recommendation = "REJECTED";
+    result.rejectionReason = `Expected payment amount $${expectedAmount} was not found in the screenshot. The screenshot must show the exact amount paid for this plan.`;
+    result.checks.push(`❌ Expected amount $${expectedAmount} not found in screenshot (found numbers: ${numTokens.slice(0, 5).join(", ") || "none"})`);
+    return result;
+  }
+  result.checks.push(`✅ Payment amount $${result.detectedAmount} confirmed in screenshot`);
+
+  // ── STAGE 5: Transaction Reference (soft — informational only) ───────────
+  const txnPatterns = [
+    /(?:TXN|Ref(?:erence)?|Trans(?:action)?|ID)[:\s#]*([A-Z0-9]{6,20})/i,
+    /\b([A-Z]{2,4}[0-9]{6,})\b/,
+    /\b([0-9]{8,20})\b/,
+  ];
+  for (const pat of txnPatterns) {
+    const m = raw.match(pat);
+    if (m?.[1] && m[1] !== extractDigits(OFFICIAL_RECEIVER_NUMBERS[data.method] || "")) {
+      result.detectedTransactionId = m[1];
+      result.checks.push(`✅ Transaction reference detected: ${m[1]}`);
+      break;
+    }
+  }
+  if (!result.detectedTransactionId) {
+    result.checks.push("⚠️ Transaction reference not clearly visible — admin will confirm from screenshot");
+  }
+
+  // ── STAGE 6: Date Detection (informational) ──────────────────────────────
+  const dateMatch = raw.match(/\b(\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4}|\d{4}[\/\-\.]\d{1,2}[\/\-\.]\d{1,2})\b/);
+  if (dateMatch) {
+    result.detectedDate = dateMatch[0];
+    result.checks.push(`✅ Payment date detected: ${dateMatch[0]}`);
+  } else {
+    result.checks.push("⚠️ Payment date not clearly visible in screenshot");
+  }
+
+  // ── STAGE 7: Sender Number (informational) ───────────────────────────────
+  const phoneMatches = raw.match(/(?:\+?252|0)[1-9]\d{7,9}/g) || [];
+  const officialSet = new Set(Object.values(OFFICIAL_RECEIVER_NUMBERS));
+  const senders = phoneMatches.filter(p => {
+    const d = extractDigits(p);
+    return ![...officialSet].some(o => d.includes(o.slice(-8)));
+  });
+  if (senders.length > 0) {
+    result.detectedSender = senders[0];
+    result.checks.push(`✅ Sender number detected: ${senders[0]}`);
+  }
+
+  // ── ALL CRITICAL CHECKS PASSED ───────────────────────────────────────────
+  result.finalStatus = "approved";
+  result.recommendation = "AUTO_VERIFIED";
+  return result;
+}
+
+function buildReport(data: {
   amount: string;
   transactionNumber: string;
   paymentDate: string;
@@ -59,103 +250,41 @@ function generateAIReport(data: {
   reference: string;
   ocrText?: string;
 }) {
-  const amountNum = parseFloat(data.amount) || 0;
-  const hasTransNum = data.transactionNumber && data.transactionNumber.length >= 4;
-  const hasDate = data.paymentDate && data.paymentDate.length > 0;
-  const hasPhone = data.senderNumber && data.senderNumber.length >= 6;
-  const ocrText = data.ocrText || "";
-  const ocrDigits = extractDigits(ocrText);
-  const hasOcr = ocrText.trim().length > 30;
-
-  let confidence = 0;
-  const checks: string[] = [];
-
-  if (amountNum > 0) { confidence += 20; checks.push("✅ Amount declared and recorded"); }
-  else { checks.push("⚠️ Amount could not be confirmed"); }
-
-  if (hasTransNum) { confidence += 15; checks.push("✅ Transaction reference number provided"); }
-  else { checks.push("⚠️ Transaction reference not provided"); }
-
-  if (hasDate) { confidence += 10; checks.push("✅ Payment date recorded"); }
-  else { checks.push("⚠️ Payment date not specified"); }
-
-  if (hasPhone) { confidence += 5; checks.push("✅ Sender number provided"); }
-  else { checks.push("⚠️ Sender phone number not provided"); }
-
-  let receiverVerified = false;
-  let amountVerifiedOcr = false;
-
-  if (hasOcr) {
-    checks.push("✅ Payment screenshot uploaded and scanned via OCR");
-    confidence += 5;
-
-    const officialNum = OFFICIAL_NUMBERS_DIGITS[data.method];
-    if (officialNum && checkNumberInOcr(ocrDigits, officialNum)) {
-      confidence += 30;
-      receiverVerified = true;
-      checks.push(`✅ Official receiver number verified in screenshot (OCR match)`);
-    } else if (officialNum) {
-      checks.push(`⚠️ Official receiver number not detected in screenshot OCR — admin will verify manually`);
-    }
-
-    const amountPatterns = ocrText.match(/\b(\d{1,6}(?:\.\d{1,2})?)\b/g) || [];
-    for (const tok of amountPatterns) {
-      const found = parseFloat(tok);
-      if (found > 0 && Math.abs(found - amountNum) < 1) {
-        confidence += 15;
-        amountVerifiedOcr = true;
-        checks.push(`✅ Payment amount $${amountNum} confirmed in screenshot via OCR`);
-        break;
-      }
-    }
-    if (!amountVerifiedOcr) {
-      checks.push(`⚠️ Could not confirm exact amount in screenshot — admin will verify`);
-    }
-
-    if (ocrText.length > 200) { confidence += 5; checks.push("✅ Screenshot text clearly readable"); }
-  } else {
-    checks.push("⚠️ No OCR text extracted — screenshot may be unclear or not uploaded");
-  }
-
-  let recommendation = "APPROVE";
-  let finalStatus = "approved";
-  if (confidence < 70) { recommendation = "REVIEW_REQUIRED"; finalStatus = "pending_review"; }
-  if (confidence < 40) { recommendation = "NEEDS_MORE_INFO"; finalStatus = "pending_review"; }
-
-  if (receiverVerified && amountVerifiedOcr && confidence >= 70) {
-    recommendation = "AUTO_VERIFIED";
-    finalStatus = "approved";
-  }
-
   const methodNames: Record<string, string> = {
     zaad: "Zaad (Telesom)", edahab: "eDahab (Dahabshiil)",
     evc: "EVC Plus (Hormuud)", epirr: "E-Pirr (Ethio Telecom)",
     sahal: "Sahal (Golis)", mpesa: "M-Pesa (Safaricom)",
   };
 
+  const v = validatePaymentProof({
+    ocrText: data.ocrText || "",
+    amount: data.amount,
+    method: data.method,
+  });
+
   return {
     reportGeneratedAt: new Date().toISOString(),
+    ocrLibrary: "Tesseract.js (open-source, browser-side)",
     planRequested: `${data.planName} — ${data.billing === "annual" ? "Annual" : "Monthly"}`,
     paymentMethod: methodNames[data.method] || data.method,
-    amountDetected: amountNum > 0 ? `$${data.amount} USD` : "Not provided",
-    transactionNumber: data.transactionNumber || "Not provided",
-    paymentDate: data.paymentDate || "Not provided",
-    senderNumber: data.senderNumber || "Not provided",
+    expectedAmount: `$${data.amount} USD`,
+    amountDetected: v.detectedAmount ? `$${v.detectedAmount} USD` : "Not found",
+    transactionId: v.detectedTransactionId || data.transactionNumber || "Not detected",
+    paymentDate: v.detectedDate || data.paymentDate || "Not detected",
+    senderNumber: v.detectedSender || data.senderNumber || "Not detected",
+    detectedProvider: v.detectedProvider ? v.detectedProvider.toUpperCase() : "Not detected",
     internalReference: data.reference,
-    ocrExtracted: hasOcr,
-    receiverNumberVerified: receiverVerified,
-    amountVerifiedOcr,
-    confidenceScore: Math.min(confidence, 100),
-    checks,
-    recommendation,
-    finalStatus,
-    aiNote: recommendation === "AUTO_VERIFIED"
-      ? "🎉 Payment auto-verified! Receiver number and amount confirmed in screenshot via OCR. Access will be activated."
-      : confidence >= 70
-      ? "All key payment details are present. Payment appears complete and is queued for quick approval."
-      : confidence >= 40
-      ? "Some details confirmed. Admin will verify the screenshot and approve within 24 hours."
-      : "Insufficient details detected. Admin will review manually. Ensure screenshot is clear and shows the transaction confirmation.",
+    receiverVerified: v.receiverVerified,
+    amountVerified: v.amountVerified,
+    checks: v.checks,
+    recommendation: v.recommendation,
+    finalStatus: v.finalStatus,
+    rejectionReason: v.rejectionReason,
+    aiNote: v.recommendation === "AUTO_VERIFIED"
+      ? "All required checks passed. Receiver number and amount confirmed in screenshot via Tesseract OCR. Payment auto-approved."
+      : v.recommendation === "REVIEW_REQUIRED"
+      ? "Screenshot is unreadable. Please upload a clearer image. Admin has been notified to assist."
+      : `Payment rejected: ${v.rejectionReason}`,
   };
 }
 
@@ -238,7 +367,7 @@ router.post("/payments/submit-proof", requireAuth, async (req: any, res) => {
     const finalAmount = amount || (billing === "annual" ? plan.annual : plan.monthly);
     const reference = `ALB-${req.userId.slice(-6).toUpperCase()}-${Date.now().toString(36).toUpperCase()}`;
 
-    const aiReport = generateAIReport({
+    const report = buildReport({
       amount: String(finalAmount),
       transactionNumber: transactionNumber || "",
       paymentDate: paymentDate || "",
@@ -250,7 +379,7 @@ router.post("/payments/submit-proof", requireAuth, async (req: any, res) => {
       ocrText,
     });
 
-    const finalStatus = aiReport.finalStatus || "pending_review";
+    const finalStatus = report.finalStatus;
 
     const [record] = await db.insert(paymentRecordsTable).values({
       userId: req.userId,
@@ -266,7 +395,7 @@ router.post("/payments/submit-proof", requireAuth, async (req: any, res) => {
       studentEmail,
       courseName,
       proofImage: proofImage || null,
-      proofAnalysis: aiReport,
+      proofAnalysis: report,
       transactionNumber: transactionNumber || "",
       paymentDate: paymentDate || "",
       senderNumber: senderNumber || "",
@@ -274,7 +403,7 @@ router.post("/payments/submit-proof", requireAuth, async (req: any, res) => {
       ...(finalStatus === "approved" ? { approvedBy: "AI-OCR", approvedAt: new Date() } : {}),
     }).returning();
 
-    logger.info({ userId: req.userId, planId, method, reference, status: finalStatus, confidence: aiReport.confidenceScore }, "Payment proof submitted");
+    logger.info({ userId: req.userId, planId, method, reference, status: finalStatus, recommendation: report.recommendation }, "Payment proof submitted");
 
     res.status(201).json({
       success: true,
@@ -282,7 +411,9 @@ router.post("/payments/submit-proof", requireAuth, async (req: any, res) => {
       reference,
       status: finalStatus,
       autoVerified: finalStatus === "approved",
-      aiReport,
+      rejected: finalStatus === "rejected",
+      reviewRequired: finalStatus === "review_required",
+      aiReport: report,
     });
   } catch (err) {
     logger.error({ err }, "Failed to submit payment proof");

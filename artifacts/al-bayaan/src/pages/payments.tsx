@@ -282,6 +282,7 @@ export default function Payments() {
   const [aiReport, setAiReport] = useState<any>(null);
   const [submittedRef, setSubmittedRef] = useState("");
   const [autoVerified, setAutoVerified] = useState(false);
+  const [rejected, setRejected] = useState(false);
 
   const [ocrRunning, setOcrRunning] = useState(false);
   const [ocrProgress, setOcrProgress] = useState(0);
@@ -388,6 +389,7 @@ export default function Payments() {
       setAiReport(data.aiReport);
       setSubmittedRef(data.reference);
       setAutoVerified(data.autoVerified === true);
+      setRejected(data.rejected === true);
       setStep("done");
     } catch (err: any) {
       toast({ title: "Submission failed", description: err.message, variant: "destructive" });
@@ -813,109 +815,137 @@ export default function Payments() {
 
               {/* STEP: Done */}
               {step === "done" && aiReport && (
-                <motion.div key="done" initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} className="space-y-6">
-                  <div className="text-center py-4">
-                    <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", delay: 0.2 }}
-                      className={`h-20 w-20 rounded-full flex items-center justify-center mx-auto mb-4 ${autoVerified ? "bg-emerald-500" : "bg-emerald-100"}`}>
-                      <CheckCheck className={`h-10 w-10 ${autoVerified ? "text-white" : "text-emerald-600"}`} />
+                <motion.div key="done" initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} className="space-y-5">
+
+                  {/* ── Status Banner ── */}
+                  <div className={`rounded-2xl p-6 text-center border-2 ${
+                    autoVerified ? "bg-emerald-50 border-emerald-300" :
+                    rejected     ? "bg-red-50 border-red-300" :
+                    "bg-amber-50 border-amber-200"
+                  }`}>
+                    <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", delay: 0.15 }}
+                      className={`h-16 w-16 rounded-full flex items-center justify-center mx-auto mb-3 ${
+                        autoVerified ? "bg-emerald-500" : rejected ? "bg-red-500" : "bg-amber-400"
+                      }`}>
+                      {autoVerified
+                        ? <CheckCheck className="h-8 w-8 text-white" />
+                        : rejected
+                        ? <X className="h-8 w-8 text-white" />
+                        : <Clock className="h-8 w-8 text-white" />
+                      }
                     </motion.div>
-                    {autoVerified ? (
+
+                    {autoVerified && (
                       <>
-                        <h2 className="text-2xl font-bold text-emerald-700">🎉 Payment Auto-Verified!</h2>
-                        <p className="text-slate-600 mt-2">Our AI confirmed your payment via OCR. <strong>Access is being activated.</strong></p>
-                      </>
-                    ) : (
-                      <>
-                        <h2 className="text-2xl font-bold text-slate-900">Proof Submitted!</h2>
-                        <p className="text-muted-foreground mt-2">Your payment is now <strong>pending admin review</strong></p>
+                        <h2 className="text-xl font-bold text-emerald-800">Payment Verified</h2>
+                        <p className="text-emerald-700 text-sm mt-1">All checks passed. Access will be activated shortly.</p>
                       </>
                     )}
-                    <p className="text-sm text-blue-700 mt-1 font-mono">Reference: {submittedRef}</p>
+                    {rejected && (
+                      <>
+                        <h2 className="text-xl font-bold text-red-800">Payment Proof Rejected</h2>
+                        <p className="text-red-700 text-sm mt-1 font-medium">{aiReport.rejectionReason}</p>
+                      </>
+                    )}
+                    {!autoVerified && !rejected && (
+                      <>
+                        <h2 className="text-xl font-bold text-amber-800">Screenshot Under Review</h2>
+                        <p className="text-amber-700 text-sm mt-1">Your image could not be fully read. Admin will review manually.</p>
+                      </>
+                    )}
+                    <p className="text-xs text-muted-foreground mt-2 font-mono">Ref: {submittedRef}</p>
                   </div>
 
-                  <Card className="border-blue-200">
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-base flex items-center gap-2">
-                        <Zap className="h-5 w-5 text-blue-700" /> AI Payment Analysis Report
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="grid grid-cols-2 gap-3">
-                        {[
-                          { label: "Amount Detected", value: aiReport.amountDetected },
-                          { label: "Transaction Number", value: aiReport.transactionNumber },
-                          { label: "Payment Date", value: aiReport.paymentDate },
-                          { label: "Sender Number", value: aiReport.senderNumber },
-                          { label: "Payment Method", value: aiReport.paymentMethod },
-                          { label: "Plan Requested", value: aiReport.planRequested },
-                        ].map(({ label, value }) => (
-                          <div key={label} className="bg-slate-50 rounded-lg p-3">
-                            <p className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">{label}</p>
-                            <p className="text-sm font-medium text-slate-900 mt-0.5 break-words">{value}</p>
-                          </div>
-                        ))}
-                      </div>
-
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-semibold">Confidence Score</span>
-                          <span className={`text-sm font-bold ${aiReport.confidenceScore >= 65 ? "text-emerald-600" : aiReport.confidenceScore >= 40 ? "text-amber-600" : "text-red-600"}`}>
-                            {aiReport.confidenceScore}%
-                          </span>
+                  {/* ── Extracted Data (only when not rejected with unreadable) ── */}
+                  {aiReport.recommendation !== "REVIEW_REQUIRED" && (
+                    <Card className="border-slate-200">
+                      <CardHeader className="pb-2 pt-4 px-4">
+                        <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                          <ScanLine className="h-4 w-4 text-blue-600" /> Verification Report — Tesseract OCR
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="px-4 pb-4 space-y-3">
+                        <div className="grid grid-cols-2 gap-2 text-xs">
+                          {[
+                            { label: "Plan", value: aiReport.planRequested },
+                            { label: "Method", value: aiReport.paymentMethod },
+                            { label: "Expected Amount", value: aiReport.expectedAmount },
+                            { label: "Amount in Screenshot", value: aiReport.amountDetected },
+                            { label: "Transaction ID", value: aiReport.transactionId },
+                            { label: "Date Detected", value: aiReport.paymentDate },
+                            { label: "Sender Number", value: aiReport.senderNumber },
+                            { label: "Provider Detected", value: aiReport.detectedProvider },
+                          ].map(({ label, value }) => (
+                            <div key={label} className="bg-slate-50 rounded-lg p-2.5">
+                              <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-semibold">{label}</p>
+                              <p className={`font-medium mt-0.5 break-words ${value === "Not found" || value === "Not detected" ? "text-red-600" : "text-slate-800"}`}>{value}</p>
+                            </div>
+                          ))}
                         </div>
-                        <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-                          <div className={`h-full rounded-full transition-all duration-1000 ${aiReport.confidenceScore >= 65 ? "bg-emerald-500" : aiReport.confidenceScore >= 40 ? "bg-amber-500" : "bg-red-500"}`}
-                            style={{ width: `${aiReport.confidenceScore}%` }} />
+
+                        {/* Per-check results */}
+                        <div className="space-y-1 pt-1 border-t">
+                          {aiReport.checks?.map((c: string, i: number) => {
+                            const pass = c.startsWith("✅");
+                            const fail = c.startsWith("❌");
+                            return (
+                              <p key={i} className={`text-xs flex items-start gap-2 ${fail ? "text-red-700 font-medium" : pass ? "text-emerald-700" : "text-amber-700"}`}>
+                                <span className="shrink-0">{pass ? "✅" : fail ? "❌" : "⚠️"}</span>
+                                <span>{c.replace(/^[✅❌⚠️]\s*/, "")}</span>
+                              </p>
+                            );
+                          })}
                         </div>
-                      </div>
 
-                      <div className="space-y-1">
-                        {aiReport.checks?.map((c: string, i: number) => (
-                          <p key={i} className="text-xs flex items-center gap-2">
-                            <span>{c.startsWith("✅") ? "✅" : "⚠️"}</span>
-                            <span className={c.startsWith("✅") ? "text-slate-700" : "text-amber-700"}>{c.slice(2)}</span>
-                          </p>
-                        ))}
-                      </div>
-
-                      <div className={`rounded-xl p-4 ${
-                        aiReport.recommendation === "APPROVE" ? "bg-emerald-50 border border-emerald-200" :
-                        aiReport.recommendation === "REVIEW_REQUIRED" ? "bg-amber-50 border border-amber-200" :
-                        "bg-red-50 border border-red-200"
-                      }`}>
-                        <p className={`text-sm font-semibold ${
-                          aiReport.recommendation === "APPROVE" ? "text-emerald-800" :
-                          aiReport.recommendation === "REVIEW_REQUIRED" ? "text-amber-800" : "text-red-800"
+                        {/* Verdict */}
+                        <div className={`rounded-lg p-3 border text-xs font-medium ${
+                          autoVerified ? "bg-emerald-50 border-emerald-200 text-emerald-800" :
+                          rejected     ? "bg-red-50 border-red-200 text-red-800" :
+                          "bg-amber-50 border-amber-200 text-amber-800"
                         }`}>
-                          AI Recommendation: {aiReport.recommendation.replace(/_/g, " ")}
-                        </p>
-                        <p className={`text-xs mt-1 ${
-                          aiReport.recommendation === "APPROVE" ? "text-emerald-700" :
-                          aiReport.recommendation === "REVIEW_REQUIRED" ? "text-amber-700" : "text-red-700"
-                        }`}>{aiReport.aiNote}</p>
-                      </div>
+                          <span className="uppercase tracking-wider text-[10px] block mb-0.5 opacity-70">Verdict</span>
+                          {aiReport.aiNote}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
 
-                      <div className={`rounded-xl p-4 border text-sm flex items-start gap-2 ${autoVerified ? "bg-emerald-50 border-emerald-200 text-emerald-800" : "bg-blue-50 border-blue-200 text-blue-800"}`}>
-                        <Shield className="h-4 w-4 shrink-0 mt-0.5" />
-                        <p>{autoVerified ? "✅ Your payment was automatically verified by AI OCR. Course access will be activated within minutes." : "This is an AI analysis report. Course access will be activated after admin approval (usually within 24 hours)."}</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-
+                  {/* ── Actions ── */}
                   <div className="flex gap-3">
-                    <Button variant="outline" className="flex-1" onClick={() => setActiveTab("history")}>
-                      <History className="h-4 w-4 mr-2" /> View History
-                    </Button>
-                    <Button className="flex-1 bg-blue-700 hover:bg-blue-800 text-white" onClick={() => {
-                      setStep("plans"); setSelectedPlan(null); setSelectedMethod(null);
-                      setProofImage(null); setProofFileName(""); setTransactionNumber("");
-                      setPaymentDate(""); setSenderNumber(""); setStudentName("");
-                      setStudentEmail(""); setCourseName(""); setAiReport(null);
-                      setOcrText(""); setOcrDone(false); setOcrError(false); setAutoVerified(false);
-                    }}>
-                      Make Another Payment
-                    </Button>
+                    {rejected ? (
+                      <Button className="flex-1 bg-red-600 hover:bg-red-700 text-white" onClick={() => {
+                        setStep("proof"); setAiReport(null); setProofImage(null);
+                        setProofFileName(""); setOcrText(""); setOcrDone(false);
+                        setOcrError(false); setRejected(false); setAutoVerified(false);
+                      }}>
+                        <Upload className="h-4 w-4 mr-2" /> Upload Correct Screenshot
+                      </Button>
+                    ) : (
+                      <>
+                        <Button variant="outline" className="flex-1" onClick={() => setActiveTab("history")}>
+                          <History className="h-4 w-4 mr-2" /> View History
+                        </Button>
+                        <Button className="flex-1 bg-blue-700 hover:bg-blue-800 text-white" onClick={() => {
+                          setStep("plans"); setSelectedPlan(null); setSelectedMethod(null);
+                          setProofImage(null); setProofFileName(""); setTransactionNumber("");
+                          setPaymentDate(""); setSenderNumber(""); setStudentName("");
+                          setStudentEmail(""); setCourseName(""); setAiReport(null);
+                          setOcrText(""); setOcrDone(false); setOcrError(false);
+                          setAutoVerified(false); setRejected(false);
+                        }}>
+                          New Payment
+                        </Button>
+                      </>
+                    )}
                   </div>
+
+                  {/* Contact admin fallback */}
+                  {rejected && (
+                    <div className="bg-slate-50 rounded-xl p-4 text-sm text-slate-700 flex items-start gap-3 border">
+                      <MessageSquare className="h-4 w-4 shrink-0 mt-0.5 text-green-600" />
+                      <p>Still having trouble? <a href="https://wa.me/252656042512" target="_blank" rel="noopener noreferrer" className="text-green-700 font-semibold underline">Contact admin on WhatsApp</a> and send your screenshot directly.</p>
+                    </div>
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>
