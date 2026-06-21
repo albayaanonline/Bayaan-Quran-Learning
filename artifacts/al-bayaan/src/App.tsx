@@ -257,7 +257,8 @@ function ClerkProviderWithRoutes() {
           <Route path="/analytics" component={() => <PremiumRoute component={Analytics} feature="analytics" />} />
           <Route path="/cms" component={() => <ProtectedRoute component={CMS} />} />
           <Route path="/parent" component={() => <ProtectedRoute component={ParentDashboard} />} />
-          <Route path="/admin" component={() => <ProtectedRoute component={Admin} />} />
+          <Route path="/management-portal" component={() => <ProtectedRoute component={Admin} />} />
+          <Route path="/admin" component={() => <Redirect to="/management-portal" />} />
           <Route path="/teacher-dashboard" component={() => <ProtectedRoute component={TeacherDashboard} />} />
           <Route path="/exam-builder" component={() => <ProtectedRoute component={ExamBuilder} />} />
           <Route path="/video-teacher" component={() => <PremiumRoute component={VideoTeacher} feature="video-teacher" />} />

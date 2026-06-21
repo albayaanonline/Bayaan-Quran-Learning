@@ -55,7 +55,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         { href: "/hifdh",      label: t("nav.hifdh"),       icon: Brain },
         { href: "/muraajacah", label: t("nav.muraajacah"),  icon: RotateCcw },
         { href: "/library",    label: t("nav.library"),     icon: Library },
-        { href: "/cms",        label: t("nav.resources"),   icon: FolderOpen },
       ],
     },
     {
@@ -98,15 +97,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         { href: "/messages",       label: t("nav.messages"),      icon: MessageCircle, badge: "NEW" },
         { href: "/live-classroom", label: t("nav.liveClassroom"), icon: MonitorPlay,   badge: "NEW" },
         { href: "/payments",       label: t("nav.payments"),      icon: CreditCard },
-      ],
-    },
-    {
-      label: t("nav.group.admin"),
-      items: [
-        { href: "/content-generator", label: t("nav.contentGen"),  icon: Sparkles,      badge: "NEW" },
-        { href: "/exam-builder",      label: t("nav.examBuilder"), icon: PenSquare },
-        { href: "/teacher-dashboard", label: t("nav.teacherView"), icon: GraduationCap },
-        { href: "/admin",             label: t("nav.admin"),       icon: Shield },
       ],
     },
   ];

@@ -5,15 +5,20 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import {
   Users, Mic, MessageSquare, TrendingUp, Star, Activity, Shield,
   RefreshCw, CreditCard, CheckCheck, X, Eye, Search, Filter,
   Clock, AlertCircle, ChevronDown, ChevronUp, FileImage,
+  BookOpen, FileText, Volume2, Video, Image, Plus, Download, Loader2, FolderOpen,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { useI18n } from "@/lib/i18n";
 import { formatDistanceToNow } from "date-fns";
+import { useToast } from "@/hooks/use-toast";
 
 const BASE = (import.meta.env.BASE_URL || "").replace(/\/$/, "");
 
@@ -403,7 +408,295 @@ function PaymentsTab() {
   );
 }
 
-type AdminTab = "overview" | "payments";
+// ── Resources Management Tab ────────────────────────────────────────────────
+
+interface ContentItem {
+  id: number;
+  type: string;
+  title: string;
+  description: string;
+  subject: string;
+  level: string;
+  fileUrl: string;
+  thumbnailUrl: string;
+  content: string;
+  tags: string[];
+  isPublished: boolean;
+  isFeatured: boolean;
+  viewCount: number;
+  downloadCount: number;
+  createdAt: string;
+}
+
+const CONTENT_TYPE_ICONS: Record<string, any> = {
+  book: BookOpen, pdf: FileText, audio: Volume2, video: Video, image: Image,
+  lesson: BookOpen, course: BookOpen, exam: FileText, quiz: FileText,
+};
+
+const CONTENT_TYPE_COLORS: Record<string, string> = {
+  book: "bg-blue-100 text-blue-800", pdf: "bg-red-100 text-red-700",
+  audio: "bg-blue-100 text-blue-700", video: "bg-purple-100 text-purple-700",
+  lesson: "bg-amber-100 text-amber-700", course: "bg-teal-100 text-teal-700",
+};
+
+const CMS_SUBJECTS = ["quran","tajweed","hifdh","arabic","tafsir","fiqh","aqeedah","hadith","general"];
+const CMS_LEVELS   = ["all","beginner","intermediate","advanced"];
+const CMS_TYPES    = ["book","pdf","audio","video","lesson","course","exam","quiz"];
+
+function ResourceCard({ item, onDownload, onTogglePublish, onDelete }: {
+  item: ContentItem;
+  onDownload: (id: number) => void;
+  onTogglePublish: (id: number, current: boolean) => void;
+  onDelete: (id: number) => void;
+}) {
+  const Icon  = CONTENT_TYPE_ICONS[item.type]  ?? FileText;
+  const color = CONTENT_TYPE_COLORS[item.type] ?? "bg-gray-100 text-gray-700";
+  return (
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+      <Card className="border-blue-100 hover:shadow-md transition-shadow h-full">
+        <CardContent className="p-4 flex flex-col h-full">
+          <div className="flex items-start gap-3 mb-3">
+            <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${color}`}>
+              <Icon className="h-5 w-5" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold text-sm leading-snug text-slate-900 line-clamp-2">{item.title}</h3>
+              <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${color}`}>{item.type}</Badge>
+                <Badge variant="outline" className="text-[10px] px-1.5 py-0">{item.subject}</Badge>
+                <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${item.isPublished ? "border-emerald-300 text-emerald-700" : "border-amber-300 text-amber-700"}`}>
+                  {item.isPublished ? "Published" : "Unpublished"}
+                </Badge>
+              </div>
+            </div>
+          </div>
+          {item.description && <p className="text-xs text-muted-foreground mb-3 line-clamp-2 flex-1">{item.description}</p>}
+          <div className="flex items-center justify-between mt-auto pt-2 border-t border-blue-50 gap-1 flex-wrap">
+            <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+              <span className="flex items-center gap-1"><Eye className="h-3 w-3" />{item.viewCount}</span>
+              <span className="flex items-center gap-1"><Download className="h-3 w-3" />{item.downloadCount}</span>
+            </div>
+            <div className="flex gap-1">
+              {item.fileUrl && (
+                <Button variant="outline" size="sm" className="h-6 text-[10px] px-2 gap-1" onClick={() => { window.open(item.fileUrl, "_blank"); onDownload(item.id); }}>
+                  <Download className="h-3 w-3" /> Open
+                </Button>
+              )}
+              <Button variant="outline" size="sm"
+                className={`h-6 text-[10px] px-2 gap-1 ${item.isPublished ? "text-amber-700 border-amber-300 hover:bg-amber-50" : "text-emerald-700 border-emerald-300 hover:bg-emerald-50"}`}
+                onClick={() => onTogglePublish(item.id, item.isPublished)}>
+                {item.isPublished ? "Unpublish" : "Publish"}
+              </Button>
+              <Button variant="outline" size="sm" className="h-6 text-[10px] px-2 gap-1 text-red-600 border-red-200 hover:bg-red-50" onClick={() => onDelete(item.id)}>
+                <X className="h-3 w-3" />
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+}
+
+function AddResourceDialog({ onAdded }: { onAdded: () => void }) {
+  const { toast } = useToast();
+  const [open, setOpen]   = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm]   = useState({ type: "pdf", title: "", description: "", subject: "quran", level: "all", fileUrl: "", content: "", tags: "" });
+
+  const save = async () => {
+    if (!form.title.trim()) { toast({ title: "Title is required", variant: "destructive" }); return; }
+    setSaving(true);
+    try {
+      const r = await fetch(`${BASE}/api/cms/content`, {
+        method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include",
+        body: JSON.stringify({ ...form, tags: form.tags ? form.tags.split(",").map((t: string) => t.trim()).filter(Boolean) : [], isPublished: true }),
+      });
+      if (r.ok) {
+        toast({ title: "Resource added!" });
+        setOpen(false);
+        setForm({ type: "pdf", title: "", description: "", subject: "quran", level: "all", fileUrl: "", content: "", tags: "" });
+        onAdded();
+      } else { toast({ title: "Failed to add resource", variant: "destructive" }); }
+    } catch { toast({ title: "Error", variant: "destructive" }); }
+    finally { setSaving(false); }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm" className="bg-blue-700 hover:bg-blue-800 gap-2"><Plus className="h-4 w-4" />Add Resource</Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+        <DialogHeader><DialogTitle>Add New Resource</DialogTitle></DialogHeader>
+        <div className="space-y-3 mt-2">
+          <div>
+            <Label className="text-xs">Content Type *</Label>
+            <Select value={form.type} onValueChange={v => setForm(f => ({ ...f, type: v }))}>
+              <SelectTrigger className="h-8 text-sm mt-1"><SelectValue /></SelectTrigger>
+              <SelectContent>{CMS_TYPES.map(t => <SelectItem key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</SelectItem>)}</SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label className="text-xs">Title *</Label>
+            <Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} className="h-8 text-sm mt-1" placeholder="e.g., Tajweed Basics Guide" />
+          </div>
+          <div>
+            <Label className="text-xs">Description</Label>
+            <Textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} className="text-sm mt-1 min-h-[60px]" placeholder="Brief description…" />
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <Label className="text-xs">Subject</Label>
+              <Select value={form.subject} onValueChange={v => setForm(f => ({ ...f, subject: v }))}>
+                <SelectTrigger className="h-8 text-sm mt-1"><SelectValue /></SelectTrigger>
+                <SelectContent>{CMS_SUBJECTS.map(s => <SelectItem key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs">Level</Label>
+              <Select value={form.level} onValueChange={v => setForm(f => ({ ...f, level: v }))}>
+                <SelectTrigger className="h-8 text-sm mt-1"><SelectValue /></SelectTrigger>
+                <SelectContent>{CMS_LEVELS.map(l => <SelectItem key={l} value={l}>{l.charAt(0).toUpperCase() + l.slice(1)}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div>
+            <Label className="text-xs">File URL (Google Drive, Dropbox, etc.)</Label>
+            <Input value={form.fileUrl} onChange={e => setForm(f => ({ ...f, fileUrl: e.target.value }))} className="h-8 text-sm mt-1" placeholder="https://…" />
+          </div>
+          <div>
+            <Label className="text-xs">Text Content (for lessons/notes)</Label>
+            <Textarea value={form.content} onChange={e => setForm(f => ({ ...f, content: e.target.value }))} className="text-sm mt-1 min-h-[80px]" placeholder="Paste lesson text here…" />
+          </div>
+          <div>
+            <Label className="text-xs">Tags (comma-separated)</Label>
+            <Input value={form.tags} onChange={e => setForm(f => ({ ...f, tags: e.target.value }))} className="h-8 text-sm mt-1" placeholder="tajweed, beginner, rules" />
+          </div>
+          <Button onClick={save} disabled={saving} className="w-full bg-blue-700 hover:bg-blue-800">
+            {saving ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Saving…</> : "Add Resource"}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function ResourcesTab() {
+  const { toast } = useToast();
+  const [items, setItems]           = useState<ContentItem[]>([]);
+  const [loading, setLoading]       = useState(true);
+  const [search, setSearch]         = useState("");
+  const [filterType, setFilterType] = useState("all");
+  const [filterSubject, setFilterSubject] = useState("all");
+
+  const load = () => {
+    setLoading(true);
+    fetch(`${BASE}/api/cms/content`, { credentials: "include" })
+      .then(r => r.ok ? r.json() : [])
+      .then(data => setItems(Array.isArray(data) ? data : []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const handleDownload = async (id: number) => {
+    await fetch(`${BASE}/api/cms/content/${id}/download`, { method: "POST", credentials: "include" }).catch(() => {});
+  };
+
+  const handleTogglePublish = async (id: number, current: boolean) => {
+    try {
+      const r = await fetch(`${BASE}/api/cms/content/${id}`, {
+        method: "PATCH", headers: { "Content-Type": "application/json" }, credentials: "include",
+        body: JSON.stringify({ isPublished: !current }),
+      });
+      if (r.ok) { toast({ title: current ? "Resource unpublished" : "Resource published" }); load(); }
+      else { toast({ title: "Failed to update", variant: "destructive" }); }
+    } catch { toast({ title: "Error", variant: "destructive" }); }
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!confirm("Delete this resource? This cannot be undone.")) return;
+    try {
+      const r = await fetch(`${BASE}/api/cms/content/${id}`, { method: "DELETE", credentials: "include" });
+      if (r.ok) { toast({ title: "Resource deleted" }); load(); }
+      else { toast({ title: "Failed to delete", variant: "destructive" }); }
+    } catch { toast({ title: "Error", variant: "destructive" }); }
+  };
+
+  const filtered = items.filter(item => {
+    if (filterType !== "all" && item.type !== filterType) return false;
+    if (filterSubject !== "all" && item.subject !== filterSubject) return false;
+    if (search && !item.title.toLowerCase().includes(search.toLowerCase()) && !item.description?.toLowerCase().includes(search.toLowerCase())) return false;
+    return true;
+  });
+
+  return (
+    <div className="space-y-5">
+      <div className="flex items-center justify-between gap-4 flex-wrap">
+        <div>
+          <h2 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+            <FolderOpen className="h-5 w-5 text-blue-700" /> Resources Management
+          </h2>
+          <p className="text-sm text-muted-foreground mt-0.5">{items.length} resource{items.length !== 1 ? "s" : ""} total · {items.filter(i => i.isPublished).length} published</p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={load} className="gap-2 h-8">
+            <RefreshCw className="h-3.5 w-3.5" /> Refresh
+          </Button>
+          <AddResourceDialog onAdded={load} />
+        </div>
+      </div>
+
+      <div className="flex gap-2 flex-wrap">
+        <div className="relative flex-1 min-w-48">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search resources…" className="pl-9 h-9 text-sm" />
+        </div>
+        <Select value={filterType} onValueChange={setFilterType}>
+          <SelectTrigger className="h-9 text-sm w-36"><SelectValue placeholder="Type" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Types</SelectItem>
+            {CMS_TYPES.map(t => <SelectItem key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</SelectItem>)}
+          </SelectContent>
+        </Select>
+        <Select value={filterSubject} onValueChange={setFilterSubject}>
+          <SelectTrigger className="h-9 text-sm w-36"><SelectValue placeholder="Subject" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Subjects</SelectItem>
+            {CMS_SUBJECTS.map(s => <SelectItem key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</SelectItem>)}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {loading ? (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {[0,1,2,3,4,5].map(i => <Skeleton key={i} className="h-44" />)}
+        </div>
+      ) : filtered.length === 0 ? (
+        <Card className="border-dashed">
+          <CardContent className="p-12 text-center">
+            <FolderOpen className="h-12 w-12 text-blue-300 mx-auto mb-4" />
+            <h3 className="font-semibold text-lg">{items.length === 0 ? "No resources yet" : "No results found"}</h3>
+            <p className="text-sm text-muted-foreground mt-1">
+              {items.length === 0 ? "Add books, PDFs, and lessons using the button above" : "Try adjusting your filters"}
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {filtered.map(item => (
+            <ResourceCard key={item.id} item={item} onDownload={handleDownload} onTogglePublish={handleTogglePublish} onDelete={handleDelete} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Admin Tab Type ────────────────────────────────────────────────────────────
+type AdminTab = "overview" | "payments" | "resources";
 
 export default function Admin() {
   const { t } = useI18n();
@@ -468,23 +761,31 @@ export default function Admin() {
         </div>
 
         {/* Admin tab nav */}
-        <div className="flex gap-1 border-b border-blue-100">
+        <div className="flex gap-1 border-b border-blue-100 overflow-x-auto">
           <button onClick={() => setActiveTab("overview")}
-            className={`flex items-center gap-2 px-5 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+            className={`flex items-center gap-2 px-5 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
               activeTab === "overview" ? "border-blue-700 text-blue-700" : "border-transparent text-muted-foreground hover:text-foreground"
             }`}>
             <Users className="h-4 w-4" /> Overview
           </button>
           <button onClick={() => setActiveTab("payments")}
-            className={`flex items-center gap-2 px-5 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+            className={`flex items-center gap-2 px-5 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
               activeTab === "payments" ? "border-blue-700 text-blue-700" : "border-transparent text-muted-foreground hover:text-foreground"
             }`}>
             <CreditCard className="h-4 w-4" /> Payment Submissions
+          </button>
+          <button onClick={() => setActiveTab("resources")}
+            className={`flex items-center gap-2 px-5 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+              activeTab === "resources" ? "border-blue-700 text-blue-700" : "border-transparent text-muted-foreground hover:text-foreground"
+            }`}>
+            <FolderOpen className="h-4 w-4" /> Resources Management
           </button>
         </div>
 
         {activeTab === "payments" ? (
           <PaymentsTab />
+        ) : activeTab === "resources" ? (
+          <ResourcesTab />
         ) : (
           <>
             {loading ? (
