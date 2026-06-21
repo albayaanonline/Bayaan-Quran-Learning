@@ -1,12 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 92 100" fill="none">
-  <!-- Left stroke of A: diagonal parallelogram, diagonal left edge is the signature AB cut -->
+  <!-- Left stroke of A (diagonal parallelogram — left edge is diagonal giving the signature cut) -->
   <path d="M 24 5 L 47 5 L 21 95 L 0 95 Z" fill="currentColor"/>
-  <!-- Spine: shared right leg of A + left column of B -->
+
+  <!-- Spine: shared right leg of A + left side of B -->
   <rect x="49" y="5" width="13" height="90" fill="currentColor"/>
-  <!-- Crossbar of A -->
+
+  <!-- Crossbar of A (spans the gap between left stroke and spine) -->
   <rect x="26" y="49" width="36" height="10" fill="currentColor"/>
+
   <!-- B upper bump -->
   <path d="M 62 5 C 62 5 87 5 87 28 C 87 50 62 50 62 50 Z" fill="currentColor"/>
+
   <!-- B lower bump (slightly wider) -->
   <path d="M 62 51 C 62 51 90 51 90 73 C 90 95 62 95 62 95 Z" fill="currentColor"/>
 </svg>

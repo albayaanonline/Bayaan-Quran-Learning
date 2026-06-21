@@ -1,17 +1,35 @@
 {
-  "name": "Al Bayaan Quran App",
-  "short_name": "AlBayaan",
-  "description": "AI-powered Quran learning with Tajweed coaching, Hifdh tracking, and personalized Islamic education in English, Arabic & Somali",
+  "name": "Al Bayaan AI Academy",
+  "short_name": "Al Bayaan",
+  "description": "AI-powered Islamic education platform for Quran, Tajweed, Arabic, Tafsir, Aqeedah, and Islamic Studies.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#F8FAFC",
+  "background_color": "#0a1628",
   "theme_color": "#1E3A8A",
   "lang": "en",
   "dir": "ltr",
   "categories": ["education", "religion", "lifestyle"],
   "icons": [
+    {
+      "src": "/favicon-16x16.png",
+      "sizes": "16x16",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
     {
       "src": "/icon-192.png",
       "sizes": "192x192",

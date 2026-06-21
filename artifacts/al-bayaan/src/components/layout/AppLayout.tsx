@@ -1,5 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { useClerk } from "@clerk/react";
+import AlBayaanLogo from "@/components/AlBayaanLogo";
 import {
   BookOpen, LayoutDashboard, LineChart, Bookmark, Award, Trophy,
   LogOut, Menu, BotMessageSquare, Brain, Mic, CalendarDays,
@@ -132,14 +133,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <div className={`flex h-full flex-col ${isRTL ? "direction-rtl" : ""}`}>
       {/* Logo */}
       <div className="flex h-16 items-center px-4 justify-between border-b border-sidebar-border/60 shrink-0">
-        <Link href="/dashboard" className="flex items-center gap-2.5 group">
-          <div className="relative">
-            <img src="/logo.svg" alt="Al Bayaan" className="h-8 w-auto transition-transform group-hover:scale-105" />
-          </div>
-          <div className="flex flex-col">
-            <span className="text-sm font-bold text-foreground leading-none">Al Bayaan</span>
-            <span className="text-[10px] text-muted-foreground leading-none mt-0.5">AI Academy</span>
-          </div>
+        <Link href="/dashboard" className="flex items-center group">
+          <AlBayaanLogo className="group-hover:opacity-90 transition-opacity" />
         </Link>
         <button
           onClick={() => setDark(!dark)}
@@ -268,9 +263,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </SheetContent>
           </Sheet>
           <div className="flex w-full items-center justify-between">
-            <Link href="/dashboard" className="flex items-center gap-2">
-              <img src="/logo.svg" alt="Al Bayaan" className="h-6 w-auto" />
-              <span className="font-bold text-sm">Al Bayaan</span>
+            <Link href="/dashboard" className="flex items-center">
+              <AlBayaanLogo className="scale-90 origin-left" />
             </Link>
             <div className="flex items-center gap-1">
               <button
