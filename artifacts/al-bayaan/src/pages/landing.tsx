@@ -68,6 +68,7 @@ export default function Landing() {
           <Link href="/sign-in" className="hover:text-white transition-colors duration-200">Programs</Link>
           <Link href="/sign-in" className="hover:text-white transition-colors duration-200">Library</Link>
           <Link href="/sign-in" className="hover:text-white transition-colors duration-200">AI Teacher</Link>
+          <Link href="/pricing" className="hover:text-white transition-colors duration-200 font-semibold text-blue-400">Pricing</Link>
         </div>
         <div className="flex items-center gap-3">
           <Link href="/sign-in">
@@ -141,6 +142,11 @@ export default function Landing() {
               <Button size="lg" className="h-14 px-8 text-base bg-gradient-to-r from-blue-700 to-blue-500 hover:from-blue-600 hover:to-blue-400 text-white font-bold rounded-full shadow-[0_0_40px_rgba(37,99,235,0.30)] hover:shadow-[0_0_60px_rgba(37,99,235,0.50)] transition-all duration-300">
                 Start Learning Free
                 <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
+            <Link href="/pricing">
+              <Button size="lg" className="h-14 px-8 text-base bg-gradient-to-r from-teal-700 to-teal-500 hover:from-teal-600 hover:to-teal-400 text-white font-bold rounded-full shadow-[0_0_30px_rgba(20,184,166,0.25)] hover:shadow-[0_0_50px_rgba(20,184,166,0.40)] transition-all duration-300">
+                Pricing &amp; Payments
               </Button>
             </Link>
             <Link href="/sign-in">
@@ -389,6 +395,8 @@ export default function Landing() {
               <div className="space-y-2">
                 <Link href="/sign-up" className="block text-xs text-white/30 hover:text-white/70 transition-colors duration-200">Get Started Free</Link>
                 <Link href="/sign-in" className="block text-xs text-white/30 hover:text-white/70 transition-colors duration-200">Sign In</Link>
+                <Link href="/pricing" className="block text-xs text-white/30 hover:text-white/70 transition-colors duration-200">Pricing</Link>
+                <Link href="/payments" className="block text-xs text-white/30 hover:text-white/70 transition-colors duration-200">Payments</Link>
                 <Link href="/about" className="block text-xs text-white/30 hover:text-white/70 transition-colors duration-200">About Us</Link>
               </div>
             </div>

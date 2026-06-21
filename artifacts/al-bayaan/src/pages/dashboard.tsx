@@ -3,7 +3,7 @@ import AppLayout from "@/components/layout/AppLayout";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Flame, Star, BookOpen, Clock, Target, Zap, Trophy, ArrowRight, TrendingUp, MessageSquare } from "lucide-react";
+import { Flame, Star, BookOpen, Clock, Target, Zap, Trophy, ArrowRight, TrendingUp, MessageSquare, CreditCard, MessageCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { useI18n } from "@/lib/i18n";
 import { Link } from "wouter";
@@ -20,10 +20,12 @@ const MOTIVATIONAL_HADITHS = [
 const todayHadith = MOTIVATIONAL_HADITHS[new Date().getDate() % MOTIVATIONAL_HADITHS.length];
 
 const QUICK_LINKS = [
-  { href: "/learn",          label: "Continue Quran",       icon: BookOpen,  color: "from-blue-600 to-teal-500",   badge: null },
-  { href: "/teacher",        label: "Ask AI Teacher",        icon: MessageSquare, color: "from-violet-500 to-purple-500", badge: "AI" },
-  { href: "/hifdh",          label: "Hifdh Tracker",        icon: Brain,     color: "from-blue-500 to-indigo-500",    badge: null },
-  { href: "/achievements",   label: "My Achievements",      icon: Trophy,    color: "from-amber-500 to-orange-500",   badge: null },
+  { href: "/learn",          label: "Continue Quran",       icon: BookOpen,      color: "from-blue-600 to-teal-500",     badge: null },
+  { href: "/teacher",        label: "Ask AI Teacher",       icon: MessageSquare, color: "from-violet-500 to-purple-500", badge: "AI" },
+  { href: "/hifdh",          label: "Hifdh Tracker",        icon: Brain,         color: "from-blue-500 to-indigo-500",   badge: null },
+  { href: "/achievements",   label: "My Achievements",      icon: Trophy,        color: "from-amber-500 to-orange-500",  badge: null },
+  { href: "/payments",       label: "Payments",             icon: CreditCard,    color: "from-emerald-600 to-teal-600",  badge: null },
+  { href: "/messages",       label: "Messages",             icon: MessageCircle, color: "from-sky-600 to-blue-600",      badge: "NEW" },
 ];
 
 function Brain(props: React.SVGProps<SVGSVGElement>) {
@@ -217,7 +219,7 @@ export default function Dashboard() {
           transition={{ delay: 0.55 }}
         >
           <h2 className="text-base font-semibold mb-3 text-muted-foreground uppercase tracking-wide text-xs">Quick Access</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
             {QUICK_LINKS.map((link, i) => (
               <Link key={link.href} href={link.href}>
                 <div className={`group relative overflow-hidden rounded-xl p-4 bg-gradient-to-br ${link.color} text-white cursor-pointer transition-all duration-200 hover:scale-[1.03] hover:shadow-lg`}>

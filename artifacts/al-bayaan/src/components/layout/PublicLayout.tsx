@@ -10,6 +10,9 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
             <img src="/logo.svg" alt="Al Bayaan" className="h-8 w-auto transition-transform group-hover:scale-105 duration-200" />
           </Link>
           <nav className="flex items-center gap-3">
+            <Link href="/pricing">
+              <Button variant="ghost" className="font-semibold text-slate-700 hover:text-blue-800 hover:bg-blue-50 transition-all duration-200">Pricing</Button>
+            </Link>
             <Link href="/sign-in">
               <Button variant="ghost" className="font-semibold text-slate-700 hover:text-blue-800 hover:bg-blue-50 transition-all duration-200">Sign In</Button>
             </Link>
@@ -28,6 +31,12 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
               © 2025 Al Bayaan AI Quran. Built for the modern Muslim.
             </p>
           </div>
+          <nav className="flex items-center gap-6 text-sm opacity-60">
+            <Link href="/pricing" className="hover:opacity-100 transition-opacity">Pricing</Link>
+            <Link href="/payments" className="hover:opacity-100 transition-opacity">Payments</Link>
+            <Link href="/about" className="hover:opacity-100 transition-opacity">About</Link>
+            <Link href="/privacy" className="hover:opacity-100 transition-opacity">Privacy</Link>
+          </nav>
         </div>
       </footer>
     </div>

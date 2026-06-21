@@ -50,6 +50,7 @@ import Contact from "./pages/contact";
 import Help from "./pages/help";
 import NotFound from "@/pages/not-found";
 import AIAssistant from "./pages/ai-assistant";
+import Pricing from "./pages/pricing";
 
 const queryClient = new QueryClient();
 
@@ -248,6 +249,7 @@ function ClerkProviderWithRoutes() {
           <Route path="/library/:bookId" component={() => <ProtectedRoute component={BookCourse} />} />
           <Route path="/library/:bookId/lesson/:lessonNum" component={() => <ProtectedRoute component={BookLesson} />} />
           {/* Public pages */}
+          <Route path="/pricing" component={Pricing} />
           <Route path="/about" component={Marketing} />
           <Route path="/privacy" component={Privacy} />
           <Route path="/terms" component={Terms} />
