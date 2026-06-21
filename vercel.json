@@ -1,0 +1,6 @@
+{
+  "buildCommand": "pnpm --filter @workspace/al-bayaan run build",
+  "outputDirectory": "artifacts/al-bayaan/dist/public",
+  "installCommand": "pnpm install",
+  "framework": null
+}
