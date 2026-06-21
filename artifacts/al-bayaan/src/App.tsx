@@ -1,4 +1,5 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, Component } from "react";
+import type { ReactNode } from "react";
 import { ClerkProvider, SignIn, SignUp, Show, useClerk, ClerkLoading } from "@clerk/react";
 import { publishableKeyFromHost } from "@clerk/react/internal";
 import { shadcn } from "@clerk/themes";
@@ -198,6 +199,39 @@ function ClerkQueryClientCacheInvalidator() {
   return null;
 }
 
+class ClerkErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { error: null };
+  }
+  static getDerivedStateFromError(error: Error) {
+    return { error };
+  }
+  render() {
+    if (this.state.error) {
+      return (
+        <div className="flex min-h-[100dvh] items-center justify-center bg-slate-50 p-6">
+          <div className="max-w-md w-full bg-white rounded-2xl border border-red-100 shadow-2xl p-10 text-center">
+            <div className="text-5xl mb-4">🔐</div>
+            <h1 className="text-2xl font-bold text-slate-900 mb-3">Authentication Error</h1>
+            <p className="text-slate-600 mb-4 leading-relaxed">
+              Clerk authentication failed to initialize. This is usually because the app domain
+              is not authorized in the Clerk dashboard.
+            </p>
+            <div className="bg-red-50 rounded-xl px-4 py-3 text-left text-sm text-red-800 font-mono break-words mb-6">
+              {this.state.error.message}
+            </div>
+            <p className="text-sm text-slate-500">
+              Go to <strong>clerk.com/dashboard</strong> → Configure → Domains and add this domain.
+            </p>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 function MissingConfigError({ message }: { message: string }) {
   return (
     <div className="flex min-h-[100dvh] items-center justify-center bg-slate-50 p-6">
@@ -227,9 +261,10 @@ function ClerkProviderWithRoutes() {
   }
 
   return (
+    <ClerkErrorBoundary>
     <ClerkProvider
       publishableKey={clerkPubKey}
-      proxyUrl={clerkProxyUrl}
+      proxyUrl={clerkProxyUrl || undefined}
       appearance={clerkAppearance}
       signInUrl={`${basePath}/sign-in`}
       signUpUrl={`${basePath}/sign-up`}
@@ -288,6 +323,7 @@ function ClerkProviderWithRoutes() {
         </Switch>
       </QueryClientProvider>
     </ClerkProvider>
+    </ClerkErrorBoundary>
   );
 }
 
