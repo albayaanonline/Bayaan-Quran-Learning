@@ -31,6 +31,23 @@ const PAYMENT_NUMBERS: Record<string, string> = {
   epirr:  "+251 0979695586",
 };
 
+const OFFICIAL_NUMBERS_DIGITS: Record<string, string> = {
+  zaad:   "252636042512",
+  edahab: "252656042512",
+  evc:    "252612035767",
+  epirr:  "2510979695586",
+};
+
+function extractDigits(str: string): string {
+  return str.replace(/\D/g, "");
+}
+
+function checkNumberInOcr(ocrDigits: string, officialDigits: string): boolean {
+  if (ocrDigits.includes(officialDigits)) return true;
+  const last8 = officialDigits.slice(-8);
+  return ocrDigits.includes(last8);
+}
+
 function generateAIReport(data: {
   amount: string;
   transactionNumber: string;
@@ -40,30 +57,75 @@ function generateAIReport(data: {
   planName: string;
   billing: string;
   reference: string;
+  ocrText?: string;
 }) {
   const amountNum = parseFloat(data.amount) || 0;
   const hasTransNum = data.transactionNumber && data.transactionNumber.length >= 4;
   const hasDate = data.paymentDate && data.paymentDate.length > 0;
   const hasPhone = data.senderNumber && data.senderNumber.length >= 6;
+  const ocrText = data.ocrText || "";
+  const ocrDigits = extractDigits(ocrText);
+  const hasOcr = ocrText.trim().length > 30;
 
   let confidence = 0;
   const checks: string[] = [];
 
-  if (amountNum > 0) { confidence += 35; checks.push("✅ Amount detected and validated"); }
+  if (amountNum > 0) { confidence += 20; checks.push("✅ Amount declared and recorded"); }
   else { checks.push("⚠️ Amount could not be confirmed"); }
 
-  if (hasTransNum) { confidence += 30; checks.push("✅ Transaction reference number provided"); }
+  if (hasTransNum) { confidence += 15; checks.push("✅ Transaction reference number provided"); }
   else { checks.push("⚠️ Transaction reference not provided"); }
 
-  if (hasDate) { confidence += 20; checks.push("✅ Payment date recorded"); }
+  if (hasDate) { confidence += 10; checks.push("✅ Payment date recorded"); }
   else { checks.push("⚠️ Payment date not specified"); }
 
-  if (hasPhone) { confidence += 15; checks.push("✅ Sender number verified"); }
+  if (hasPhone) { confidence += 5; checks.push("✅ Sender number provided"); }
   else { checks.push("⚠️ Sender phone number not provided"); }
 
+  let receiverVerified = false;
+  let amountVerifiedOcr = false;
+
+  if (hasOcr) {
+    checks.push("✅ Payment screenshot uploaded and scanned via OCR");
+    confidence += 5;
+
+    const officialNum = OFFICIAL_NUMBERS_DIGITS[data.method];
+    if (officialNum && checkNumberInOcr(ocrDigits, officialNum)) {
+      confidence += 30;
+      receiverVerified = true;
+      checks.push(`✅ Official receiver number verified in screenshot (OCR match)`);
+    } else if (officialNum) {
+      checks.push(`⚠️ Official receiver number not detected in screenshot OCR — admin will verify manually`);
+    }
+
+    const amountPatterns = ocrText.match(/\b(\d{1,6}(?:\.\d{1,2})?)\b/g) || [];
+    for (const tok of amountPatterns) {
+      const found = parseFloat(tok);
+      if (found > 0 && Math.abs(found - amountNum) < 1) {
+        confidence += 15;
+        amountVerifiedOcr = true;
+        checks.push(`✅ Payment amount $${amountNum} confirmed in screenshot via OCR`);
+        break;
+      }
+    }
+    if (!amountVerifiedOcr) {
+      checks.push(`⚠️ Could not confirm exact amount in screenshot — admin will verify`);
+    }
+
+    if (ocrText.length > 200) { confidence += 5; checks.push("✅ Screenshot text clearly readable"); }
+  } else {
+    checks.push("⚠️ No OCR text extracted — screenshot may be unclear or not uploaded");
+  }
+
   let recommendation = "APPROVE";
-  if (confidence < 50) recommendation = "REVIEW_REQUIRED";
-  if (confidence < 30) recommendation = "NEEDS_MORE_INFO";
+  let finalStatus = "approved";
+  if (confidence < 70) { recommendation = "REVIEW_REQUIRED"; finalStatus = "pending_review"; }
+  if (confidence < 40) { recommendation = "NEEDS_MORE_INFO"; finalStatus = "pending_review"; }
+
+  if (receiverVerified && amountVerifiedOcr && confidence >= 70) {
+    recommendation = "AUTO_VERIFIED";
+    finalStatus = "approved";
+  }
 
   const methodNames: Record<string, string> = {
     zaad: "Zaad (Telesom)", edahab: "eDahab (Dahabshiil)",
@@ -80,14 +142,20 @@ function generateAIReport(data: {
     paymentDate: data.paymentDate || "Not provided",
     senderNumber: data.senderNumber || "Not provided",
     internalReference: data.reference,
-    confidenceScore: confidence,
+    ocrExtracted: hasOcr,
+    receiverNumberVerified: receiverVerified,
+    amountVerifiedOcr,
+    confidenceScore: Math.min(confidence, 100),
     checks,
     recommendation,
-    aiNote: confidence >= 65
-      ? "All key payment details are present. Payment appears complete."
+    finalStatus,
+    aiNote: recommendation === "AUTO_VERIFIED"
+      ? "🎉 Payment auto-verified! Receiver number and amount confirmed in screenshot via OCR. Access will be activated."
+      : confidence >= 70
+      ? "All key payment details are present. Payment appears complete and is queued for quick approval."
       : confidence >= 40
-      ? "Some payment details are missing. Admin should verify the proof screenshot."
-      : "Insufficient payment details. Please contact the student for more information.",
+      ? "Some details confirmed. Admin will verify the screenshot and approve within 24 hours."
+      : "Insufficient details detected. Admin will review manually. Ensure screenshot is clear and shows the transaction confirmation.",
   };
 }
 
@@ -153,6 +221,7 @@ router.post("/payments/submit-proof", requireAuth, async (req: any, res) => {
       planId, billing = "monthly", method,
       amount, transactionNumber, paymentDate, senderNumber,
       proofImage, studentName = "", studentEmail = "", courseName = "",
+      ocrText = "",
     } = req.body;
 
     if (!planId || !method) {
@@ -178,7 +247,10 @@ router.post("/payments/submit-proof", requireAuth, async (req: any, res) => {
       planName: plan.name,
       billing,
       reference,
+      ocrText,
     });
+
+    const finalStatus = aiReport.finalStatus || "pending_review";
 
     const [record] = await db.insert(paymentRecordsTable).values({
       userId: req.userId,
@@ -189,7 +261,7 @@ router.post("/payments/submit-proof", requireAuth, async (req: any, res) => {
       amount: String(finalAmount),
       currency: "USD",
       reference,
-      status: "pending_review",
+      status: finalStatus,
       studentName,
       studentEmail,
       courseName,
@@ -198,16 +270,18 @@ router.post("/payments/submit-proof", requireAuth, async (req: any, res) => {
       transactionNumber: transactionNumber || "",
       paymentDate: paymentDate || "",
       senderNumber: senderNumber || "",
-      metadata: { submittedAt: new Date().toISOString() },
+      metadata: { submittedAt: new Date().toISOString(), ocrUsed: ocrText.length > 30 },
+      ...(finalStatus === "approved" ? { approvedBy: "AI-OCR", approvedAt: new Date() } : {}),
     }).returning();
 
-    logger.info({ userId: req.userId, planId, method, reference }, "Payment proof submitted");
+    logger.info({ userId: req.userId, planId, method, reference, status: finalStatus, confidence: aiReport.confidenceScore }, "Payment proof submitted");
 
     res.status(201).json({
       success: true,
       id: record.id,
       reference,
-      status: "pending_review",
+      status: finalStatus,
+      autoVerified: finalStatus === "approved",
       aiReport,
     });
   } catch (err) {

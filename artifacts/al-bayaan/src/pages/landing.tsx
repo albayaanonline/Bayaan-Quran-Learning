@@ -351,6 +351,70 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* ── PAYMENT PARTNERS ──────────────────────────────────────────── */}
+      <section className="py-20 px-4 border-y border-white/5 bg-white/[0.015] overflow-hidden">
+        <div className="container mx-auto mb-12 text-center">
+          <FadeIn>
+            <div className="text-xs text-blue-400 tracking-[0.3em] uppercase font-semibold mb-3">Trusted Payment Partners</div>
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-3">Secure and convenient payment options</h2>
+            <p className="text-white/40 max-w-xl mx-auto">for students worldwide.</p>
+          </FadeIn>
+        </div>
+
+        <style>{`
+          @keyframes scroll-left {
+            0%   { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+          }
+          .partner-track {
+            display: flex;
+            width: max-content;
+            animation: scroll-left 30s linear infinite;
+          }
+          .partner-track:hover { animation-play-state: paused; }
+        `}</style>
+
+        <div className="relative">
+          <div className="absolute left-0 top-0 bottom-0 w-24 z-10 pointer-events-none" style={{ background: "linear-gradient(to right, #080f24, transparent)" }} />
+          <div className="absolute right-0 top-0 bottom-0 w-24 z-10 pointer-events-none" style={{ background: "linear-gradient(to left, #080f24, transparent)" }} />
+
+          <div className="overflow-hidden">
+            <div className="partner-track">
+              {[
+                { name: "Zaad",       logo: "/logos/zaad.png",          bg: "bg-green-50" },
+                { name: "eDahab",     logo: "/logos/edahab.png",        bg: "bg-orange-50" },
+                { name: "EVC Plus",   logo: "/logos/evc-plus.png",      bg: "bg-red-50" },
+                { name: "E-Pirr",     logo: "/logos/ethio-telecom.jpeg", bg: "bg-yellow-50" },
+                { name: "Sahal",      logo: "/logos/golis.png",         bg: "bg-blue-50" },
+                { name: "M-Pesa",     logo: "/logos/somtel.png",        bg: "bg-green-50" },
+                { name: "Visa",       logo: "/logos/visa.png",          bg: "bg-blue-50" },
+                { name: "Mastercard", logo: "/logos/mastercard.jpeg",   bg: "bg-red-50" },
+                { name: "Zaad",       logo: "/logos/zaad.png",          bg: "bg-green-50" },
+                { name: "eDahab",     logo: "/logos/edahab.png",        bg: "bg-orange-50" },
+                { name: "EVC Plus",   logo: "/logos/evc-plus.png",      bg: "bg-red-50" },
+                { name: "E-Pirr",     logo: "/logos/ethio-telecom.jpeg", bg: "bg-yellow-50" },
+                { name: "Sahal",      logo: "/logos/golis.png",         bg: "bg-blue-50" },
+                { name: "M-Pesa",     logo: "/logos/somtel.png",        bg: "bg-green-50" },
+                { name: "Visa",       logo: "/logos/visa.png",          bg: "bg-blue-50" },
+                { name: "Mastercard", logo: "/logos/mastercard.jpeg",   bg: "bg-red-50" },
+              ].map((p, i) => (
+                <div key={i} className="mx-4 flex flex-col items-center gap-3 group cursor-default shrink-0">
+                  <div className={`h-20 w-32 rounded-2xl ${p.bg} border border-white/10 flex items-center justify-center overflow-hidden shadow-lg group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(255,255,255,0.08)] transition-all duration-300`}>
+                    <img
+                      src={p.logo}
+                      alt={p.name}
+                      className="h-14 w-28 object-contain p-2"
+                      onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0.3"; }}
+                    />
+                  </div>
+                  <span className="text-white/50 text-xs font-semibold group-hover:text-white/80 transition-colors duration-300">{p.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ── CTA ───────────────────────────────────────────────────────── */}
       <section className="py-28 px-4 relative overflow-hidden">
         <div className="absolute inset-0 bg-blue-950/35" />

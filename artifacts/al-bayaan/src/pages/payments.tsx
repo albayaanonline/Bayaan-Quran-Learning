@@ -10,8 +10,9 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   CheckCircle2, CreditCard, Star, Crown, BookOpen, Loader2, History,
   Clock, Upload, FileImage, ChevronRight, Shield, AlertCircle,
-  CheckCheck, X, ArrowLeft, MessageSquare, ExternalLink, Zap,
+  CheckCheck, X, ArrowLeft, MessageSquare, ExternalLink, Zap, ScanLine,
 } from "lucide-react";
+import { createWorker } from "tesseract.js";
 import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
@@ -143,8 +144,8 @@ const PAYMENT_METHODS: PaymentMethod[] = [
   {
     id: "mpesa",
     name: "M-Pesa",
-    logo: "/logos/mastercard.jpeg",
-    country: "🇰🇪 Kenya (Safaricom)",
+    logo: "/logos/somtel.png",
+    country: "🇸🇴 Somalia / Kenya (M-Pesa)",
     desc: "Contact admin via WhatsApp",
     contact: true,
   },
@@ -280,6 +281,44 @@ export default function Payments() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [aiReport, setAiReport] = useState<any>(null);
   const [submittedRef, setSubmittedRef] = useState("");
+  const [autoVerified, setAutoVerified] = useState(false);
+
+  const [ocrRunning, setOcrRunning] = useState(false);
+  const [ocrProgress, setOcrProgress] = useState(0);
+  const [ocrText, setOcrText] = useState("");
+  const [ocrDone, setOcrDone] = useState(false);
+  const [ocrError, setOcrError] = useState(false);
+
+  const performOCR = useCallback(async (imageData: string) => {
+    setOcrRunning(true);
+    setOcrProgress(0);
+    setOcrDone(false);
+    setOcrError(false);
+    setOcrText("");
+    try {
+      const worker = await createWorker("eng", 1, {
+        logger: (m: any) => {
+          if (m.status === "recognizing text") {
+            setOcrProgress(Math.round((m.progress || 0) * 100));
+          }
+        },
+      });
+      const { data } = await worker.recognize(imageData);
+      await worker.terminate();
+      const extracted = data.text || "";
+      setOcrText(extracted);
+      setOcrDone(true);
+      if (!transactionNumber) {
+        const txnMatch = extracted.match(/(?:TXN|Ref(?:erence)?|Trans(?:action)?)[:\s#]*([A-Z0-9]{6,20})/i);
+        if (txnMatch?.[1]) setTransactionNumber(txnMatch[1]);
+      }
+    } catch {
+      setOcrError(true);
+      setOcrDone(true);
+    } finally {
+      setOcrRunning(false);
+    }
+  }, [transactionNumber]);
 
   const handleFileSelect = useCallback((file: File) => {
     if (!file.type.startsWith("image/")) {
@@ -292,11 +331,15 @@ export default function Payments() {
     }
     const reader = new FileReader();
     reader.onloadend = () => {
-      setProofImage(reader.result as string);
+      const result = reader.result as string;
+      setProofImage(result);
       setProofFileName(file.name);
+      setOcrDone(false);
+      setOcrText("");
+      performOCR(result);
     };
     reader.readAsDataURL(file);
-  }, [toast]);
+  }, [toast, performOCR]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -312,6 +355,10 @@ export default function Payments() {
     }
     if (!transactionNumber.trim()) {
       toast({ title: "Transaction number required", description: "Please enter the transaction/reference number from your payment", variant: "destructive" });
+      return;
+    }
+    if (ocrRunning) {
+      toast({ title: "OCR in progress", description: "Please wait while we scan your screenshot", variant: "destructive" });
       return;
     }
 
@@ -333,12 +380,14 @@ export default function Payments() {
           studentName,
           studentEmail,
           courseName,
+          ocrText,
         }),
       });
       const data = await r.json();
       if (!r.ok) throw new Error(data.error || "Failed to submit");
       setAiReport(data.aiReport);
       setSubmittedRef(data.reference);
+      setAutoVerified(data.autoVerified === true);
       setStep("done");
     } catch (err: any) {
       toast({ title: "Submission failed", description: err.message, variant: "destructive" });
@@ -711,23 +760,39 @@ export default function Payments() {
                         </CardContent>
                       </Card>
 
-                      <Card className="border-blue-100 bg-blue-50/50">
+                      <Card className={`border-2 ${ocrRunning ? "border-blue-300 bg-blue-50/80" : ocrDone && !ocrError ? "border-emerald-300 bg-emerald-50/60" : ocrError ? "border-amber-300 bg-amber-50/60" : "border-blue-100 bg-blue-50/50"}`}>
                         <CardContent className="p-4">
                           <div className="flex items-start gap-3">
-                            <Zap className="h-5 w-5 text-blue-700 shrink-0 mt-0.5" />
-                            <div className="text-sm">
-                              <p className="font-semibold text-slate-900">AI Payment Assistant</p>
-                              <p className="text-muted-foreground text-xs mt-0.5">
-                                Our AI will analyze your payment details and generate a verification report for the admin to review. Only the admin can approve access.
+                            <ScanLine className={`h-5 w-5 shrink-0 mt-0.5 ${ocrRunning ? "text-blue-600 animate-pulse" : ocrDone && !ocrError ? "text-emerald-600" : "text-blue-700"}`} />
+                            <div className="text-sm flex-1">
+                              <p className="font-semibold text-slate-900">
+                                {ocrRunning ? "🔍 Scanning screenshot with OCR…" : ocrDone && !ocrError ? "✅ Screenshot scanned via OCR" : ocrError ? "⚠️ OCR scan failed — manual entry required" : "AI OCR Verification"}
                               </p>
+                              {ocrRunning && (
+                                <div className="mt-2 space-y-1">
+                                  <div className="h-1.5 bg-blue-100 rounded-full overflow-hidden">
+                                    <div className="h-full bg-blue-600 rounded-full transition-all duration-300" style={{ width: `${ocrProgress}%` }} />
+                                  </div>
+                                  <p className="text-xs text-blue-600">Extracting text from your screenshot… {ocrProgress}%</p>
+                                </div>
+                              )}
+                              {!ocrRunning && !ocrDone && (
+                                <p className="text-muted-foreground text-xs mt-0.5">Upload your screenshot above — OCR will scan it automatically to verify receiver number and amount.</p>
+                              )}
+                              {ocrDone && !ocrError && ocrText.length > 0 && (
+                                <p className="text-emerald-700 text-xs mt-0.5">Text extracted from screenshot. Your payment will be verified against our official numbers.</p>
+                              )}
+                              {ocrError && (
+                                <p className="text-amber-700 text-xs mt-0.5">Could not read the screenshot. Fill in details manually — admin will verify.</p>
+                              )}
                             </div>
                           </div>
                         </CardContent>
                       </Card>
 
-                      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800 flex items-start gap-2">
+                      <div className={`rounded-xl p-4 text-sm flex items-start gap-2 border ${ocrDone && !ocrError ? "bg-emerald-50 border-emerald-200 text-emerald-800" : "bg-amber-50 border-amber-200 text-amber-800"}`}>
                         <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-                        <p>Course access is only activated after <strong>admin approval</strong>. AI analysis assists but never grants access automatically.</p>
+                        <p>{ocrDone && !ocrError ? "Screenshot scanned. High-confidence payments are <strong>automatically verified</strong>. Others go to admin review." : "Our AI scans your screenshot to verify the payment automatically. Low-confidence payments go to admin review."}</p>
                       </div>
                     </div>
                   </div>
@@ -751,11 +816,20 @@ export default function Payments() {
                 <motion.div key="done" initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} className="space-y-6">
                   <div className="text-center py-4">
                     <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", delay: 0.2 }}
-                      className="h-20 w-20 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
-                      <CheckCheck className="h-10 w-10 text-emerald-600" />
+                      className={`h-20 w-20 rounded-full flex items-center justify-center mx-auto mb-4 ${autoVerified ? "bg-emerald-500" : "bg-emerald-100"}`}>
+                      <CheckCheck className={`h-10 w-10 ${autoVerified ? "text-white" : "text-emerald-600"}`} />
                     </motion.div>
-                    <h2 className="text-2xl font-bold text-slate-900">Proof Submitted!</h2>
-                    <p className="text-muted-foreground mt-2">Your payment is now <strong>pending admin review</strong></p>
+                    {autoVerified ? (
+                      <>
+                        <h2 className="text-2xl font-bold text-emerald-700">🎉 Payment Auto-Verified!</h2>
+                        <p className="text-slate-600 mt-2">Our AI confirmed your payment via OCR. <strong>Access is being activated.</strong></p>
+                      </>
+                    ) : (
+                      <>
+                        <h2 className="text-2xl font-bold text-slate-900">Proof Submitted!</h2>
+                        <p className="text-muted-foreground mt-2">Your payment is now <strong>pending admin review</strong></p>
+                      </>
+                    )}
                     <p className="text-sm text-blue-700 mt-1 font-mono">Reference: {submittedRef}</p>
                   </div>
 
@@ -821,9 +895,9 @@ export default function Payments() {
                         }`}>{aiReport.aiNote}</p>
                       </div>
 
-                      <div className="bg-blue-50 rounded-xl p-4 border border-blue-200 text-sm text-blue-800 flex items-start gap-2">
+                      <div className={`rounded-xl p-4 border text-sm flex items-start gap-2 ${autoVerified ? "bg-emerald-50 border-emerald-200 text-emerald-800" : "bg-blue-50 border-blue-200 text-blue-800"}`}>
                         <Shield className="h-4 w-4 shrink-0 mt-0.5" />
-                        <p>This is an AI analysis report. <strong>Course access will only be activated after admin approval.</strong></p>
+                        <p>{autoVerified ? "✅ Your payment was automatically verified by AI OCR. Course access will be activated within minutes." : "This is an AI analysis report. Course access will be activated after admin approval (usually within 24 hours)."}</p>
                       </div>
                     </CardContent>
                   </Card>
@@ -837,6 +911,7 @@ export default function Payments() {
                       setProofImage(null); setProofFileName(""); setTransactionNumber("");
                       setPaymentDate(""); setSenderNumber(""); setStudentName("");
                       setStudentEmail(""); setCourseName(""); setAiReport(null);
+                      setOcrText(""); setOcrDone(false); setOcrError(false); setAutoVerified(false);
                     }}>
                       Make Another Payment
                     </Button>
