@@ -135,18 +135,38 @@ function computeSubscriptionStatus(profile: any) {
   };
 }
 
+function buildTrialDates() {
+  const now = new Date();
+  const end = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000);
+  return { trialStartDate: now, trialEndDate: end };
+}
+
 // GET /api/subscription/status
 router.get("/subscription/status", requireAuth, async (req: any, res) => {
   try {
-    const rows = await db
+    let rows = await db
       .select()
       .from(profilesTable)
       .where(eq(profilesTable.clerkId, req.userId))
       .limit(1);
 
     if (!rows[0]) {
-      res.status(404).json({ error: "Profile not found" });
-      return;
+      // Auto-create profile with trial so new users are never blocked
+      const trial = buildTrialDates();
+      const inserted = await db
+        .insert(profilesTable)
+        .values({ clerkId: req.userId, displayName: "Student", ...trial })
+        .returning();
+      rows = inserted;
+    } else if (!rows[0].trialStartDate) {
+      // Backfill: existing profile has no trial — grant 2 days starting now
+      const trial = buildTrialDates();
+      const updated = await db
+        .update(profilesTable)
+        .set(trial)
+        .where(eq(profilesTable.clerkId, req.userId))
+        .returning();
+      rows = updated;
     }
 
     const status = computeSubscriptionStatus(rows[0]);
