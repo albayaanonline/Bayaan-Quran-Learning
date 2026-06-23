@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useUser } from "@clerk/react";
+import { useUser, useAuth } from "@clerk/react";
 
 export interface SubscriptionStatus {
   trialStatus: "active" | "expired" | "none";
@@ -27,12 +27,17 @@ const BASE = import.meta.env.BASE_URL?.replace(/\/$/, "") ?? "";
 
 export function useSubscription() {
   const { isSignedIn } = useUser();
+  const { getToken } = useAuth();
 
   const query = useQuery<SubscriptionStatus>({
     queryKey: ["subscription-status"],
     queryFn: async () => {
+      const token = await getToken();
+      const headers: Record<string, string> = {};
+      if (token) headers["Authorization"] = `Bearer ${token}`;
       const res = await fetch(`${BASE}/api/subscription/status`, {
         credentials: "include",
+        headers,
       });
       if (!res.ok) throw new Error("Failed to fetch subscription status");
       return res.json();

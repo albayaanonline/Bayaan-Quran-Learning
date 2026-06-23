@@ -7,11 +7,31 @@ import { SURAHS } from "./surahs";
 
 const router: IRouter = Router();
 
+function buildTrialDates() {
+  const now = new Date();
+  const end = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000);
+  return { trialStartDate: now, trialEndDate: end };
+}
+
 async function getOrCreateProfile(userId: string) {
   let rows = await db.select().from(profilesTable).where(eq(profilesTable.clerkId, userId)).limit(1);
   if (rows.length === 0) {
-    const inserted = await db.insert(profilesTable).values({ clerkId: userId, displayName: "Student" }).returning();
+    const trial = buildTrialDates();
+    const inserted = await db.insert(profilesTable).values({
+      clerkId: userId,
+      displayName: "Student",
+      ...trial,
+    }).returning();
     rows = inserted;
+  } else if (!rows[0].trialStartDate) {
+    // Backfill: existing profile has no trial — grant one now
+    const trial = buildTrialDates();
+    const updated = await db
+      .update(profilesTable)
+      .set(trial)
+      .where(eq(profilesTable.clerkId, userId))
+      .returning();
+    rows = updated;
   }
   return rows[0];
 }
