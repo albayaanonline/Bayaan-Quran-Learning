@@ -1,6 +1,7 @@
 import { useEffect, useRef, Component } from "react";
 import type { ReactNode } from "react";
 import { ClerkProvider, SignIn, SignUp, Show, useClerk, ClerkLoading } from "@clerk/react";
+import { publishableKeyFromHost } from "@clerk/react/internal";
 import { shadcn } from "@clerk/themes";
 import { Switch, Route, useLocation, Router as WouterRouter, Redirect } from "wouter";
 import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
@@ -55,18 +56,17 @@ import Pricing from "./pages/pricing";
 
 const queryClient = new QueryClient();
 
-// Use the publishable key directly — never use publishableKeyFromHost for live
-// keys: that function ignores pk_live_ keys and constructs a synthetic key from
-// the hostname, which is always invalid and causes Clerk to silently hang.
-const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as string | undefined;
-// Only use proxyUrl on Replit dev domains — on Vercel/custom domains it causes
-// a key/proxy mismatch that makes Clerk crash silently (blank page).
-const _rawProxy = import.meta.env.VITE_CLERK_PROXY_URL as string | undefined;
-const _isReplitDomain =
-  window.location.hostname.includes("replit.dev") ||
-  window.location.hostname.includes("replit.app") ||
-  window.location.hostname.includes("riker.replit");
-const clerkProxyUrl = _isReplitDomain ? _rawProxy : undefined;
+// Resolves the publishable key from the hostname — required for Replit-managed
+// Clerk so the same build works across dev (test key) and prod (live key derived
+// from the domain). VITE_CLERK_PUBLISHABLE_KEY is auto-provisioned by Replit;
+// do NOT replace this with the raw env var.
+const clerkPubKey = publishableKeyFromHost(
+  window.location.hostname,
+  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
+);
+// Unconditional — empty in dev (Clerk hits FAPI directly), auto-set in prod.
+// Do NOT gate on NODE_ENV or hostname — the empty dev value is intentional.
+const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL as string | undefined;
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 function stripBase(path: string): string {
