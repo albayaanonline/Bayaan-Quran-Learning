@@ -10,10 +10,6 @@
   },
   "rewrites": [
     {
-      "source": "/api/:path*",
-      "destination": "https://8ec4ea82-f917-4de5-8a02-48dcad990d4d-00-2lhtipg0kb2in.janeway.replit.dev/api/:path*"
-    },
-    {
       "source": "/((?!api/).*)",
       "destination": "/index.html"
     }

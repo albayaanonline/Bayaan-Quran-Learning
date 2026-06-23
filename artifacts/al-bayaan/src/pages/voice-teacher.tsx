@@ -28,7 +28,7 @@ const SR_CLASS: (new () => any) | null =
     ? ((window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition ?? null)
     : null;
 
-const BASE_PATH = (import.meta.env.BASE_URL || "").replace(/\/$/, "");
+const BASE_PATH = ((import.meta.env.VITE_API_BASE_URL as string) || "").replace(/\/$/, "");
 
 // Human-readable error messages for every known failure mode
 function describeTranscriptionError(errorDetail: string | undefined): string {

@@ -143,7 +143,7 @@ const SR_CLASS_VT: (new () => any) | null =
     ? ((window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition ?? null)
     : null;
 
-const BASE_PATH = (import.meta.env.BASE_URL || "").replace(/\/$/, "");
+const BASE_PATH = ((import.meta.env.VITE_API_BASE_URL as string) || "").replace(/\/$/, "");
 
 export default function VideoTeacher() {
   const { toast } = useToast();

@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, X, Sparkles, RotateCcw } from "lucide-react";
 
-const API_BASE = import.meta.env.BASE_URL?.replace(/\/$/, "") ?? "";
+const API_BASE = ((import.meta.env.VITE_API_BASE_URL as string) || "").replace(/\/$/, "");
 
 const WELCOME = `Assalamu Alaikum 👋
 

@@ -23,7 +23,7 @@ export interface SubscriptionStatus {
   displayName: string;
 }
 
-const BASE = import.meta.env.BASE_URL?.replace(/\/$/, "") ?? "";
+const BASE = ((import.meta.env.VITE_API_BASE_URL as string) || "").replace(/\/$/, "");
 
 export function useSubscription() {
   const { isSignedIn } = useUser();

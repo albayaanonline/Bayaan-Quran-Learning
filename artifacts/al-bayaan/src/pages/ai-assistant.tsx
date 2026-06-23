@@ -220,7 +220,7 @@ function getLocalResponse(userMessage: string): string {
   return FALLBACK_RESPONSES.default;
 }
 
-const BASE_URL = import.meta.env.BASE_URL.replace(/\/$/, "");
+const BASE_URL = ((import.meta.env.VITE_API_BASE_URL as string) || "").replace(/\/$/, "");
 
 async function fetchAIResponse(messages: { role: string; content: string }[]): Promise<string> {
   try {
