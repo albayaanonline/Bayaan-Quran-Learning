@@ -227,7 +227,6 @@ const EN: Translations = {
   "hifdh.status.strong":    "Strong",
 
   // ── Quran / Learn ────────────────────────────────────────────────────────────
-  "learn.title":        "Quran",
   "learn.selectSurah":  "Select a Surah",
   "learn.listenFirst":  "Listen first",
   "learn.record":       "Record",
@@ -468,7 +467,6 @@ const EN: Translations = {
   "hifdh.errorLoad": "Could not load Hifdh data.",
   "hifdh.errorAdd": "Could not add surah.",
   "hifdh.errorRevise": "Could not record revision.",
-  "hifdh.revisions": "revisions",
   "hifdh.memorizedCheck": "Memorized ✓",
 
   // ── Teacher Dashboard ─────────────────────────────────────────────────────────
@@ -500,8 +498,6 @@ const EN: Translations = {
   "teacher.noStudents": "No students yet",
   "teacher.missedTimes": "× missed",
   "teacher.recentRecordings": "Recent Recordings",
-  "teacher.surahProgress": "Surah Progress",
-  "teacher.noRecordings": "No recordings yet",
   "teacher.noSurahsStarted": "No surahs started yet",
   "teacher.back": "Back",
 
@@ -577,10 +573,7 @@ const EN: Translations = {
 
   // ── Library ───────────────────────────────────────────────────────────────────
   "lib.searchPh": "Search books…",
-  "lib.featured": "Featured",
-  "lib.lessons": "lessons",
   "lib.started": "started",
-  "lib.completed": "completed",
 
   // ── Learn (Surahs) ────────────────────────────────────────────────────────────
   "learn.surahs": "Surahs",
@@ -927,7 +920,6 @@ const AR: Translations = {
   "hifdh.status.strong":    "قوي",
 
   // ── Quran / Learn ────────────────────────────────────────────────────────────
-  "learn.title":        "القرآن الكريم",
   "learn.selectSurah":  "اختر سورة",
   "learn.listenFirst":  "استمع أولاً",
   "learn.record":       "تسجيل",
@@ -1168,7 +1160,6 @@ const AR: Translations = {
   "hifdh.errorLoad": "تعذر تحميل بيانات الحفظ.",
   "hifdh.errorAdd": "تعذر إضافة السورة.",
   "hifdh.errorRevise": "تعذر تسجيل المراجعة.",
-  "hifdh.revisions": "مراجعة",
   "hifdh.memorizedCheck": "محفوظة ✓",
 
   // ── Teacher Dashboard ─────────────────────────────────────────────────────────
@@ -1200,8 +1191,6 @@ const AR: Translations = {
   "teacher.noStudents": "لا يوجد طلاب بعد",
   "teacher.missedTimes": "× فائت",
   "teacher.recentRecordings": "التسجيلات الأخيرة",
-  "teacher.surahProgress": "تقدم السور",
-  "teacher.noRecordings": "لا توجد تسجيلات بعد",
   "teacher.noSurahsStarted": "لم تبدأ أي سورة بعد",
   "teacher.back": "رجوع",
 
@@ -1277,10 +1266,7 @@ const AR: Translations = {
 
   // ── Library ───────────────────────────────────────────────────────────────────
   "lib.searchPh": "ابحث في الكتب…",
-  "lib.featured": "مميز",
-  "lib.lessons": "دروس",
   "lib.started": "بدأت",
-  "lib.completed": "مكتمل",
 
   // ── Learn (Surahs) ────────────────────────────────────────────────────────────
   "learn.surahs": "السور",
@@ -1627,7 +1613,6 @@ const SO: Translations = {
   "hifdh.status.strong":    "Xoog leh",
 
   // ── Quran / Learn ────────────────────────────────────────────────────────────
-  "learn.title":        "Quraanka Kariimka",
   "learn.selectSurah":  "Dooro Suurad",
   "learn.listenFirst":  "Dhageyso marka hore",
   "learn.record":       "Duub",
@@ -1868,7 +1853,6 @@ const SO: Translations = {
   "hifdh.errorLoad": "Xogta Xifdhiga lama soo gelin karin.",
   "hifdh.errorAdd": "Suuradda lama ku dayn karin.",
   "hifdh.errorRevise": "Dib-u-eegista lama diiwaan galin karin.",
-  "hifdh.revisions": "dib-u-eegis",
   "hifdh.memorizedCheck": "La xifdhi ✓",
 
   // ── Teacher Dashboard ─────────────────────────────────────────────────────────
@@ -1900,8 +1884,6 @@ const SO: Translations = {
   "teacher.noStudents": "Ardayal ma jiraan weli",
   "teacher.missedTimes": "× la maqlay",
   "teacher.recentRecordings": "Diiwaanaadkii Dhawaa",
-  "teacher.surahProgress": "Horumarinta Suurada",
-  "teacher.noRecordings": "Diiwaanaad ma jiraan weli",
   "teacher.noSurahsStarted": "Suurad ma bilaabaan weli",
   "teacher.back": "Dib u noqo",
 
@@ -1977,10 +1959,7 @@ const SO: Translations = {
 
   // ── Library ───────────────────────────────────────────────────────────────────
   "lib.searchPh": "Raadi buugaagta…",
-  "lib.featured": "Xiddigaysan",
-  "lib.lessons": "casharo",
   "lib.started": "la bilaabay",
-  "lib.completed": "dhammaystay",
 
   // ── Learn (Surahs) ────────────────────────────────────────────────────────────
   "learn.surahs": "Suuradaha",
