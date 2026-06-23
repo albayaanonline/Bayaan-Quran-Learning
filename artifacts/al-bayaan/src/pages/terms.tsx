@@ -138,7 +138,7 @@ export default function Terms() {
         </div>
 
         <div className="mt-12 text-center text-sm text-muted-foreground">
-          <p>Questions? Contact us at <a href="mailto:legal@albayaan.app" className="text-primary hover:underline">legal@albayaan.app</a></p>
+          <p>Questions? Contact us at <a href="mailto:legal@bayaan.online" className="text-primary hover:underline">legal@bayaan.online</a></p>
           <div className="flex justify-center gap-4 mt-3">
             <Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
             <Link href="/contact" className="hover:text-primary transition-colors">Contact Us</Link>

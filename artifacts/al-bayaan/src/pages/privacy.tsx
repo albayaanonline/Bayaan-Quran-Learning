@@ -66,15 +66,15 @@ No method of transmission over the internet is 100% secure, but we strive to use
 • **Portability**: Export your learning progress data.
 • **Opt-out**: Unsubscribe from marketing emails at any time.
 
-To exercise any of these rights, contact us at privacy@albayaan.app. We will respond within 30 days.`,
+To exercise any of these rights, contact us at privacy@bayaan.online. We will respond within 30 days.`,
   },
   {
     icon: Mail,
     title: "Contact Us",
     content: `If you have any questions about this Privacy Policy or our data practices, please contact us:
 
-• **Email**: privacy@albayaan.app
-• **Support**: help@albayaan.app
+• **Email**: privacy@bayaan.online
+• **Support**: help@bayaan.online
 • **Address**: Al Bayaan AI Academy
 
 We are committed to resolving any privacy concerns you have promptly and transparently.`,

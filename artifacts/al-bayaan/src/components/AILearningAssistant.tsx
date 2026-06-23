@@ -389,7 +389,7 @@ export default function AILearningAssistant() {
                   <Send className="w-3.5 h-3.5 text-white" />
                 </button>
               </div>
-              <p className="text-center text-white/15 text-[9px] mt-1.5">Powered by Al Bayaan AI · albayaanquraan.xyz</p>
+              <p className="text-center text-white/15 text-[9px] mt-1.5">Powered by Al Bayaan AI · bayaan.online</p>
             </div>
           </motion.div>
         )}

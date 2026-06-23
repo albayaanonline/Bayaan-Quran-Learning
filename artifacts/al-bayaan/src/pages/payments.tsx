@@ -19,6 +19,25 @@ import { formatDistanceToNow } from "date-fns";
 
 const BASE = (import.meta.env.BASE_URL || "").replace(/\/$/, "");
 
+// Compress image to max 1024px wide, JPEG 0.65 quality — keeps base64 under ~300KB
+function compressImage(dataUrl: string, maxWidth = 1024, quality = 0.65): Promise<string> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const ratio = Math.min(1, maxWidth / img.width);
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(img.width * ratio);
+      canvas.height = Math.round(img.height * ratio);
+      const ctx = canvas.getContext("2d");
+      if (!ctx) { resolve(dataUrl); return; }
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL("image/jpeg", quality));
+    };
+    img.onerror = () => resolve(dataUrl);
+    img.src = dataUrl;
+  });
+}
+
 const WA_NUMBER = "252656042512";
 const WA_URL = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent("Assalamu Alaikum! I need help with Sahal/M-Pesa payment for Al Bayaan AI Academy.")}`;
 
@@ -326,18 +345,20 @@ export default function Payments() {
       toast({ title: "Images only", description: "Please upload an image file (PNG, JPG, etc.)", variant: "destructive" });
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      toast({ title: "File too large", description: "Max 5MB allowed", variant: "destructive" });
+    if (file.size > 10 * 1024 * 1024) {
+      toast({ title: "File too large", description: "Max 10MB allowed", variant: "destructive" });
       return;
     }
     const reader = new FileReader();
-    reader.onloadend = () => {
-      const result = reader.result as string;
-      setProofImage(result);
+    reader.onloadend = async () => {
+      const raw = reader.result as string;
+      // Compress before storing — keeps JSON body under 300KB even for large screenshots
+      const compressed = await compressImage(raw);
+      setProofImage(compressed);
       setProofFileName(file.name);
       setOcrDone(false);
       setOcrText("");
-      performOCR(result);
+      performOCR(raw); // Run OCR on original (higher resolution = better accuracy)
     };
     reader.readAsDataURL(file);
   }, [toast, performOCR]);
@@ -384,8 +405,16 @@ export default function Payments() {
           ocrText,
         }),
       });
-      const data = await r.json();
-      if (!r.ok) throw new Error(data.error || "Failed to submit");
+      // Safe JSON parsing — API may return HTML on network errors
+      const rawText = await r.text();
+      let data: any;
+      try {
+        data = JSON.parse(rawText);
+      } catch {
+        console.error("[Payment] Non-JSON response:", rawText.slice(0, 200));
+        throw new Error("Server error. Please check your connection and try again.");
+      }
+      if (!r.ok) throw new Error(data?.error || `Server error (${r.status})`);
       setAiReport(data.aiReport);
       setSubmittedRef(data.reference);
       setAutoVerified(data.autoVerified === true);

@@ -44,7 +44,7 @@ export async function sendEmail(payload: EmailPayload): Promise<boolean> {
   const t = await getTransporter();
   if (!t) return false;
 
-  const from = process.env.SMTP_FROM ?? process.env.SMTP_USER ?? "noreply@albayaan.com";
+  const from = process.env.SMTP_FROM ?? process.env.SMTP_USER ?? "noreply@bayaan.online";
 
   try {
     await t.sendMail({ from, to: payload.to, subject: payload.subject, text: payload.text, html: payload.html });

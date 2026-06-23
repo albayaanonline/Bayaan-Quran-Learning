@@ -28,7 +28,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
           <div className="flex flex-col items-center gap-4 px-8 md:flex-row md:gap-2 md:px-0">
             <img src="/logo.svg" alt="Al Bayaan" className="h-6 w-auto brightness-0 invert" />
             <p className="text-center text-sm leading-loose md:text-left opacity-75">
-              © 2025 Al Bayaan AI Academy. albayaanquraan.xyz
+              © 2026 Al Bayaan AI Academy. bayaan.online
             </p>
           </div>
           <nav className="flex items-center gap-6 text-sm opacity-60">
