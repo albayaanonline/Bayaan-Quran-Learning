@@ -65,7 +65,14 @@ try {
 } catch {
   clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as string | undefined;
 }
-const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL as string | undefined;
+// Only use proxyUrl on Replit dev domains — on Vercel/custom domains it causes
+// a key/proxy mismatch that makes Clerk crash silently (blank page).
+const _rawProxy = import.meta.env.VITE_CLERK_PROXY_URL as string | undefined;
+const _isReplitDomain =
+  window.location.hostname.includes("replit.dev") ||
+  window.location.hostname.includes("replit.app") ||
+  window.location.hostname.includes("riker.replit");
+const clerkProxyUrl = _isReplitDomain ? _rawProxy : undefined;
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 function stripBase(path: string): string {
