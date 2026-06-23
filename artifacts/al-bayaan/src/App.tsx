@@ -1,7 +1,6 @@
 import { useEffect, useRef, Component } from "react";
 import type { ReactNode } from "react";
 import { ClerkProvider, SignIn, SignUp, Show, useClerk, ClerkLoading } from "@clerk/react";
-import { publishableKeyFromHost } from "@clerk/react/internal";
 import { shadcn } from "@clerk/themes";
 import { Switch, Route, useLocation, Router as WouterRouter, Redirect } from "wouter";
 import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
@@ -56,15 +55,10 @@ import Pricing from "./pages/pricing";
 
 const queryClient = new QueryClient();
 
-let clerkPubKey: string | undefined;
-try {
-  clerkPubKey = publishableKeyFromHost(
-    window.location.hostname,
-    import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
-  );
-} catch {
-  clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as string | undefined;
-}
+// Use the publishable key directly — never use publishableKeyFromHost for live
+// keys: that function ignores pk_live_ keys and constructs a synthetic key from
+// the hostname, which is always invalid and causes Clerk to silently hang.
+const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as string | undefined;
 // Only use proxyUrl on Replit dev domains — on Vercel/custom domains it causes
 // a key/proxy mismatch that makes Clerk crash silently (blank page).
 const _rawProxy = import.meta.env.VITE_CLERK_PROXY_URL as string | undefined;
