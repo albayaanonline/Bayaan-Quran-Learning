@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { authFetch } from "@/lib/api";
 import AppLayout from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -207,8 +208,8 @@ export default function Muraajacah() {
     setLoading(true);
     try {
       const [entriesRes, planRes] = await Promise.all([
-        fetch("/api/hifdh", { credentials: "include" }),
-        fetch("/api/hifdh/plan", { credentials: "include" }),
+        authFetch("/api/hifdh", { }),
+        authFetch("/api/hifdh/plan", { }),
       ]);
 
       if (entriesRes.ok) {
@@ -242,10 +243,9 @@ export default function Muraajacah() {
   const handleRevise = async (entryId: number, quality: number) => {
     setRevisingId(entryId);
     try {
-      const res = await fetch(`/api/hifdh/${entryId}/revise`, {
+      const res = await authFetch(`/api/hifdh/${entryId}/revise`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ quality }),
       });
       if (!res.ok) throw new Error("Failed");
@@ -273,8 +273,7 @@ export default function Muraajacah() {
     const ctrl = new AbortController();
     abortRef.current = ctrl;
     try {
-      const r = await fetch("/api/hifdh/ai-coach", {
-        credentials: "include",
+      const r = await authFetch("/api/hifdh/ai-coach", {
         signal: ctrl.signal,
       });
       if (!r.ok) throw new Error(`HTTP ${r.status}`);

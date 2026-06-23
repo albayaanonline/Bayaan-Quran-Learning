@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { authFetch } from "@/lib/api";
 import AppLayout from "@/components/layout/AppLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -219,7 +220,7 @@ function VerifyPanel() {
     setResult(null);
     try {
       const basePath = (import.meta.env.BASE_URL || "").replace(/\/$/, "");
-      const r = await fetch(`${basePath}/api/certificates/verify/${code.trim().toUpperCase()}`);
+      const r = await authFetch(`/api/certificates/verify/${code.trim().toUpperCase()}`);
       const data = await r.json();
       setResult(data);
     } catch { setResult({ valid: false, message: t("certs.verifyFail") }); }
@@ -269,7 +270,7 @@ export default function Certificates() {
 
   useEffect(() => {
     const basePath = (import.meta.env.BASE_URL || "").replace(/\/$/, "");
-    fetch(`${basePath}/api/certificates`, { credentials: "include" })
+    authFetch(`/api/certificates`, { })
       .then(r => r.ok ? r.json() : [])
       .then(data => setCerts(Array.isArray(data) ? data : []))
       .catch(() => {})

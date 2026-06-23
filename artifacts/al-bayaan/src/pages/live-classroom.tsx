@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { authFetch } from "@/lib/api";
 import AppLayout from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -159,7 +160,7 @@ export default function LiveClassroom() {
   });
 
   useEffect(() => {
-    fetch("/api/live-classroom/sessions", { credentials: "include" })
+    authFetch("/api/live-classroom/sessions", { })
       .then(r => r.ok ? r.json() : null)
       .then(d => { if (d && Array.isArray(d)) setClasses([...SAMPLE_CLASSES, ...d]); })
       .catch(() => {});
@@ -187,10 +188,9 @@ export default function LiveClassroom() {
     }
     setLoading(true);
     try {
-      const r = await fetch("/api/live-classroom/sessions", {
+      const r = await authFetch("/api/live-classroom/sessions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify(newClass),
       });
       const d = await r.json();

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { authFetch } from "@/lib/api";
 import AppLayout from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -108,10 +109,9 @@ function AddContentDialog({ onAdded }: { onAdded: () => void }) {
     if (!form.title.trim()) { toast({ title: "Title is required", variant: "destructive" }); return; }
     setSaving(true);
     try {
-      const r = await fetch("/api/cms/content", {
+      const r = await authFetch("/api/cms/content", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({
           ...form,
           tags: form.tags ? form.tags.split(",").map(t => t.trim()).filter(Boolean) : [],
@@ -204,7 +204,7 @@ export default function CMS() {
 
   const load = () => {
     setLoading(true);
-    fetch("/api/cms/content", { credentials: "include" })
+    authFetch("/api/cms/content", { })
       .then(r => r.ok ? r.json() : [])
       .then(data => setItems(Array.isArray(data) ? data : []))
       .catch(() => {})
@@ -214,7 +214,7 @@ export default function CMS() {
   useEffect(() => { load(); }, []);
 
   const handleDownload = async (id: number) => {
-    await fetch(`/api/cms/content/${id}/download`, { method: "POST", credentials: "include" }).catch(() => {});
+    await authFetch(`/api/cms/content/${id}/download`, { method: "POST" }).catch(() => {});
   };
 
   const filtered = items.filter(item => {

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { authFetch } from "@/lib/api";
 import AppLayout from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -50,10 +51,9 @@ function GeneratorPanel({
     setLoading(true);
     setResult("");
     try {
-      const r = await fetch("/api/content-generator/generate", {
+      const r = await authFetch("/api/content-generator/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ type, subject, level, topic, count: parseInt(count) }),
       });
       if (!r.ok) throw new Error();

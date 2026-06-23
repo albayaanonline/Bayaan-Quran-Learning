@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { authFetch } from "@/lib/api";
 import AppLayout from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -46,7 +47,7 @@ export default function StudyPlanner() {
   const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
-    fetch("/api/hifdh", { credentials: "include" })
+    authFetch("/api/hifdh", { })
       .then(r => r.ok ? r.json() : [])
       .then(data => setHifdhCount(Array.isArray(data) ? data.length : 0))
       .catch(() => {});
@@ -57,10 +58,9 @@ export default function StudyPlanner() {
     setPlan("");
 
     try {
-      const r = await fetch("/api/study-planner/generate", {
+      const r = await authFetch("/api/study-planner/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({}),
       });
       if (!r.ok) throw new Error(`HTTP ${r.status}`);

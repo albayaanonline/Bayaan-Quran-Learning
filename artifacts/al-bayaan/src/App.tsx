@@ -1,7 +1,8 @@
 import { useEffect, useRef, Component } from "react";
 import type { ReactNode } from "react";
 import { ClerkProvider, SignIn, SignUp, Show, useClerk, ClerkLoading, useAuth } from "@clerk/react";
-import { setAuthTokenGetter } from "@workspace/api-client-react";
+import { setAuthTokenGetter, setBaseUrl } from "@workspace/api-client-react";
+import { setApiTokenGetter } from "@/lib/api";
 import { publishableKeyFromHost } from "@clerk/react/internal";
 import { shadcn } from "@clerk/themes";
 import { Switch, Route, useLocation, Router as WouterRouter, Redirect } from "wouter";
@@ -255,13 +256,23 @@ function MissingConfigError({ message }: { message: string }) {
   );
 }
 
-// Sets up Bearer-token auth for all customFetch-based API calls.
+// Set base URL for all customFetch-based calls once at module load.
+// VITE_API_BASE_URL is empty on Replit deployment (same-domain), and set to
+// the stable Replit deployment URL in Vercel env vars.
+setBaseUrl((import.meta.env.VITE_API_BASE_URL as string) || "");
+
+// Sets up Bearer-token auth for customFetch AND authFetch (bare fetch wrapper).
 // Required for cross-origin deployments (e.g. Vercel frontend → Replit API).
 function SetupApiAuth() {
   const { getToken } = useAuth();
   useEffect(() => {
-    setAuthTokenGetter(() => getToken());
-    return () => setAuthTokenGetter(null);
+    const getter = () => getToken();
+    setAuthTokenGetter(getter);
+    setApiTokenGetter(getter);
+    return () => {
+      setAuthTokenGetter(null);
+      setApiTokenGetter(null);
+    };
   }, [getToken]);
   return null;
 }

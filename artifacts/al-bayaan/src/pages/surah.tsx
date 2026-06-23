@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { authFetch } from "@/lib/api";
 import { useParams, Link } from "wouter";
 import { useGetSurah, useListAyahs, useGetSurahProgress } from "@workspace/api-client-react";
 import AppLayout from "@/components/layout/AppLayout";
@@ -276,10 +277,9 @@ export default function SurahDetail() {
     });
 
     try {
-      const resp = await fetch("/api/recordings", {
+      const resp = await authFetch("/api/recordings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({
           surahId,
           ayahId: currentAyah.number ?? 0,
@@ -314,7 +314,7 @@ export default function SurahDetail() {
     if (translation) { setShowTranslation(v => !v); return; }
     setLoadingTranslation(true);
     try {
-      const resp = await fetch(`/api/ayahs/${surahId}:${currentAyah?.numberInSurah}`, { credentials: "include" });
+      const resp = await authFetch(`/api/ayahs/${surahId}:${currentAyah?.numberInSurah}`, { });
       if (resp.ok) { const d = await resp.json(); setTranslation(d.translation ?? null); setShowTranslation(true); }
     } catch {} finally { setLoadingTranslation(false); }
   };

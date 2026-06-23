@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { authFetch } from "@/lib/api";
 import AppLayout from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -133,7 +134,7 @@ export default function Exams() {
 
   useEffect(() => {
     const basePath = (import.meta.env.BASE_URL || "").replace(/\/$/, "");
-    fetch(`${basePath}/api/exams`, { credentials: "include" })
+    authFetch(`/api/exams`, { })
       .then(r => r.ok ? r.json() : [])
       .then(data => setExams(Array.isArray(data) ? data : []))
       .catch(() => {})
@@ -153,7 +154,7 @@ export default function Exams() {
   const startExam = async (exam: Exam) => {
     try {
       const basePath = (import.meta.env.BASE_URL || "").replace(/\/$/, "");
-      const r = await fetch(`${basePath}/api/exams/${exam.id}/start`, { method: "POST", credentials: "include" });
+      const r = await authFetch(`/api/exams/${exam.id}/start`, { method: "POST" });
       if (r.ok) {
         const data = await r.json();
         setResultId(data.id);
@@ -171,10 +172,9 @@ export default function Exams() {
     setSubmitting(true);
     try {
       const basePath = (import.meta.env.BASE_URL || "").replace(/\/$/, "");
-      const r = await fetch(`${basePath}/api/exams/${activeExam.id}/submit`, {
+      const r = await authFetch(`/api/exams/${activeExam.id}/submit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ resultId, answers }),
       });
       if (r.ok) {
@@ -191,10 +191,9 @@ export default function Exams() {
     setEvaluating(true);
     try {
       const basePath = (import.meta.env.BASE_URL || "").replace(/\/$/, "");
-      const r = await fetch(`${basePath}/api/exams/${activeExam.id}/evaluate`, {
+      const r = await authFetch(`/api/exams/${activeExam.id}/evaluate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ answers }),
       });
       if (!r.ok) return;

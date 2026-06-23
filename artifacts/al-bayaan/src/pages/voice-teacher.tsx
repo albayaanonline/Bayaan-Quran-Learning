@@ -121,7 +121,6 @@ export default function VoiceTeacher() {
       const r = await fetch(`${BASE_PATH}/api/voice-teacher/message`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ text: trimmed, history }),
       });
 
@@ -313,7 +312,6 @@ export default function VoiceTeacher() {
       const r = await fetch(`${BASE_PATH}/api/voice-teacher/message`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ audioBase64, audioMimeType: blob.type, history }),
       });
 

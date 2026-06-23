@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { authFetch } from "@/lib/api";
 import AppLayout from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -112,10 +113,9 @@ function PaymentRow({ p, onAction }: { p: PaymentSubmission; onAction: () => voi
   const act = async (action: "approve" | "reject") => {
     setProcessing(true);
     try {
-      const r = await fetch(`${BASE}/api/admin/payments/${p.id}/${action}`, {
+      const r = await authFetch(`/api/admin/payments/${p.id}/${action}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ adminNotes: notes }),
       });
       if (!r.ok) throw new Error();
@@ -315,7 +315,7 @@ function PaymentsTab() {
     setLoading(true);
     setError(null);
     try {
-      const r = await fetch(`${BASE}/api/admin/payments?status=${statusFilter}`, { credentials: "include" });
+      const r = await authFetch(`/api/admin/payments?status=${statusFilter}`, { });
       if (!r.ok) { setError("Failed to load payments"); return; }
       setPayments(await r.json());
     } catch {
@@ -508,8 +508,8 @@ function AddResourceDialog({ onAdded }: { onAdded: () => void }) {
     if (!form.title.trim()) { toast({ title: "Title is required", variant: "destructive" }); return; }
     setSaving(true);
     try {
-      const r = await fetch(`${BASE}/api/cms/content`, {
-        method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include",
+      const r = await authFetch(`/api/cms/content`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...form, tags: form.tags ? form.tags.split(",").map((t: string) => t.trim()).filter(Boolean) : [], isPublished: true }),
       });
       if (r.ok) {
@@ -592,7 +592,7 @@ function ResourcesTab() {
 
   const load = () => {
     setLoading(true);
-    fetch(`${BASE}/api/cms/content`, { credentials: "include" })
+    authFetch(`/api/cms/content`, { })
       .then(r => r.ok ? r.json() : [])
       .then(data => setItems(Array.isArray(data) ? data : []))
       .catch(() => {})
@@ -602,13 +602,13 @@ function ResourcesTab() {
   useEffect(() => { load(); }, []);
 
   const handleDownload = async (id: number) => {
-    await fetch(`${BASE}/api/cms/content/${id}/download`, { method: "POST", credentials: "include" }).catch(() => {});
+    await authFetch(`/api/cms/content/${id}/download`, { method: "POST" }).catch(() => {});
   };
 
   const handleTogglePublish = async (id: number, current: boolean) => {
     try {
-      const r = await fetch(`${BASE}/api/cms/content/${id}`, {
-        method: "PATCH", headers: { "Content-Type": "application/json" }, credentials: "include",
+      const r = await authFetch(`/api/cms/content/${id}`, {
+        method: "PATCH", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isPublished: !current }),
       });
       if (r.ok) { toast({ title: current ? "Resource unpublished" : "Resource published" }); load(); }
@@ -619,7 +619,7 @@ function ResourcesTab() {
   const handleDelete = async (id: number) => {
     if (!confirm("Delete this resource? This cannot be undone.")) return;
     try {
-      const r = await fetch(`${BASE}/api/cms/content/${id}`, { method: "DELETE", credentials: "include" });
+      const r = await authFetch(`/api/cms/content/${id}`, { method: "DELETE" });
       if (r.ok) { toast({ title: "Resource deleted" }); load(); }
       else { toast({ title: "Failed to delete", variant: "destructive" }); }
     } catch { toast({ title: "Error", variant: "destructive" }); }
@@ -711,8 +711,8 @@ export default function Admin() {
     setError(null);
     try {
       const [statsRes, usersRes] = await Promise.all([
-        fetch(`${BASE}/api/admin/stats`, { credentials: "include" }),
-        fetch(`${BASE}/api/admin/users?limit=20`, { credentials: "include" }),
+        authFetch(`/api/admin/stats`, { }),
+        authFetch(`/api/admin/users?limit=20`, { }),
       ]);
       if (statsRes.status === 403) { setError("Access denied. Admin privileges required."); return; }
       if (!statsRes.ok) throw new Error(`Stats: HTTP ${statsRes.status}`);

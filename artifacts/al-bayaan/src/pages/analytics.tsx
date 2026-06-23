@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { authFetch } from "@/lib/api";
 import AppLayout from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -75,8 +76,8 @@ export default function Analytics() {
 
   useEffect(() => {
     Promise.all([
-      fetch("/api/analytics/overview", { credentials: "include" }).then(r => r.ok ? r.json() : null),
-      fetch("/api/analytics/tajweed", { credentials: "include" }).then(r => r.ok ? r.json() : null),
+      authFetch("/api/analytics/overview", { }).then(r => r.ok ? r.json() : null),
+      authFetch("/api/analytics/tajweed", { }).then(r => r.ok ? r.json() : null),
     ]).then(([overview, taj]) => {
       setData(overview);
       setTajweed(taj);

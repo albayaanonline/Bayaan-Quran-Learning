@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { authFetch } from "@/lib/api";
 import AppLayout from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -213,7 +214,7 @@ function PaymentHistory() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${BASE}/api/payments/history`, { credentials: "include" })
+    authFetch(`/api/payments/history`, { })
       .then(r => r.ok ? r.json() : [])
       .then(data => setRecords(Array.isArray(data) ? data : []))
       .catch(() => {})
@@ -386,10 +387,9 @@ export default function Payments() {
 
     setProcessing(true);
     try {
-      const r = await fetch(`${BASE}/api/payments/submit-proof`, {
+      const r = await authFetch(`/api/payments/submit-proof`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({
           planId: selectedPlan.id,
           billing,

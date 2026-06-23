@@ -223,7 +223,7 @@ export default function VideoTeacher() {
 
       const resp = await fetch(
         `${BASE_PATH}/api/tts?text=${encodeURIComponent(snippet)}&lang=${ttsLang}`,
-        { credentials: "include", signal: AbortSignal.timeout(12_000) }
+        { signal: AbortSignal.timeout(12_000) }
       );
       if (!resp.ok) return false;
 
@@ -326,7 +326,6 @@ export default function VideoTeacher() {
       const r = await fetch(`${BASE_PATH}/api/video-teacher/message`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         signal: ctrl.signal,
         body: JSON.stringify({ text: content, mode, language: lang, history }),
       });
@@ -474,7 +473,6 @@ export default function VideoTeacher() {
       const r = await fetch(`${BASE_PATH}/api/voice-teacher/message`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ audioBase64, audioMimeType: blob.type, history: messages.slice(-6) }),
       });
       if (!r.ok) throw new Error(`HTTP ${r.status}`);

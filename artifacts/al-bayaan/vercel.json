@@ -6,7 +6,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://cadb33fb-b58f-4cec-8f02-9487c6d03663-00-cdt0iu5aw8qn.riker.replit.dev/api/:path*"
+      "destination": "https://8ec4ea82-f917-4de5-8a02-48dcad990d4d-00-2lhtipg0kb2in.janeway.replit.dev/api/:path*"
     },
     {
       "source": "/((?!api/).*)",

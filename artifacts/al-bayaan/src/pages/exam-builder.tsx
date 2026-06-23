@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { authFetch } from "@/lib/api";
 import AppLayout from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -202,11 +203,11 @@ export default function ExamBuilder() {
   const loadExams = async () => {
     setLoading(true);
     try {
-      const r = await fetch("/api/exams", { credentials: "include" });
+      const r = await authFetch("/api/exams", { });
       if (r.ok) {
         const data = await r.json();
         // Show ALL exams (published + drafts) for teacher
-        const all = await fetch("/api/exams?all=true", { credentials: "include" });
+        const all = await authFetch("/api/exams?all=true", { });
         setExams(all.ok ? await all.json() : Array.isArray(data) ? data : []);
       }
     } catch {} finally { setLoading(false); }
@@ -248,7 +249,6 @@ export default function ExamBuilder() {
       const url = isNew ? "/api/exams" : `/api/exams/${(editingExam as Exam).id}`;
       const r = await fetch(url, {
         method, headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify(editingExam),
       });
       if (r.ok) {
@@ -264,7 +264,7 @@ export default function ExamBuilder() {
 
   const publishExam = async (id: number) => {
     try {
-      const r = await fetch(`/api/exams/${id}/publish`, { method: "PATCH", credentials: "include" });
+      const r = await authFetch(`/api/exams/${id}/publish`, { method: "PATCH" });
       if (r.ok) { toast({ title: "Exam published! Students can now take it." }); loadExams(); }
     } catch { toast({ title: "Failed to publish", variant: "destructive" }); }
   };
@@ -272,7 +272,7 @@ export default function ExamBuilder() {
   const deleteExam = async (id: number) => {
     if (!confirm("Delete this exam?")) return;
     try {
-      const r = await fetch(`/api/exams/${id}`, { method: "DELETE", credentials: "include" });
+      const r = await authFetch(`/api/exams/${id}`, { method: "DELETE" });
       if (r.ok || r.status === 204) { toast({ title: "Exam deleted" }); loadExams(); }
     } catch { toast({ title: "Failed to delete", variant: "destructive" }); }
   };

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { authFetch } from "@/lib/api";
 import AppLayout from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -113,8 +114,8 @@ export default function Hifdh() {
     setLoading(true);
     try {
       const [entriesRes, planRes] = await Promise.all([
-        fetch("/api/hifdh", { credentials: "include" }),
-        fetch("/api/hifdh/plan", { credentials: "include" }),
+        authFetch("/api/hifdh", { }),
+        authFetch("/api/hifdh/plan", { }),
       ]);
       if (entriesRes.ok) setEntries(await entriesRes.json());
       if (planRes.ok) setPlan(await planRes.json());
@@ -133,7 +134,7 @@ export default function Hifdh() {
     abortRef.current = ctrl;
 
     try {
-      const r = await fetch("/api/hifdh/ai-coach", { credentials: "include", signal: ctrl.signal });
+      const r = await authFetch("/api/hifdh/ai-coach", { signal: ctrl.signal });
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
       const reader = r.body!.getReader();
       const decoder = new TextDecoder();
@@ -169,10 +170,9 @@ export default function Hifdh() {
     const surahId = parseInt(selectedSurahId);
     const surah = surahs?.find((s) => s.number === surahId);
     try {
-      const res = await fetch("/api/hifdh", {
+      const res = await authFetch("/api/hifdh", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ surahId, ayahStart: 1, ayahEnd: surah?.ayahCount ?? 1 }),
       });
       if (res.status === 409) { toast({ title: t("hifdh.alreadyAdded"), description: t("hifdh.alreadyAddedSub") }); return; }
@@ -189,10 +189,9 @@ export default function Hifdh() {
   const revise = async (id: number, quality: string) => {
     setRevising(id);
     try {
-      const res = await fetch(`/api/hifdh/${id}/revise`, {
+      const res = await authFetch(`/api/hifdh/${id}/revise`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ quality }),
       });
       if (res.ok) {
@@ -208,7 +207,7 @@ export default function Hifdh() {
 
   const remove = async (id: number) => {
     try {
-      await fetch(`/api/hifdh/${id}`, { method: "DELETE", credentials: "include" });
+      await authFetch(`/api/hifdh/${id}`, { method: "DELETE" });
       setEntries((prev) => prev.filter((e) => e.id !== id));
       toast({ title: t("gen.removed") });
     } catch {}

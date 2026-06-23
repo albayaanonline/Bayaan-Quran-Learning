@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { authFetch } from "@/lib/api";
 import { useLocation } from "wouter";
 import AppLayout from "@/components/layout/AppLayout";
 import { Badge } from "@/components/ui/badge";
@@ -138,8 +139,8 @@ export default function Library() {
   useEffect(() => {
     setLoading(true);
     Promise.all([
-      fetch("/api/library/books", { credentials: "include" }),
-      fetch("/api/library/progress", { credentials: "include" }),
+      authFetch("/api/library/books", { }),
+      authFetch("/api/library/progress", { }),
     ])
       .then(async ([br, pr]) => {
         if (!br.ok) throw new Error("Failed to load books");

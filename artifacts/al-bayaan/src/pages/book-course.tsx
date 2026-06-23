@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { authFetch } from "@/lib/api";
 import { useParams, useLocation } from "wouter";
 import AppLayout from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -81,8 +82,8 @@ export default function BookCourse() {
     if (!bookId) return;
     setLoading(true);
     Promise.all([
-      fetch(`/api/library/books/${bookId}`, { credentials: "include" }),
-      fetch("/api/library/progress", { credentials: "include" }),
+      authFetch(`/api/library/books/${bookId}`, { }),
+      authFetch("/api/library/progress", { }),
     ])
       .then(async ([br, pr]) => {
         if (!br.ok) throw new Error("Course not found");
@@ -105,9 +106,8 @@ export default function BookCourse() {
     const newCompleted = Math.max(completedLessons, lessonNum);
     setSavingLesson(lessonNum);
     try {
-      const res = await fetch(`/api/library/progress/${bookId}`, {
+      const res = await authFetch(`/api/library/progress/${bookId}`, {
         method: "POST",
-        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ completedLessons: newCompleted }),
       });

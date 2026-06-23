@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { authFetch } from "@/lib/api";
 import AppLayout from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -324,10 +325,9 @@ export default function Mushaf() {
           const blob = new Blob(chunksRef.current, { type: mimeType });
           const audioBase64 = await buildAudioBase64(blob);
           const referenceText = getReferenceText();
-          const response = await fetch("/api/mushaf-recitation/analyze", {
+          const response = await authFetch("/api/mushaf-recitation/analyze", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            credentials: "include",
             body: JSON.stringify({
               audioBase64,
               mimeType,

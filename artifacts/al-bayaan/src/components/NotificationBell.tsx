@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { authFetch } from "@/lib/api";
 import { Bell, Check, X, Award, ClipboardList, Flame, BotMessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -53,7 +54,7 @@ export default function NotificationBell() {
 
   const fetchNotifications = async () => {
     try {
-      const r = await fetch("/api/notifications", { credentials: "include" });
+      const r = await authFetch("/api/notifications", { });
       if (r.ok) {
         const data = await r.json();
         setNotifications(Array.isArray(data) ? data : []);
@@ -79,19 +80,19 @@ export default function NotificationBell() {
   }, [open]);
 
   const markRead = async (id: number) => {
-    await fetch(`/api/notifications/${id}/read`, { method: "PATCH", credentials: "include" }).catch(() => {});
+    await authFetch(`/api/notifications/${id}/read`, { method: "PATCH" }).catch(() => {});
     setNotifications(n => n.map(x => x.id === id ? { ...x, isRead: true } : x));
     setUnread(c => Math.max(0, c - 1));
   };
 
   const markAllRead = async () => {
-    await fetch("/api/notifications/read-all", { method: "PATCH", credentials: "include" }).catch(() => {});
+    await authFetch("/api/notifications/read-all", { method: "PATCH" }).catch(() => {});
     setNotifications(n => n.map(x => ({ ...x, isRead: true })));
     setUnread(0);
   };
 
   const remove = async (id: number) => {
-    await fetch(`/api/notifications/${id}`, { method: "DELETE", credentials: "include" }).catch(() => {});
+    await authFetch(`/api/notifications/${id}`, { method: "DELETE" }).catch(() => {});
     const removed = notifications.find(n => n.id === id);
     setNotifications(n => n.filter(x => x.id !== id));
     if (removed && !removed.isRead) setUnread(c => Math.max(0, c - 1));

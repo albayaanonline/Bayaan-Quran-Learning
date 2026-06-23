@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { authFetch } from "@/lib/api";
 import AppLayout from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -133,7 +134,7 @@ export default function Messages() {
   const loadMessages = async () => {
     setLoading(true);
     try {
-      const r = await fetch(`${BASE}/api/messages?tab=${tab}`, { credentials: "include" });
+      const r = await authFetch(`/api/messages?tab=${tab}`, { });
       if (r.ok) setMessages(await r.json());
     } catch {
       toast({ title: "Error", description: "Could not load messages", variant: "destructive" });
@@ -164,10 +165,9 @@ export default function Messages() {
     if (!replyText.trim() || !selectedThread) return;
     setSending(true);
     try {
-      const r = await fetch(`${BASE}/api/messages`, {
+      const r = await authFetch(`/api/messages`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({
           receiverId: selectedThread,
           subject: `Re: ${selectedMsg?.subject || ""}`,
@@ -193,10 +193,9 @@ export default function Messages() {
     if (!composeBody.trim() || !composeSubject.trim()) return;
     setSending(true);
     try {
-      const r = await fetch(`${BASE}/api/messages/broadcast`, {
+      const r = await authFetch(`/api/messages/broadcast`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({
           subject: composeSubject,
           body: composeBody,
@@ -221,7 +220,7 @@ export default function Messages() {
   };
 
   const markRead = async (id: number) => {
-    await fetch(`${BASE}/api/messages/${id}/read`, { method: "PATCH", credentials: "include" });
+    await authFetch(`/api/messages/${id}/read`, { method: "PATCH" });
     setMessages(m => m.map(msg => msg.id === id ? { ...msg, isRead: true } : msg));
   };
 

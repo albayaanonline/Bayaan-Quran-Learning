@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { authFetch } from "@/lib/api";
 import AppLayout from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -73,7 +74,7 @@ function WeaknessPanel({ onPracticeRule }: { onPracticeRule: (rule: string) => v
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/teacher/weak-areas", { credentials: "include" })
+    authFetch("/api/teacher/weak-areas", { })
       .then(r => r.ok ? r.json() : null)
       .then(d => setData(d))
       .catch(() => {})
@@ -165,10 +166,9 @@ export default function TajweedTeacher() {
   }, [messages]);
 
   const createConversation = async (): Promise<number> => {
-    const r = await fetch("/api/teacher/conversations", {
+    const r = await authFetch("/api/teacher/conversations", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      credentials: "include",
       body: JSON.stringify({ title: "Tajweed Session" }),
     });
     const d = await r.json();
@@ -190,10 +190,9 @@ export default function TajweedTeacher() {
 
       const ctrl = new AbortController();
       abortRef.current = ctrl;
-      const r = await fetch(`/api/teacher/conversations/${id}/messages`, {
+      const r = await authFetch(`/api/teacher/conversations/${id}/messages`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         signal: ctrl.signal,
         body: JSON.stringify({ content, mode: "tajweed", language: "en" }),
       });

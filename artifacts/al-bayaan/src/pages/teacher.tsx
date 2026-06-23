@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { authFetch } from "@/lib/api";
 import AppLayout from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -77,7 +78,7 @@ export default function Teacher() {
 
   const loadConversations = async () => {
     try {
-      const res = await fetch("/api/teacher/conversations", { credentials: "include" });
+      const res = await authFetch("/api/teacher/conversations", { });
       if (res.ok) setConversations(await res.json());
     } catch {}
   };
@@ -86,7 +87,7 @@ export default function Teacher() {
     setActiveConvId(id);
     setIsLoading(true);
     try {
-      const res = await fetch(`/api/teacher/conversations/${id}`, { credentials: "include" });
+      const res = await authFetch(`/api/teacher/conversations/${id}`, { });
       if (res.ok) {
         const data = await res.json();
         setMessages(data.messages ?? []);
@@ -101,10 +102,9 @@ export default function Teacher() {
   const createConversation = async (firstMessage?: string) => {
     try {
       const title = firstMessage ? firstMessage.slice(0, 40) : "New Chat";
-      const res = await fetch("/api/teacher/conversations", {
+      const res = await authFetch("/api/teacher/conversations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ title }),
       });
       if (!res.ok) throw new Error();
@@ -121,7 +121,7 @@ export default function Teacher() {
 
   const deleteConversation = async (id: number) => {
     try {
-      await fetch(`/api/teacher/conversations/${id}`, { method: "DELETE", credentials: "include" });
+      await authFetch(`/api/teacher/conversations/${id}`, { method: "DELETE" });
       setConversations((prev) => prev.filter((c) => c.id !== id));
       if (activeConvId === id) { setActiveConvId(null); setMessages([]); }
     } catch {}
@@ -144,10 +144,9 @@ export default function Teacher() {
     setStreamingContent("");
 
     try {
-      const res = await fetch(`/api/teacher/conversations/${convId}/messages`, {
+      const res = await authFetch(`/api/teacher/conversations/${convId}/messages`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ content }),
       });
 

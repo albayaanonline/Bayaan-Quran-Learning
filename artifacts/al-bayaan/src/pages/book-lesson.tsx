@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { authFetch } from "@/lib/api";
 import { useParams, useLocation } from "wouter";
 import AppLayout from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -335,7 +336,7 @@ export default function BookLesson() {
     setPagesCompleted(new Set());
     setAiFeedback("");
 
-    fetch(`/api/arabic/lessons/${bookId}/${lessonNum}`, { credentials: "include" })
+    authFetch(`/api/arabic/lessons/${bookId}/${lessonNum}`, { })
       .then(async r => {
         if (!r.ok) throw new Error("Lesson not found");
         const d = await r.json();
@@ -348,9 +349,8 @@ export default function BookLesson() {
   useEffect(() => {
     if (!lesson || !bookId) return;
     if (pagesCompleted.size >= lesson.pages.length) {
-      fetch(`/api/library/progress/${bookId}`, {
+      authFetch(`/api/library/progress/${bookId}`, {
         method: "POST",
-        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ completedLessons: lessonNumber }),
       }).catch(() => {});
@@ -384,9 +384,8 @@ export default function BookLesson() {
         reader.readAsDataURL(audioBlob);
       });
 
-      const transcribeRes = await fetch("/api/transcribe", {
+      const transcribeRes = await authFetch("/api/transcribe", {
         method: "POST",
-        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ audioBase64: b64, language: "ar" }),
       });
@@ -397,9 +396,8 @@ export default function BookLesson() {
         transcription = td.text || td.transcription || "";
       }
 
-      const feedbackRes = await fetch("/api/arabic/feedback", {
+      const feedbackRes = await authFetch("/api/arabic/feedback", {
         method: "POST",
-        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           transcription: transcription || "[Could not transcribe — evaluating general pronunciation practice]",
