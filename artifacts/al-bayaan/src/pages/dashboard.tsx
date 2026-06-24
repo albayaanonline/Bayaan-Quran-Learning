@@ -1,9 +1,12 @@
-import { useGetDashboard } from "@workspace/api-client-react";
+import { useGetDashboard, useGetProfile } from "@workspace/api-client-react";
+import { useUser } from "@clerk/react";
+import { useLocation } from "wouter";
+import { useEffect } from "react";
 import AppLayout from "@/components/layout/AppLayout";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Flame, Star, BookOpen, Clock, Target, Zap, Trophy, ArrowRight, TrendingUp, MessageSquare, CreditCard, MessageCircle } from "lucide-react";
+import { Flame, Star, BookOpen, Clock, Target, Zap, Trophy, ArrowRight, TrendingUp, MessageSquare, CreditCard, MessageCircle, RefreshCw } from "lucide-react";
 import { motion } from "framer-motion";
 import { useI18n } from "@/lib/i18n";
 import { Link } from "wouter";
@@ -34,10 +37,31 @@ function Brain(props: React.SVGProps<SVGSVGElement>) {
 }
 
 export default function Dashboard() {
-  const { data: dashboard, isLoading } = useGetDashboard();
+  const { isSignedIn, isLoaded } = useUser();
+  const [, setLocation] = useLocation();
   const { t } = useI18n();
 
-  if (isLoading) {
+  // Don't call the dashboard API until Clerk has confirmed the session —
+  // this prevents a race condition where customFetch fires before setAuthTokenGetter runs.
+  const { data: dashboard, isLoading, isError, refetch } = useGetDashboard({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    query: { enabled: isLoaded && !!isSignedIn } as any,
+  });
+
+  // Load profile to detect new users who haven't completed onboarding
+  const { data: profile } = useGetProfile({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    query: { enabled: isLoaded && !!isSignedIn } as any,
+  });
+
+  // Redirect new users to onboarding before they see the dashboard
+  useEffect(() => {
+    if (profile && profile.onboardingComplete === false) {
+      setLocation("/onboarding");
+    }
+  }, [profile, setLocation]);
+
+  if (!isLoaded || isLoading) {
     return (
       <AppLayout>
         <div className="space-y-6 animate-fade-in">
@@ -54,10 +78,16 @@ export default function Dashboard() {
     );
   }
 
-  if (!dashboard) {
+  if (isError || !dashboard) {
     return (
       <AppLayout>
-        <div className="text-muted-foreground p-6">{t("dash.failedLoad", "Failed to load dashboard.")}</div>
+        <div className="flex flex-col items-center justify-center min-h-[300px] gap-4 text-center p-6">
+          <p className="text-muted-foreground">{t("dash.failedLoad", "Failed to load dashboard.")}</p>
+          <Button variant="outline" size="sm" onClick={() => refetch()} className="gap-2">
+            <RefreshCw className="h-4 w-4" />
+            Try again
+          </Button>
+        </div>
       </AppLayout>
     );
   }

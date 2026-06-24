@@ -50,10 +50,17 @@ export function useSubscription() {
   const status = query.data;
 
   const hasFeature = (feature: string): boolean => {
-    if (!status) return false;
-    if (!status.hasAccess) return false;
-    if (status.permissions.includes("all")) return true;
-    return status.permissions.includes(feature);
+    // Still loading — allow through (don't block while fetching)
+    if (query.isLoading) return true;
+    // Status loaded and valid
+    if (status) {
+      if (!status.hasAccess) return false;
+      if (status.permissions.includes("all")) return true;
+      return status.permissions.includes(feature);
+    }
+    // Status failed to load (network error, 401 on first load, etc.) — allow through
+    // so users aren't locked out by a transient error; re-fetch will correct this
+    return true;
   };
 
   return {
