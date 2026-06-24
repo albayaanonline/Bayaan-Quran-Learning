@@ -216,6 +216,7 @@ export function InstallBanner() {
       const timer = setTimeout(() => setVisible(true), 3000);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [deferredPrompt, isInstalled, dismissed]);
 
   const handleInstall = async () => {

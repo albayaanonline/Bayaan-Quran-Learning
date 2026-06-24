@@ -271,7 +271,7 @@ router.post("/recordings", requireAuth, async (req: any, res) => {
               type: "recitation",
               title: "New Recitation Completed",
               message: `${studentName} completed Ayah ${ayahNumber} of ${surahName} with a score of ${overallScore}%.`,
-              link: `/teacher-dashboard`,
+              data: { link: `/teacher-dashboard` },
               isRead: false,
             });
           }

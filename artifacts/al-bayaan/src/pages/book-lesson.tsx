@@ -102,7 +102,7 @@ function useRecorder() {
   const mrRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);
   const startTime = useRef(0);
-  const timerRef = useRef<NodeJS.Timeout>();
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const start = useCallback(async () => {
     try {
@@ -127,7 +127,7 @@ function useRecorder() {
   }, []);
 
   const stop = useCallback(() => {
-    clearInterval(timerRef.current);
+    if (timerRef.current !== null) clearInterval(timerRef.current);
     mrRef.current?.stop();
     setAudioDuration(0);
   }, []);

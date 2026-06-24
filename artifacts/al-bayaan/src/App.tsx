@@ -66,9 +66,12 @@ const clerkPubKey = publishableKeyFromHost(
   window.location.hostname,
   import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
 );
-// Unconditional — empty in dev (Clerk hits FAPI directly), auto-set in prod.
-// Do NOT gate on NODE_ENV or hostname — the empty dev value is intentional.
-const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL as string | undefined;
+// In production builds (import.meta.env.PROD === true), always route Clerk
+// through the on-domain proxy so session cookies work on the .replit.app domain.
+// In dev, skip the proxy — the middleware is a no-op in development anyway.
+const clerkProxyUrl: string | undefined = import.meta.env.PROD
+  ? `${window.location.origin}/api/__clerk`
+  : (import.meta.env.VITE_CLERK_PROXY_URL as string | undefined);
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 function stripBase(path: string): string {

@@ -33,7 +33,8 @@ const router = Router();
 
 const ADMIN_IDS = (process.env.ADMIN_USER_IDS || "").split(",").map(s => s.trim()).filter(Boolean);
 function requireAdmin(req: any, res: any, next: any) {
-  if (ADMIN_IDS.length > 0 && !ADMIN_IDS.includes(req.userId)) {
+  // Deny if ADMIN_USER_IDS is not configured OR the user is not in the list
+  if (ADMIN_IDS.length === 0 || !ADMIN_IDS.includes(req.userId)) {
     res.status(403).json({ error: "Forbidden: admin access required" });
     return;
   }

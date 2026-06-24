@@ -701,14 +701,14 @@ export default function Mushaf() {
                     })()}
 
                     {/* Extra words the student said that aren't in the reference */}
-                    {recitationResult && recitationResult.correction.incorrectWords.length > 0 && (
+                    {recitationResult && (recitationResult.correction?.incorrectWords.length ?? 0) > 0 && (
                       <div className="px-6 pb-4 border-t border-gray-100">
                         <p className="text-xs font-medium text-orange-700 mt-3 mb-1 flex items-center gap-1">
                           <AlertTriangle className="h-3.5 w-3.5" />
                           {t("mushaf.extra")} — 
                         </p>
                         <div className="flex flex-wrap gap-1.5" dir="rtl">
-                          {recitationResult.correction.incorrectWords.map((w, i) => (
+                          {recitationResult.correction?.incorrectWords.map((w, i) => (
                             <span key={i} className="inline-block bg-orange-100 text-orange-800 rounded px-2 py-0.5 text-sm border border-orange-200"
                               style={{ fontFamily: "var(--font-arabic)" }}>
                               {w}

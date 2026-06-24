@@ -70,7 +70,7 @@ mk("aqeedah-wasitiyya",4,"Tawhid al-Asma' wa-l-Sifat — Names & Attributes","ت
 "أَهْلُ السُّنَّةِ وَسَطٌ بَيْنَ طَرَفَيْن:\n\nالتَّعْطِيل (المُعْطِلَة): نَفْيُ الصِّفَات — «لَيْسَ لِلَّهِ يَدٌ — بَلِ المُرَادُ: نِعْمَتُهُ» ← بَاطِل\n\nالتَّمْثِيل (المُجَسِّمَة): تَشْبِيهُ الصِّفَات بِالمَخْلُوق ← بَاطِل\n\nالوَسَطُ الصَّحِيح:\nإِثْبَاتُ الصِّفَاتِ عَلَى الحَقِيقَةِ دُونَ تَأْوِيل وَدُونَ تَشْبِيه\n﴿لَيْسَ كَمِثْلِهِ شَيْءٌ وَهُوَ السَّمِيعُ البَصِير﴾ [الشورى: ١١]\n\nالمَنْهَجُ: أَمِرُّوهَا كَمَا جَاءَتْ — «بِلَا كَيْف»",
 "Ahl al-Sunnah are the middle path between two extremes:\n\nTa'til (Deniers): Denying attributes — 'Allah has no Hand — 'hand' means His blessing' ← false\n\nTamthil (Anthropomorphists): Likening attributes to creation ← false\n\nThe Correct Middle:\nAffirm the attributes as real without distorting or resembling to creation\n'There is nothing like Him, yet He is the All-Hearing, All-Seeing.' [42:11]\n\nThe method: Pass them as they came — 'without asking how (bila kayf)'",
 "«بِلَا كَيْفَ وَلَا مَعْنَى وَلَا تَشْبِيه» — الإِمَامُ مَالِك عِنْدَمَا سُئِلَ عَنِ الاسْتِوَاء. الصِّفَاتُ مَعْلُومَةٌ — وَالكَيْفِيَّةُ مَجْهُولَة — وَالسُّؤَالُ بِدْعَة.",
-[{arabic:"صِفَة",transliteration:"ṣifah",english:"attribute/characteristic",pos:"noun (f)", plural:"صِفَات"},
+[{arabic:"صِفَة",transliteration:"ṣifah",english:"attribute/characteristic",pos:"noun (f)"},
  {arabic:"تَعْطِيل",transliteration:"taʿṭīl",english:"denial of attributes",pos:"noun (m)"},
  {arabic:"تَمْثِيل",transliteration:"tamthīl",english:"anthropomorphism (likening to creation)",pos:"noun (m)"},
  {arabic:"بِلَا كَيْف",transliteration:"bilā kayf",english:"without asking 'how'",pos:"phrase"},

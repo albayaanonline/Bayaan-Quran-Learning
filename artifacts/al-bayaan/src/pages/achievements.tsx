@@ -104,7 +104,7 @@ export default function Achievements() {
                             </p>
                           )}
 
-                          {achievement.maxProgress && achievement.maxProgress > 1 && (
+                          {achievement.isUnlocked && achievement.progress !== null && achievement.progress !== undefined && achievement.progress > 0 && (
                             <div className="w-full mt-3">
                               <Progress value={100} className="h-1.5 bg-amber-100 dark:bg-amber-900/50" />
                             </div>
@@ -145,14 +145,14 @@ export default function Achievements() {
                           <h3 className="font-semibold text-sm leading-tight mb-1 text-muted-foreground">{achievement.title}</h3>
                           <p className="text-xs text-muted-foreground/70 leading-relaxed flex-1">{achievement.description}</p>
 
-                          {achievement.maxProgress && achievement.currentProgress !== undefined && (
+                          {!achievement.isUnlocked && achievement.progress !== null && achievement.progress !== undefined && (
                             <div className="w-full mt-3 space-y-1">
                               <div className="flex justify-between text-[10px] text-muted-foreground">
-                                <span>{achievement.currentProgress ?? 0}</span>
-                                <span>{achievement.maxProgress}</span>
+                                <span>{achievement.progress}%</span>
+                                <span>100%</span>
                               </div>
                               <Progress
-                                value={((achievement.currentProgress ?? 0) / achievement.maxProgress) * 100}
+                                value={achievement.progress}
                                 className="h-1.5"
                               />
                             </div>

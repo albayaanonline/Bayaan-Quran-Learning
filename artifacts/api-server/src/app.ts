@@ -5,6 +5,8 @@ import { clerkMiddleware } from "@clerk/express";
 import { publishableKeyFromHost } from "@clerk/shared/keys";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
+import path from "path";
+import { existsSync } from "fs";
 import {
   CLERK_PROXY_PATH,
   clerkProxyMiddleware,
@@ -92,6 +94,25 @@ app.use("/api/tts", rateLimit({ windowMs: 60 * 1000, max: 30, standardHeaders: t
 
 // ── Routes ──────────────────────────────────────────────────────────────────
 app.use("/api", router);
+
+// ── Serve frontend static files in production ─────────────────────────────
+// The frontend is built to artifacts/al-bayaan/dist/public/ during deployment.
+// __dirname is set to the directory of the bundled api-server output file
+// (artifacts/api-server/dist/), so two levels up lands at artifacts/, then
+// we go into al-bayaan/dist/public/.
+if (process.env.NODE_ENV === "production") {
+  const frontendDist = path.resolve(__dirname, "../../al-bayaan/dist/public");
+  if (existsSync(frontendDist)) {
+    logger.info({ frontendDist }, "Serving frontend static files");
+    app.use(express.static(frontendDist, { maxAge: "1d", etag: true }));
+    // SPA fallback — any non-API route returns index.html for client-side routing
+    app.get("*", (_req, res) => {
+      res.sendFile(path.join(frontendDist, "index.html"));
+    });
+  } else {
+    logger.warn({ frontendDist }, "Frontend dist not found — run the frontend build step");
+  }
+}
 
 // ── Global error handler ────────────────────────────────────────────────────
 app.use((err: unknown, req: Request, res: Response, next: NextFunction) => {

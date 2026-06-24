@@ -68,6 +68,7 @@ export default function AILearningAssistant() {
       return () => { clearTimeout(t1); clearTimeout(t2); };
     } else {
       setTooltipDismissed(true);
+      return undefined;
     }
   }, []);
 

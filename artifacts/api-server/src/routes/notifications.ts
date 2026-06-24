@@ -114,7 +114,10 @@ export async function createNotification(
         title,
         message,
         linkText: "Open Al Bayaan",
-        linkUrl: process.env.APP_URL ?? "https://bayaan.online",
+        linkUrl: process.env.APP_URL ??
+          (process.env.REPLIT_DOMAINS
+            ? `https://${process.env.REPLIT_DOMAINS.split(",")[0]}`
+            : "https://albayaan.replit.app"),
       });
     } catch (emailErr) {
       logger.warn({ emailErr }, "Email notification failed (non-critical)");

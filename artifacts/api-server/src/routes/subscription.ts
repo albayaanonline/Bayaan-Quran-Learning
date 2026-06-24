@@ -93,7 +93,7 @@ function computeSubscriptionStatus(profile: any) {
 
   if (hasActiveSubscription && profile.subscriptionPlan) {
     effectivePlan = profile.subscriptionPlan;
-    permissions = PLAN_PERMISSIONS[effectivePlan]?.features ?? [];
+    permissions = PLAN_PERMISSIONS[effectivePlan as string]?.features ?? [];
   } else if (trialActive) {
     effectivePlan = "trial";
     permissions = PLAN_PERMISSIONS.trial.features;
@@ -181,15 +181,28 @@ router.get("/subscription/status", requireAuth, async (req: any, res) => {
 router.get("/subscription/check/:feature", requireAuth, async (req: any, res) => {
   try {
     const { feature } = req.params;
-    const rows = await db
+    let rows = await db
       .select()
       .from(profilesTable)
       .where(eq(profilesTable.clerkId, req.userId))
       .limit(1);
 
     if (!rows[0]) {
-      res.status(403).json({ allowed: false, reason: "Profile not found" });
-      return;
+      // Auto-create profile with trial — same as /status so new users are never hard-blocked
+      const trial = buildTrialDates();
+      const inserted = await db
+        .insert(profilesTable)
+        .values({ clerkId: req.userId, displayName: "Student", ...trial })
+        .returning();
+      rows = inserted;
+    } else if (!rows[0].trialStartDate) {
+      const trial = buildTrialDates();
+      const updated = await db
+        .update(profilesTable)
+        .set(trial)
+        .where(eq(profilesTable.clerkId, req.userId))
+        .returning();
+      rows = updated;
     }
 
     const status = computeSubscriptionStatus(rows[0]);

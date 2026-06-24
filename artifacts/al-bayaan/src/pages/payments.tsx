@@ -943,7 +943,7 @@ export default function Payments() {
                   <div className="flex gap-3">
                     {rejected ? (
                       <Button className="flex-1 bg-red-600 hover:bg-red-700 text-white" onClick={() => {
-                        setStep("proof"); setAiReport(null); setProofImage(null);
+                        setStep("upload"); setAiReport(null); setProofImage(null);
                         setProofFileName(""); setOcrText(""); setOcrDone(false);
                         setOcrError(false); setRejected(false); setAutoVerified(false);
                       }}>
