@@ -1,5 +1,5 @@
-import { useGetDashboard, useGetProfile } from "@workspace/api-client-react";
-import { useUser } from "@clerk/react";
+import { useUser, useAuth } from "@clerk/react";
+import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { useEffect } from "react";
 import AppLayout from "@/components/layout/AppLayout";
@@ -36,22 +36,39 @@ function Brain(props: React.SVGProps<SVGSVGElement>) {
   return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.46 2.5 2.5 0 0 1-1.07-4.81A3 3 0 0 1 4.5 9.5a3 3 0 0 1 .5-1.69A2.5 2.5 0 0 1 9.5 2Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.46 2.5 2.5 0 0 0 1.07-4.81A3 3 0 0 0 19.5 9.5a3 3 0 0 0-.5-1.69A2.5 2.5 0 0 0 14.5 2Z"/></svg>;
 }
 
+async function fetchWithToken(path: string, getToken: () => Promise<string | null>) {
+  const token = await getToken();
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  const res = await fetch(path, { credentials: "include", headers });
+  if (!res.ok) throw new Error(`API ${path} returned ${res.status}`);
+  return res.json();
+}
+
 export default function Dashboard() {
   const { isSignedIn, isLoaded } = useUser();
+  const { getToken } = useAuth();
   const [, setLocation] = useLocation();
   const { t } = useI18n();
 
-  // Don't call the dashboard API until Clerk has confirmed the session —
-  // this prevents a race condition where customFetch fires before setAuthTokenGetter runs.
-  const { data: dashboard, isLoading, isError, refetch } = useGetDashboard({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    query: { enabled: isLoaded && !!isSignedIn } as any,
+  const ready = isLoaded && !!isSignedIn;
+
+  // Fetch dashboard data — getToken() called at query-time so the Bearer token
+  // is always fresh regardless of when Clerk finishes initializing.
+  const { data: dashboard, isLoading, isError, refetch } = useQuery({
+    queryKey: ["dashboard"],
+    queryFn: () => fetchWithToken("/api/dashboard", getToken),
+    enabled: ready,
+    retry: 2,
+    staleTime: 30_000,
   });
 
   // Load profile to detect new users who haven't completed onboarding
-  const { data: profile } = useGetProfile({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    query: { enabled: isLoaded && !!isSignedIn } as any,
+  const { data: profile } = useQuery({
+    queryKey: ["profile"],
+    queryFn: () => fetchWithToken("/api/profile", getToken),
+    enabled: ready,
+    staleTime: 60_000,
   });
 
   // Redirect new users to onboarding before they see the dashboard
