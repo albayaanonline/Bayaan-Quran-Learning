@@ -72,13 +72,25 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "2mb" }));
 
 // ── Clerk auth middleware ───────────────────────────────────────────────────
+// publishableKeyFromHost derives a Replit-specific pk_live_ key from the
+// domain. We should only use it when x-forwarded-host is explicitly set,
+// meaning a real user-facing domain is known (e.g. the Replit preview domain
+// forwarded by the Vite dev proxy). When x-forwarded-host is absent — which
+// happens when Vercel rewrites /api/* to this backend without forwarding the
+// header — the Host header is the internal Replit backend hostname, NOT the
+// user-facing domain. Deriving a key from that internal hostname would produce
+// a pk_live_ key that doesn't match the pk_test_ key the Vercel-hosted
+// frontend used → JWT verification fails → 401. In that case fall back to the
+// raw CLERK_PUBLISHABLE_KEY (the test key), which matches the fallback the
+// frontend computes via publishableKeyFromHost on non-Replit domains.
 app.use(
-  clerkMiddleware((req) => ({
-    publishableKey: publishableKeyFromHost(
-      getClerkProxyHost(req) ?? "",
-      process.env.CLERK_PUBLISHABLE_KEY,
-    ),
-  })),
+  clerkMiddleware((req) => {
+    const xfh = req.headers["x-forwarded-host"];
+    const publishableKey = xfh
+      ? publishableKeyFromHost(getClerkProxyHost(req) ?? "", process.env.CLERK_PUBLISHABLE_KEY)
+      : process.env.CLERK_PUBLISHABLE_KEY;
+    return { publishableKey };
+  }),
 );
 
 // ── Apply rate limiters to specific paths ───────────────────────────────────
