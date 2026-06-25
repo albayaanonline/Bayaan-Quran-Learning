@@ -6,6 +6,15 @@ export interface AuthRequest extends Request {
 }
 
 export function requireAuth(req: Request, res: Response, next: NextFunction): void {
+  // Dev-only test bypass: pass X-Test-User-Id header to simulate auth
+  if (process.env.NODE_ENV === "development") {
+    const testUserId = req.headers["x-test-user-id"] as string | undefined;
+    if (testUserId) {
+      (req as AuthRequest).userId = testUserId;
+      next();
+      return;
+    }
+  }
   const auth = getAuth(req);
   const userId = auth?.userId;
   if (!userId) {
