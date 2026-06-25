@@ -10,6 +10,10 @@
   },
   "rewrites": [
     {
+      "source": "/api/(.*)",
+      "destination": "https://216a2c46-4ca6-4a65-9cb5-9c8d5acc9b22-00-33brpba6490z3.riker.replit.dev/api/$1"
+    },
+    {
       "source": "/((?!api/).*)",
       "destination": "/index.html"
     }

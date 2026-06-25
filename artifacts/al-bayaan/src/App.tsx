@@ -66,12 +66,20 @@ const clerkPubKey = publishableKeyFromHost(
   window.location.hostname,
   import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
 );
-// In production builds (import.meta.env.PROD === true), always route Clerk
-// through the on-domain proxy so session cookies work on the .replit.app domain.
-// In dev, skip the proxy — the middleware is a no-op in development anyway.
-const clerkProxyUrl: string | undefined = import.meta.env.PROD
-  ? `${window.location.origin}/api/__clerk`
-  : (import.meta.env.VITE_CLERK_PROXY_URL as string | undefined);
+// Only use the on-domain Clerk proxy for Replit-hosted domains (*.replit.app,
+// *.replit.dev, *.repl.co). On Vercel / custom domains the Clerk SDK connects
+// directly to FAPI — the proxy is not needed for Bearer-token auth flows and
+// the clerkProxyMiddleware is not guaranteed to be reachable from the Vercel edge.
+const _hostname = window.location.hostname;
+const _isReplitDomain =
+  _hostname.endsWith(".replit.app") ||
+  _hostname.endsWith(".replit.dev") ||
+  _hostname.endsWith(".repl.co") ||
+  _hostname.endsWith(".riker.replit.dev");
+const clerkProxyUrl: string | undefined =
+  import.meta.env.PROD && _isReplitDomain
+    ? `${window.location.origin}/api/__clerk`
+    : (import.meta.env.VITE_CLERK_PROXY_URL as string | undefined);
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 function stripBase(path: string): string {
