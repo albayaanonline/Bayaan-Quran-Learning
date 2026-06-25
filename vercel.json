@@ -11,7 +11,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://216a2c46-4ca6-4a65-9cb5-9c8d5acc9b22-00-33brpba6490z3.riker.replit.dev/api/$1"
+      "destination": "https://c1e065a4-def5-4705-b06e-35ca3c74c8ed-00-e6g06pgnnhkg.picard.replit.dev/api/$1"
     },
     {
       "source": "/((?!api/).*)",
