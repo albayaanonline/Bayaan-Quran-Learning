@@ -14,10 +14,12 @@ function requireAuth(req: any, res: any, next: any) {
   next();
 }
 
-function buildTrialDates() {
-  const now = new Date();
-  const end = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000); // 2 days
-  return { trialStartDate: now, trialEndDate: end, trialStatus: "active" };
+function buildTrialDates(referenceTime?: Date | null) {
+  const start = referenceTime instanceof Date && !isNaN(referenceTime.getTime())
+    ? referenceTime
+    : new Date();
+  const end = new Date(start.getTime() + 48 * 60 * 60 * 1000);
+  return { trialStartDate: start, trialEndDate: end };
 }
 
 async function getOrCreateProfile(userId: string) {
@@ -30,9 +32,9 @@ async function getOrCreateProfile(userId: string) {
       ...trial,
     }).returning();
     rows = inserted;
-  } else if (!rows[0].trialStartDate) {
-    // Existing profile without trial — backfill
-    const trial = buildTrialDates();
+  } else if (!rows[0].trialStartDate || !rows[0].trialEndDate) {
+    // Backfill — anchor trial to the account's creation time
+    const trial = buildTrialDates(rows[0].createdAt ? new Date(rows[0].createdAt) : null);
     const updated = await db
       .update(profilesTable)
       .set(trial)
@@ -129,10 +131,10 @@ router.post("/profile/onboarding", requireAuth, async (req: any, res) => {
       }).returning();
       row = inserted[0];
     } else {
-      // Preserve trial dates if they exist
+      // Preserve trial dates if they exist; backfill anchored to createdAt
       const trialUpdates: any = {};
-      if (!existing[0].trialStartDate) {
-        Object.assign(trialUpdates, buildTrialDates());
+      if (!existing[0].trialStartDate || !existing[0].trialEndDate) {
+        Object.assign(trialUpdates, buildTrialDates(existing[0].createdAt ? new Date(existing[0].createdAt) : null));
       }
       const updated = await db.update(profilesTable).set({
         displayName: displayName ?? existing[0].displayName,

@@ -7,10 +7,12 @@ import { SURAHS } from "./surahs";
 
 const router: IRouter = Router();
 
-function buildTrialDates() {
-  const now = new Date();
-  const end = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000);
-  return { trialStartDate: now, trialEndDate: end };
+function buildTrialDates(referenceTime?: Date | null) {
+  const start = referenceTime instanceof Date && !isNaN(referenceTime.getTime())
+    ? referenceTime
+    : new Date();
+  const end = new Date(start.getTime() + 48 * 60 * 60 * 1000);
+  return { trialStartDate: start, trialEndDate: end };
 }
 
 async function getOrCreateProfile(userId: string) {
@@ -23,9 +25,9 @@ async function getOrCreateProfile(userId: string) {
       ...trial,
     }).returning();
     rows = inserted;
-  } else if (!rows[0].trialStartDate) {
-    // Backfill: existing profile has no trial — grant one now
-    const trial = buildTrialDates();
+  } else if (!rows[0].trialStartDate || !rows[0].trialEndDate) {
+    // Backfill — anchor trial to the account's creation time
+    const trial = buildTrialDates(rows[0].createdAt ? new Date(rows[0].createdAt) : null);
     const updated = await db
       .update(profilesTable)
       .set(trial)
