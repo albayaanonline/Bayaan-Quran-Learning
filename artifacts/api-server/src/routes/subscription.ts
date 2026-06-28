@@ -147,13 +147,25 @@ function computeSubscriptionStatus(profile: any) {
 
 /**
  * Ensure a profile has explicit trial dates persisted.
- * Always anchors the trial to the profile's createdAt timestamp so the
- * 48-hour window is deterministic regardless of when this runs.
+ *
+ * Strategy:
+ * 1. If trial dates already set → nothing to do.
+ * 2. Try to anchor the trial to createdAt (honest: user signed up N days ago).
+ * 3. If that window has already expired (createdAt was > 48h ago), the user
+ *    never got to use their free trial due to a bug — grant a fresh 48h from
+ *    now so they aren't permanently locked out.
  */
 async function ensureTrialDates(profile: any): Promise<any> {
   if (profile.trialStartDate && profile.trialEndDate) return profile;
 
-  const trial = buildTrialDates(profile.createdAt ? new Date(profile.createdAt) : null);
+  const now = new Date();
+  let trial = buildTrialDates(profile.createdAt ? new Date(profile.createdAt) : null);
+
+  // If anchoring to createdAt produces an already-expired trial, start fresh from now.
+  if (trial.trialEndDate <= now) {
+    trial = buildTrialDates(now);
+  }
+
   const updated = await db
     .update(profilesTable)
     .set(trial)
