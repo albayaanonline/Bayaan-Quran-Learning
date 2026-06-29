@@ -13,7 +13,7 @@ import { useI18n } from "@/lib/i18n";
 
 export default function Learn() {
   const { t } = useI18n();
-  const { data: surahs, isLoading: surahsLoading } = useListSurahs();
+  const { data: surahs, isLoading: surahsLoading, isError: surahsError, refetch: refetchSurahs } = useListSurahs();
   const { data: progress } = useGetProgress();
   const [search, setSearch] = useState("");
 
