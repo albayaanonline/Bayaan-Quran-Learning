@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useUser } from "@clerk/react";
 import { authFetch } from "@/lib/api";
 import { Bell, Check, X, Award, ClipboardList, Flame, BotMessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -47,12 +48,14 @@ function timeAgo(dateStr: string): string {
 
 export default function NotificationBell() {
   const { t } = useI18n();
+  const { isLoaded, isSignedIn } = useUser();
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unread, setUnread] = useState(0);
   const panelRef = useRef<HTMLDivElement>(null);
 
   const fetchNotifications = async () => {
+    if (!isLoaded || !isSignedIn) return;
     try {
       const r = await authFetch("/api/notifications", { });
       if (r.ok) {
@@ -64,10 +67,11 @@ export default function NotificationBell() {
   };
 
   useEffect(() => {
+    if (!isLoaded || !isSignedIn) return;
     fetchNotifications();
     const interval = setInterval(fetchNotifications, 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isLoaded, isSignedIn]);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {

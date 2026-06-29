@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { useClerk } from "@clerk/react";
+import { useClerk, useUser } from "@clerk/react";
 import AlBayaanLogo from "@/components/AlBayaanLogo";
 import {
   BookOpen, LayoutDashboard, LineChart, Bookmark, Award, Trophy,
@@ -35,7 +35,8 @@ function useDarkMode() {
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const { signOut } = useClerk();
-  const { data: profile } = useGetProfile();
+  const { isLoaded, isSignedIn } = useUser();
+  const { data: profile } = useGetProfile({ query: { enabled: isLoaded && !!isSignedIn } });
   const { locale, setLocale, t, isRTL } = useI18n();
   const [dark, setDark] = useDarkMode();
   const [mobileOpen, setMobileOpen] = useState(false);
