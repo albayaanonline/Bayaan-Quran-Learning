@@ -276,15 +276,21 @@ setBaseUrl((import.meta.env.VITE_API_BASE_URL as string) || "");
 // Required for cross-origin deployments (e.g. Vercel frontend → Replit API).
 function SetupApiAuth() {
   const { getToken } = useAuth();
+  const getTokenRef = useRef(getToken);
+  getTokenRef.current = getToken;
+
+  // Set synchronously during render (before any child effects fire) so that
+  // authFetch() calls inside child useEffects on first mount always have a token.
+  const getter = () => getTokenRef.current();
+  setAuthTokenGetter(getter);
+  setApiTokenGetter(getter);
+
   useEffect(() => {
-    const getter = () => getToken();
-    setAuthTokenGetter(getter);
-    setApiTokenGetter(getter);
     return () => {
       setAuthTokenGetter(null);
       setApiTokenGetter(null);
     };
-  }, [getToken]);
+  }, []);
   return null;
 }
 

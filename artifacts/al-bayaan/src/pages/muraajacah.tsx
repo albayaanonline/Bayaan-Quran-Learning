@@ -242,11 +242,12 @@ export default function Muraajacah() {
 
   const handleRevise = async (entryId: number, quality: number) => {
     setRevisingId(entryId);
+    const qualityStr = quality >= 4 ? "excellent" : quality >= 3 ? "good" : "poor";
     try {
       const res = await authFetch(`/api/hifdh/${entryId}/revise`, {
-        method: "POST",
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ quality }),
+        body: JSON.stringify({ quality: qualityStr }),
       });
       if (!res.ok) throw new Error("Failed");
       toast({

@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Mic, MicOff, Volume2, VolumeX, Loader2, RefreshCw, BotMessageSquare, User, Send, Globe, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
+import { authFetch } from "@/lib/api";
 
 interface VoiceMessage {
   role: "user" | "assistant";
@@ -118,7 +119,7 @@ export default function VoiceTeacher() {
     const history = messages.slice(-8).map(m => ({ role: m.role, content: m.content }));
 
     try {
-      const r = await fetch(`${BASE_PATH}/api/voice-teacher/message`, {
+      const r = await authFetch("/api/voice-teacher/message", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: trimmed, history }),
@@ -309,7 +310,7 @@ export default function VoiceTeacher() {
       const audioBase64 = await toBase64(blob);
       setStatusMsg("Transcribing audio…");
       const history = messages.slice(-8).map(m => ({ role: m.role, content: m.content }));
-      const r = await fetch(`${BASE_PATH}/api/voice-teacher/message`, {
+      const r = await authFetch("/api/voice-teacher/message", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ audioBase64, audioMimeType: blob.type, history }),

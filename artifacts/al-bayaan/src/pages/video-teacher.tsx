@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Mic, MicOff, Send, Volume2, VolumeX, Loader2, RefreshCw, Video, Globe } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
+import { authFetch } from "@/lib/api";
 
 type TeacherMode = "quran" | "tajweed" | "hifdh" | "arabic" | "fiqh" | "tafsir";
 type Language = "en" | "ar" | "so";
@@ -323,7 +324,7 @@ export default function VideoTeacher() {
       const ctrl = new AbortController();
       abortRef.current = ctrl;
       const history = messages.slice(-8).map(m => ({ role: m.role, content: m.content }));
-      const r = await fetch(`${BASE_PATH}/api/video-teacher/message`, {
+      const r = await authFetch("/api/video-teacher/message", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         signal: ctrl.signal,
@@ -470,7 +471,7 @@ export default function VideoTeacher() {
 
     try {
       const audioBase64 = await toBase64(blob);
-      const r = await fetch(`${BASE_PATH}/api/voice-teacher/message`, {
+      const r = await authFetch("/api/voice-teacher/message", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ audioBase64, audioMimeType: blob.type, history: messages.slice(-6) }),
