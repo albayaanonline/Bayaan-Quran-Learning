@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useAuth } from "@clerk/react";
 import { authFetch } from "@/lib/api";
 import { useLocation } from "wouter";
 import AppLayout from "@/components/layout/AppLayout";
@@ -123,6 +124,7 @@ function BookCard({ book, completedLessons, onOpen }: { book: Book; completedLes
 export default function Library() {
   const { t } = useI18n();
   const [, navigate] = useLocation();
+  const { isLoaded, isSignedIn } = useAuth();
   const [books, setBooks] = useState<Book[]>([]);
   const [progressMap, setProgressMap] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
@@ -137,14 +139,15 @@ export default function Library() {
   }, []);
 
   useEffect(() => {
+    if (!isLoaded) return;
     setLoading(true);
     Promise.all([
-      authFetch("/api/library/books", { }),
-      authFetch("/api/library/progress", { }),
+      fetch("/api/library/books"),
+      isSignedIn ? authFetch("/api/library/progress", { }) : Promise.resolve(null),
     ])
       .then(async ([br, pr]) => {
         if (!br.ok) throw new Error("Failed to load books");
-        const [bd, pd] = await Promise.all([br.json(), pr.ok ? pr.json() : { progress: [] }]);
+        const [bd, pd] = await Promise.all([br.json(), pr && pr.ok ? pr.json() : { progress: [] }]);
         setBooks(bd.books ?? []);
         const map: Record<string, number> = {};
         for (const p of pd.progress ?? []) map[p.bookId] = p.completedLessons;
@@ -152,7 +155,7 @@ export default function Library() {
       })
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
-  }, []);
+  }, [isLoaded, isSignedIn]);
 
   const filtered = books.filter(b => {
     const matchesCat = category === "all" || b.category === category;

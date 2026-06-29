@@ -651,11 +651,11 @@ function generateLessons(book: Book): Lesson[] {
   return base;
 }
 
-router.get("/library/books", requireAuth, async (_req, res) => {
+router.get("/library/books", async (_req, res) => {
   res.json({ books: LIBRARY_BOOKS });
 });
 
-router.get("/library/books/:bookId", requireAuth, async (req: any, res) => {
+router.get("/library/books/:bookId", async (req: any, res) => {
   try {
     const { bookId } = req.params;
     const book = LIBRARY_BOOKS.find((b) => b.id === bookId);

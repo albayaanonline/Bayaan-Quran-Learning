@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useAuth } from "@clerk/react";
 import { authFetch } from "@/lib/api";
 import { useParams, useLocation } from "wouter";
 import AppLayout from "@/components/layout/AppLayout";
@@ -70,6 +71,7 @@ export default function BookCourse() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const { t } = useI18n();
+  const { isLoaded, isSignedIn } = useAuth();
 
   const [book, setBook] = useState<BookDetail | null>(null);
   const [completedLessons, setCompletedLessons] = useState(0);
@@ -79,15 +81,15 @@ export default function BookCourse() {
   const [savingLesson, setSavingLesson] = useState<number | null>(null);
 
   useEffect(() => {
-    if (!bookId) return;
+    if (!bookId || !isLoaded) return;
     setLoading(true);
     Promise.all([
-      authFetch(`/api/library/books/${bookId}`, { }),
-      authFetch("/api/library/progress", { }),
+      fetch(`/api/library/books/${bookId}`),
+      isSignedIn ? authFetch("/api/library/progress", { }) : Promise.resolve(null),
     ])
       .then(async ([br, pr]) => {
         if (!br.ok) throw new Error("Course not found");
-        const [bd, pd] = await Promise.all([br.json(), pr.ok ? pr.json() : { progress: [] }]);
+        const [bd, pd] = await Promise.all([br.json(), pr && pr.ok ? pr.json() : { progress: [] }]);
         setBook(bd.book);
         const entry = (pd.progress ?? []).find((p: any) => p.bookId === bookId);
         setCompletedLessons(entry?.completedLessons ?? 0);
@@ -99,7 +101,7 @@ export default function BookCourse() {
       })
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
-  }, [bookId]);
+  }, [bookId, isLoaded, isSignedIn]);
 
   const markLessonComplete = useCallback(async (lessonNum: number) => {
     if (!book || savingLesson) return;
