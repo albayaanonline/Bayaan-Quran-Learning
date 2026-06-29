@@ -26,7 +26,7 @@ export interface SubscriptionStatus {
 const BASE = ((import.meta.env.VITE_API_BASE_URL as string) || "").replace(/\/$/, "");
 
 export function useSubscription() {
-  const { isSignedIn } = useUser();
+  const { isSignedIn, isLoaded } = useUser();
   const { getToken } = useAuth();
 
   const query = useQuery<SubscriptionStatus>({
@@ -42,7 +42,7 @@ export function useSubscription() {
       if (!res.ok) throw new Error("Failed to fetch subscription status");
       return res.json();
     },
-    enabled: !!isSignedIn,
+    enabled: isLoaded && !!isSignedIn,
     staleTime: 30_000,
     refetchInterval: 60_000,
   });
@@ -50,17 +50,10 @@ export function useSubscription() {
   const status = query.data;
 
   const hasFeature = (feature: string): boolean => {
-    // Still loading — allow through (don't block while fetching)
-    if (query.isLoading) return true;
-    // Status loaded and valid
-    if (status) {
-      if (!status.hasAccess) return false;
-      if (status.permissions.includes("all")) return true;
-      return status.permissions.includes(feature);
-    }
-    // Status failed to load (network error, 401 on first load, etc.) — allow through
-    // so users aren't locked out by a transient error; re-fetch will correct this
-    return true;
+    if (query.isLoading || query.isPending || !status) return true;
+    if (!status.hasAccess) return false;
+    if (status.permissions.includes("all")) return true;
+    return status.permissions.includes(feature);
   };
 
   return {

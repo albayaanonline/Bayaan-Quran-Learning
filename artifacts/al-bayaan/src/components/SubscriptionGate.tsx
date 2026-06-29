@@ -18,9 +18,9 @@ const PLAN_LABELS: Record<string, string> = {
 };
 
 export default function SubscriptionGate({ feature, children, fallback }: Props) {
-  const { status, isLoading, hasAccess, hasFeature } = useSubscription();
+  const { status, isLoading, isPending, hasAccess, hasFeature } = useSubscription();
 
-  if (isLoading) return <>{children}</>;
+  if (isLoading || isPending || !status) return <>{children}</>;
 
   const allowed = feature ? hasFeature(feature) : hasAccess;
 
