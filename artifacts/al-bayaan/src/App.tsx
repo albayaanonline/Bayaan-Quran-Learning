@@ -58,24 +58,34 @@ import Pricing from "./pages/pricing";
 
 const queryClient = new QueryClient();
 
-// Resolves the publishable key from the hostname — required for Replit-managed
-// Clerk so the same build works across dev (test key) and prod (live key derived
-// from the domain). VITE_CLERK_PUBLISHABLE_KEY is auto-provisioned by Replit;
-// do NOT replace this with the raw env var.
-const clerkPubKey = publishableKeyFromHost(
-  window.location.hostname,
-  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
-);
-// Only use the on-domain Clerk proxy for Replit-hosted domains (*.replit.app,
-// *.replit.dev, *.repl.co). On Vercel / custom domains the Clerk SDK connects
-// directly to FAPI — the proxy is not needed for Bearer-token auth flows and
-// the clerkProxyMiddleware is not guaranteed to be reachable from the Vercel edge.
+// Determine if we're on a Replit-managed domain.
+// publishableKeyFromHost() is only safe to call on Replit domains — on external
+// domains (Vercel, custom) it can derive an invalid pk_live_ key which causes
+// Clerk to redirect-loop (ERR_TOO_MANY_REDIRECTS).
 const _hostname = window.location.hostname;
+const _isLocalhost = _hostname === "localhost" || _hostname === "127.0.0.1";
 const _isReplitDomain =
   _hostname.endsWith(".replit.app") ||
   _hostname.endsWith(".replit.dev") ||
   _hostname.endsWith(".repl.co") ||
   _hostname.endsWith(".riker.replit.dev");
+
+// On Replit domains: use publishableKeyFromHost so the same build resolves
+//   pk_test_ (dev) or pk_live_ (production deploy) from the domain.
+// On all other domains (Vercel, custom, localhost): use VITE_CLERK_PUBLISHABLE_KEY
+//   directly. If the env var is not set → null → MissingConfigError shown cleanly
+//   with no redirect loop.
+const clerkPubKey: string | null = (_isReplitDomain || _isLocalhost)
+  ? publishableKeyFromHost(
+      window.location.hostname,
+      import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
+    )
+  : ((import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as string | undefined) ?? null);
+
+// Only use the on-domain Clerk proxy for Replit-hosted domains (*.replit.app,
+// *.replit.dev, *.repl.co). On Vercel / custom domains the Clerk SDK connects
+// directly to FAPI — the proxy is not needed for Bearer-token auth flows and
+// the clerkProxyMiddleware is not guaranteed to be reachable from the Vercel edge.
 const clerkProxyUrl: string | undefined =
   import.meta.env.PROD && _isReplitDomain
     ? `${window.location.origin}/api/__clerk`
@@ -247,21 +257,29 @@ class ClerkErrorBoundary extends Component<{ children: ReactNode }, { error: Err
 }
 
 function MissingConfigError({ message }: { message: string }) {
+  const isVercel = typeof window !== "undefined" && window.location.hostname.endsWith(".vercel.app");
   return (
     <div className="flex min-h-[100dvh] items-center justify-center bg-slate-50 p-6">
-      <div className="max-w-md w-full bg-white rounded-2xl border border-blue-100 shadow-2xl shadow-blue-900/10 p-10 text-center">
+      <div className="max-w-lg w-full bg-white rounded-2xl border border-blue-100 shadow-2xl shadow-blue-900/10 p-10 text-center">
         <div className="text-5xl mb-4">⚙️</div>
-        <h1 className="text-2xl font-bold text-slate-900 mb-3">Configuration Required</h1>
-        <p className="text-slate-600 mb-4 leading-relaxed">
-          Al Bayaan requires authentication to be configured before it can start.
-          Please contact the administrator or check the environment setup.
-        </p>
+        <h1 className="text-2xl font-bold text-slate-900 mb-3">Authentication Not Configured</h1>
         <div className="bg-blue-50 rounded-xl px-4 py-3 text-left text-sm text-blue-900 font-mono break-words mb-6">
           {message}
         </div>
-        <p className="text-sm text-blue-700">
-          Set <code className="bg-blue-100 px-1.5 py-0.5 rounded-md">VITE_CLERK_PUBLISHABLE_KEY</code> in the environment variables and restart.
-        </p>
+        {isVercel ? (
+          <div className="text-left space-y-3 text-sm text-slate-700">
+            <p className="font-semibold text-slate-900">To fix this on Vercel:</p>
+            <ol className="list-decimal list-inside space-y-2">
+              <li>Open your Vercel project → <strong>Settings → Environment Variables</strong></li>
+              <li>Add <code className="bg-blue-100 px-1.5 py-0.5 rounded-md">VITE_CLERK_PUBLISHABLE_KEY</code> with your Clerk publishable key</li>
+              <li>Redeploy the project</li>
+            </ol>
+          </div>
+        ) : (
+          <p className="text-sm text-blue-700">
+            Set <code className="bg-blue-100 px-1.5 py-0.5 rounded-md">VITE_CLERK_PUBLISHABLE_KEY</code> in the environment variables and restart.
+          </p>
+        )}
       </div>
     </div>
   );
