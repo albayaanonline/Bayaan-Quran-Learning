@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { authFetch } from "@/lib/api";
 import { useParams, Link } from "wouter";
 import { useGetSurah, useListAyahs, useGetSurahProgress } from "@workspace/api-client-react";
+import { useUser } from "@clerk/react";
 import AppLayout from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -98,10 +99,11 @@ export default function SurahDetail() {
   const params = useParams();
   const surahId = parseInt(params.surahId || "1");
   const { toast } = useToast();
+  const { isLoaded, isSignedIn } = useUser();
 
-  const { data: surah, isLoading: surahLoading } = useGetSurah(surahId);
-  const { data: ayahs, isLoading: ayahsLoading } = useListAyahs(surahId);
-  const { data: progress } = useGetSurahProgress(surahId);
+  const { data: surah, isLoading: surahLoading, isError: surahError, refetch: refetchSurah } = useGetSurah(surahId);
+  const { data: ayahs, isLoading: ayahsLoading, isError: ayahsError, refetch: refetchAyahs } = useListAyahs(surahId);
+  const { data: progress } = useGetSurahProgress(surahId, { query: { enabled: isLoaded && !!isSignedIn } });
 
   const [currentAyahIndex, setCurrentAyahIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -331,7 +333,28 @@ export default function SurahDetail() {
       </AppLayout>
     );
   }
-  if (!surah || !ayahs || !currentAyah) return <AppLayout><div className="p-8 text-center text-muted-foreground">Failed to load. Please refresh.</div></AppLayout>;
+  if (surahError || ayahsError || !surah || !ayahs || !currentAyah) {
+    return (
+      <AppLayout>
+        <div className="max-w-4xl mx-auto flex flex-col items-center justify-center py-24 gap-4 text-center">
+          <AlertCircle className="h-10 w-10 text-red-400" />
+          <div>
+            <p className="font-semibold text-foreground">Failed to load</p>
+            <p className="text-sm text-muted-foreground mt-1">Could not fetch surah data. Check your connection.</p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            onClick={() => { refetchSurah(); refetchAyahs(); }}
+          >
+            <RotateCcw className="h-4 w-4" /> Retry
+          </Button>
+          <Link href="/learn" className="text-sm text-blue-600 hover:underline">← Back to Surahs</Link>
+        </div>
+      </AppLayout>
+    );
+  }
 
   const score = feedback?.overallScore ?? 0;
   const scoreColor = score >= 90 ? "border-blue-500 text-blue-700" : score >= 75 ? "border-amber-500 text-amber-600" : "border-red-500 text-red-600";

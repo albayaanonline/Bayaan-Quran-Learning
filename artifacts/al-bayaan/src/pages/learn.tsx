@@ -6,15 +6,18 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { Search, CheckCircle2, BookOpen } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Search, CheckCircle2, BookOpen, RefreshCw, AlertCircle } from "lucide-react";
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useI18n } from "@/lib/i18n";
+import { useUser } from "@clerk/react";
 
 export default function Learn() {
   const { t } = useI18n();
+  const { isLoaded, isSignedIn } = useUser();
   const { data: surahs, isLoading: surahsLoading, isError: surahsError, refetch: refetchSurahs } = useListSurahs();
-  const { data: progress } = useGetProgress();
+  const { data: progress } = useGetProgress({ query: { enabled: isLoaded && !!isSignedIn } });
   const [search, setSearch] = useState("");
 
   const progressMap = useMemo(() => {
@@ -58,7 +61,20 @@ export default function Learn() {
           </div>
         </div>
 
-        {surahsLoading ? (
+        {surahsError ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center gap-4">
+            <div className="h-14 w-14 rounded-2xl bg-red-50 dark:bg-red-950/40 flex items-center justify-center">
+              <AlertCircle className="h-7 w-7 text-red-500" />
+            </div>
+            <div>
+              <p className="font-semibold text-foreground">Could not load surahs</p>
+              <p className="text-sm text-muted-foreground mt-1">Check your connection and try again</p>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => refetchSurahs()} className="gap-2">
+              <RefreshCw className="h-4 w-4" /> Retry
+            </Button>
+          </div>
+        ) : surahsLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {Array.from({ length: 12 }).map((_, i) => <Skeleton key={i} className="h-32 rounded-xl shimmer" />)}
           </div>
