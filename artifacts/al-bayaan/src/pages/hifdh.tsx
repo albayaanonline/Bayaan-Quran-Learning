@@ -210,7 +210,9 @@ export default function Hifdh() {
       await authFetch(`/api/hifdh/${id}`, { method: "DELETE" });
       setEntries((prev) => prev.filter((e) => e.id !== id));
       toast({ title: t("gen.removed") });
-    } catch {}
+    } catch {
+      toast({ title: t("gen.error"), description: "Could not remove entry. Please try again.", variant: "destructive" });
+    }
   };
 
   return (
@@ -257,6 +259,10 @@ export default function Hifdh() {
         {loading ? (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {Array(4).fill(0).map((_, i) => <Skeleton key={i} className="h-24" />)}
+          </div>
+        ) : !plan ? (
+          <div className="rounded-xl border border-dashed p-6 text-center text-muted-foreground text-sm">
+            {t("hifdh.noplan") || "Add your first surah to begin tracking your Hifdh."}
           </div>
         ) : plan && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

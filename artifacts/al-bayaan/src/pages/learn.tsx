@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { Search, CheckCircle2 } from "lucide-react";
+import { Search, CheckCircle2, BookOpen } from "lucide-react";
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useI18n } from "@/lib/i18n";
@@ -61,6 +61,11 @@ export default function Learn() {
         {surahsLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {Array.from({ length: 12 }).map((_, i) => <Skeleton key={i} className="h-32 rounded-xl shimmer" />)}
+          </div>
+        ) : filteredSurahs?.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center text-muted-foreground gap-3">
+            <BookOpen className="h-10 w-10 opacity-30" />
+            <p className="text-sm">{t("learn.noResults") || "No surahs found"}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -118,7 +123,7 @@ export default function Learn() {
                               {surah.revelationType}
                             </span>
                             <span>
-                              {hasStarted ? `${sp!.completedAyahs}/${surah.ayahCount} ayahs` : `${surah.ayahCount} ayahs`}
+                              {hasStarted ? `${sp?.completedAyahs ?? 0}/${surah.ayahCount} ayahs` : `${surah.ayahCount} ayahs`}
                             </span>
                           </div>
                           <div className="h-1.5 rounded-full bg-muted overflow-hidden">

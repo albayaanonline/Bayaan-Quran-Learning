@@ -146,6 +146,7 @@ export default function Mushaf() {
   const [pageData, setPageData] = useState<PageData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
   const [pageInput, setPageInput] = useState(String(page));
   const [bookmarks, setBookmarks] = useState<number[]>(() => {
     try { return JSON.parse(localStorage.getItem(BOOKMARKS_KEY) ?? "[]"); } catch { return []; }
@@ -197,7 +198,7 @@ export default function Mushaf() {
       .finally(() => setLoading(false));
 
     return () => ctrl.abort();
-  }, [page]);
+  }, [page, retryCount]);
 
   useEffect(() => {
     return () => {
@@ -520,7 +521,7 @@ export default function Mushaf() {
               className="bg-red-50 border border-red-200 rounded-2xl p-8 text-center text-red-700">
               <p className="font-medium">Could not load page {page}</p>
               <p className="text-sm mt-1">{error}</p>
-              <Button onClick={() => setPage(p => p)} variant="outline" className="mt-4">Retry</Button>
+              <Button onClick={() => setRetryCount(c => c + 1)} variant="outline" className="mt-4">Retry</Button>
             </motion.div>
           )}
 

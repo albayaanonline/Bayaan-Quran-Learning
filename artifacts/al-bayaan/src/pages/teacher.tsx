@@ -181,6 +181,11 @@ export default function Teacher() {
           } catch {}
         }
       }
+      if (streamingRef.current) {
+        setMessages((prev) => [...prev, { role: "assistant", content: streamingRef.current }]);
+        setStreamingContent("");
+        streamingRef.current = "";
+      }
     } catch {
       toast({ title: "Error", description: "Could not get response. Please try again.", variant: "destructive" });
     } finally {

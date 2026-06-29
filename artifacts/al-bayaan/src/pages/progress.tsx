@@ -109,7 +109,7 @@ export default function Progress() {
               <CardContent>
                 <div className="h-[300px] w-full">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={progress.surahsProgress.slice(0, 5).map(s => ({ name: s.surahName, percent: Math.round((s.completedAyahs/s.totalAyahs)*100) }))}>
+                    <BarChart data={(progress.surahsProgress ?? []).slice(0, 5).map(s => ({ name: s.surahName, percent: s.totalAyahs > 0 ? Math.round((s.completedAyahs / s.totalAyahs) * 100) : 0 }))}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted))" />
                       <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }} />
                       <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }} />
